@@ -10,6 +10,9 @@ It will support the following flow
 5. suport all registration workflow including waiting for email approval 
 
 
+There will be 2 websites 
+public - www.kitchen48.com - this will be for everyone
+admin - admin.kitchen48.com - this will only be for aminstrator and developer 
 
 
 
