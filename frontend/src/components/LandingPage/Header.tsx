@@ -4,11 +4,11 @@ export default function Header() {
   return (
     <header className="sticky top-0 z-50 bg-primary border-b border-slate-700/50 shadow-xl">
       <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
-        <div className="flex items-center">
+        <div className="flex items-center h-full py-1">
           <img
             alt="Kitchen48 Logo"
-            className="h-12 w-auto object-contain"
-            src="/kitchen48-logo.jpg"
+            className="h-full w-auto object-contain"
+            src="/kitchen48-logo-tight.jpg"
           />
         </div>
 

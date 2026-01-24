@@ -22,8 +22,8 @@ export default function Header({ currentPage = 'dashboard', onNavigate }: Header
           <div className="flex items-center gap-4">
             <img
               alt="Kitchen48 Logo"
-              className="h-12 w-auto object-contain"
-              src="/kitchen48-logo.jpg"
+              className="h-16 w-auto object-contain"
+              src="/kitchen48-logo-tight.jpg"
             />
             <span className="text-white/80 text-sm font-medium bg-accent-orange/20 px-3 py-1 rounded-full border border-accent-orange/30">
               Admin Portal

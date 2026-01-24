@@ -8,7 +8,7 @@ export default function Footer() {
               <img
                 alt="Kitchen48"
                 className="h-10 w-auto"
-                src="/kitchen48-logo.jpg"
+                src="/kitchen48-logo-tight.jpg"
               />
             </div>
             <p className="text-slate-400 text-sm leading-relaxed">
