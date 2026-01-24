@@ -30,19 +30,18 @@ class ParameterService {
 
   /**
    * Get parameter by key and owner
+   * Note: Uses findFirst instead of findUnique because Prisma doesn't support null in compound unique keys
    */
   async getByKeyAndOwner(
     key: string,
     ownerType: 'SYSTEM' | 'ORGANIZATION' | 'USER',
     ownerId?: string | null
   ): Promise<Parameter | null> {
-    return prisma.parameter.findUnique({
+    return prisma.parameter.findFirst({
       where: {
-        key_ownerType_ownerId: {
-          key,
-          ownerType,
-          ownerId: ownerId ?? null,
-        },
+        key,
+        ownerType,
+        ownerId: ownerId ?? null,
       },
     });
   }
