@@ -84,4 +84,32 @@ frontend/
 - Admin users must have `userType === 'admin'` to access admin portal
 - Non-admin users see "Access Denied" page after login
 
+### Parameters Feature - 2026-01-24
+- Parameters page accessible via admin top bar menu
+- Located in `src/components/AdminLandingPage/ParametersPage/`
+- Uses Tabulator for data grid (dynamic loading pattern)
+- Grid supports inline editing with auto-save
+- Custom color picker editor for COLOR data type
+- Theme CSS uses Tailwind CSS variables for dark mode consistency
+- API calls to `/api/parameters` with Bearer token auth
+
+#### Admin Navigation Pattern
+```tsx
+// Header.tsx - currentPage state controls which page is shown
+const [currentPage, setCurrentPage] = useState<'dashboard' | 'parameters'>('dashboard');
+
+// Navigation buttons with active state
+<button
+  onClick={() => setCurrentPage('parameters')}
+  className={currentPage === 'parameters' ? 'border-b-2 border-accent-orange' : ''}
+>
+  Parameters
+</button>
+```
+
+#### Tabulator Usage
+- See root `CLAUDE.md` for Tabulator best practices
+- Grid theme in `ParametersPage/tabulator-theme.css`
+- Uses CSS variables for dark mode support
+
 ---

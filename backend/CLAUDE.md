@@ -63,4 +63,32 @@ res.status(400).json({ error: 'Error message' });
 - Admin middleware: `requireAdmin` checks user type
 - Default admin user: `shacoof@gmail.com`
 
+### Parameters Feature - 2026-01-24
+- Parameters stored in `parameters` table (Prisma model: `Parameter`)
+- Supports data types: STRING, NUMBER, BOOLEAN, JSON, DATE, COLOR
+- Owner types: SYSTEM (global), ORGANIZATION, USER
+- Unique constraint on `[key, ownerType, ownerId]`
+- Admin-only access for CRUD operations
+
+#### API Endpoints
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/api/parameters` | List all parameters |
+| POST | `/api/parameters` | Create parameter |
+| GET | `/api/parameters/:id` | Get single parameter |
+| PUT | `/api/parameters/:id` | Update parameter |
+| DELETE | `/api/parameters/:id` | Delete parameter |
+
+#### Parameter Model Fields
+- `key` - Unique identifier within scope
+- `value` - String value (stored as text)
+- `dataType` - STRING, NUMBER, BOOLEAN, JSON, DATE, COLOR
+- `ownerType` - SYSTEM, ORGANIZATION, USER
+- `ownerId` - Owner ID (null for SYSTEM)
+- `category` - Optional grouping
+- `description` - Optional description
+- `isEncrypted` - Flag for sensitive values
+- `defaultValue` - Fallback value
+- `validationRules` - JSON validation schema
+
 ---

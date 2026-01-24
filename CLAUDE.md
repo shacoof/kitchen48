@@ -322,3 +322,229 @@ const prisma = new PrismaClient();
 ```
 
 ---
+
+## Tabulator Best Practices
+
+Kitchen48 uses [Tabulator](https://tabulator.info/) for data grids. Follow these patterns for consistency.
+
+### Installation
+
+```bash
+cd frontend && npm install tabulator-tables
+```
+
+### Dynamic Loading Pattern
+
+Always load Tabulator dynamically to avoid SSR/build issues:
+
+```typescript
+import { useEffect, useRef, useState } from 'react';
+
+const [tabulatorLoaded, setTabulatorLoaded] = useState(false);
+const tableRef = useRef<HTMLDivElement>(null);
+const tabulatorRef = useRef<any>(null);
+
+// Step 1: Load module dynamically
+useEffect(() => {
+  import('tabulator-tables')
+    .then((module) => {
+      (window as any).TabulatorModule = module.TabulatorFull;
+      setTabulatorLoaded(true);
+    });
+}, []);
+
+// Step 2: Initialize after load
+useEffect(() => {
+  if (!tabulatorLoaded || !tableRef.current || tabulatorRef.current) return;
+
+  const Tabulator = (window as any).TabulatorModule;
+  tabulatorRef.current = new Tabulator(tableRef.current, {
+    height: "100%",
+    layout: "fitData",
+    columns: [/* ... */],
+  });
+}, [tabulatorLoaded]);
+```
+
+### Container Sizing (CRITICAL)
+
+Proper container sizing is essential for scrolling:
+
+```tsx
+<div style={{
+  height: '500px',
+  minHeight: 0,      // CRITICAL for vertical scroll in flex
+  minWidth: 0,       // CRITICAL for horizontal scroll
+  overflow: 'hidden' // prevent double scrollbars
+}}>
+  <div ref={tableRef} style={{ height: '100%', width: '100%' }}></div>
+</div>
+```
+
+### Column Configuration
+
+```typescript
+const columns = [
+  {
+    title: 'Key',
+    field: 'key',
+    editor: 'input',                    // Inline editing
+    validator: ['required', 'minLength:1'],
+    headerFilter: 'input',              // Filter in header
+    sorter: 'string',
+    width: 150,
+  },
+  {
+    title: 'Data Type',
+    field: 'dataType',
+    editor: 'list',
+    editorParams: {
+      values: ['STRING', 'NUMBER', 'BOOLEAN', 'JSON', 'DATE', 'COLOR']
+    },
+    headerFilter: 'list',
+    headerFilterParams: {
+      values: { '': 'All', 'STRING': 'String', 'NUMBER': 'Number' }
+    },
+  },
+  {
+    title: 'Active',
+    field: 'isActive',
+    editor: 'tickCross',                // Boolean checkbox
+    formatter: 'tickCross',
+    hozAlign: 'center',
+  }
+];
+```
+
+### Custom Editor Pattern
+
+For complex editors (e.g., color picker):
+
+```typescript
+editor: function(cell, onRendered, success, cancel) {
+  const container = document.createElement('div');
+  const input = document.createElement('input');
+  input.type = 'text';
+  input.value = cell.getValue() || '';
+
+  input.addEventListener('blur', () => {
+    if (validateValue(input.value)) {
+      success(input.value);  // Save value
+    } else {
+      cancel();              // Discard changes
+    }
+  });
+
+  input.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') success(input.value);
+    if (e.key === 'Escape') cancel();
+  });
+
+  onRendered(() => input.focus());  // Auto-focus when editor opens
+
+  container.appendChild(input);
+  return container;
+}
+```
+
+### Data Loading Pattern
+
+```typescript
+const loadData = async () => {
+  const token = localStorage.getItem('token');
+
+  const response = await fetch('/api/parameters', {
+    headers: {
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json'
+    },
+    cache: 'no-store'  // Always get fresh data
+  });
+
+  if (!response.ok) throw new Error('Failed to load');
+
+  const data = await response.json();
+  tabulatorRef.current?.setData(data);
+};
+```
+
+### Inline Editing with Auto-Save
+
+```typescript
+const tableOptions = {
+  columns: columns,
+  cellEdited: function(cell) {
+    const row = cell.getRow();
+    const data = row.getData();
+
+    // Send update to API
+    handleUpdate(data).catch(() => {
+      loadData();  // Reload on error (rollback)
+    });
+  }
+};
+```
+
+### Theme Styling
+
+Create a `tabulator-theme.css` using CSS variables only (no hardcoded colors):
+
+```css
+/* DO: Use CSS variables */
+.tabulator {
+  background-color: var(--bg-primary) !important;
+  color: var(--text-primary) !important;
+}
+
+.tabulator .tabulator-header {
+  background-color: var(--bg-secondary) !important;
+  border-bottom: 1px solid var(--border-color) !important;
+}
+
+.tabulator .tabulator-row:hover {
+  background-color: var(--bg-hover) !important;
+}
+
+/* DON'T: Hardcode colors */
+/* ❌ background-color: #ffffff; */
+```
+
+### Common Tabulator Options
+
+```typescript
+const tableOptions = {
+  height: "100%",
+  layout: "fitData",           // or "fitColumns", "fitDataFill"
+  responsiveLayout: "collapse",
+  pagination: true,
+  paginationSize: 20,
+  movableColumns: true,
+  resizableColumns: true,
+  placeholder: "No Data Available",
+
+  // Callbacks
+  dataLoaded: () => console.log('Data loaded'),
+  cellEdited: (cell) => handleCellEdit(cell),
+  rowClick: (e, row) => handleRowClick(row),
+};
+```
+
+### TypeScript Support
+
+```typescript
+import type { TabulatorFull, ColumnDefinition } from 'tabulator-tables';
+
+// Declare module on window
+declare global {
+  interface Window {
+    TabulatorModule: typeof TabulatorFull;
+  }
+}
+
+// Type your columns
+const columns: ColumnDefinition[] = [
+  { title: 'Name', field: 'name', sorter: 'string' },
+];
+```
+
+---
