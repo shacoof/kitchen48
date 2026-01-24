@@ -9,8 +9,10 @@ import crypto from 'crypto';
 import { prisma } from '../../core/database/prisma.js';
 import { emailService } from '../../services/email.service.js';
 import { env } from '../../config/env.js';
+import { createLogger } from '../../lib/logger.js';
 import type { RegisterInput, LoginInput, AuthUser, AuthResponse, JwtPayload, UserType } from './auth.types.js';
 
+const logger = createLogger('AuthService');
 const SALT_ROUNDS = 12;
 const VERIFICATION_TOKEN_EXPIRY_HOURS = 24;
 
@@ -60,7 +62,7 @@ class AuthService {
     });
 
     if (!emailResult.success) {
-      console.warn(`Failed to send verification email to ${user.email}: ${emailResult.error}`);
+      logger.warning(`Failed to send verification email to ${user.email}: ${emailResult.error}`);
       // Don't fail registration if email fails - user can request resend
     }
 

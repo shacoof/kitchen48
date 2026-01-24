@@ -4,6 +4,9 @@ import passport from 'passport';
 import { configurePassport } from './config/passport.js';
 import authRoutes from './modules/auth/auth.routes.js';
 import parameterRoutes from './modules/parameters/parameter.routes.js';
+import { createLogger } from './lib/logger.js';
+
+const logger = createLogger('Server');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -30,5 +33,5 @@ app.get('/api/health', (_req, res) => {
 });
 
 app.listen(PORT, () => {
-  console.log(`Server running on http://localhost:${PORT}`);
+  logger.debug(`Server running on http://localhost:${PORT}`);
 });

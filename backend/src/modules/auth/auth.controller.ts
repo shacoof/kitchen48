@@ -5,12 +5,15 @@
 
 import type { Request, Response } from 'express';
 import { authService } from './auth.service.js';
+import { createLogger } from '../../lib/logger.js';
 import {
   registerSchema,
   loginSchema,
   verifyEmailSchema,
   resendVerificationSchema,
 } from './auth.types.js';
+
+const logger = createLogger('AuthController');
 
 export const authController = {
   /**
@@ -45,7 +48,7 @@ export const authController = {
         message: 'Registration successful. Please check your email to verify your account.',
       });
     } catch (error) {
-      console.error('Registration error:', error);
+      logger.error(`Registration error: ${error}`);
       res.status(500).json({
         success: false,
         error: 'An error occurred during registration',
@@ -85,7 +88,7 @@ export const authController = {
         data: result.data,
       });
     } catch (error) {
-      console.error('Login error:', error);
+      logger.error(`Login error: ${error}`);
       res.status(500).json({
         success: false,
         error: 'An error occurred during login',
@@ -125,7 +128,7 @@ export const authController = {
         message: 'Email verified successfully. You can now login.',
       });
     } catch (error) {
-      console.error('Email verification error:', error);
+      logger.error(`Email verification error: ${error}`);
       res.status(500).json({
         success: false,
         error: 'An error occurred during email verification',
@@ -165,7 +168,7 @@ export const authController = {
         message: 'If an account exists with this email, a verification email has been sent.',
       });
     } catch (error) {
-      console.error('Resend verification error:', error);
+      logger.error(`Resend verification error: ${error}`);
       res.status(500).json({
         success: false,
         error: 'An error occurred while sending verification email',
@@ -205,7 +208,7 @@ export const authController = {
         data: { user },
       });
     } catch (error) {
-      console.error('Get user error:', error);
+      logger.error(`Get user error: ${error}`);
       res.status(500).json({
         success: false,
         error: 'An error occurred while fetching user data',

@@ -5,6 +5,9 @@
 
 import nodemailer from 'nodemailer';
 import { env } from '../config/env.js';
+import { createLogger } from '../lib/logger.js';
+
+const logger = createLogger('EmailService');
 
 export interface EmailOptions {
   to: string;
@@ -80,7 +83,7 @@ class EmailService {
       // Check rate limiting
       const rateLimitCheck = this.checkRateLimit(options.to);
       if (!rateLimitCheck.allowed) {
-        console.warn(`Email rate limit exceeded for ${options.to}`);
+        logger.warning(`Email rate limit exceeded for ${options.to}`);
         return {
           success: false,
           error: rateLimitCheck.error,
@@ -102,10 +105,10 @@ class EmailService {
         userLimits.count++;
       }
 
-      console.log(`Email sent successfully to ${options.to}, messageId: ${result.messageId}`);
+      logger.debug(`Email sent successfully to ${options.to}, messageId: ${result.messageId}`);
       return { success: true };
     } catch (error) {
-      console.error('Failed to send email:', error);
+      logger.error(`Failed to send email: ${error}`);
       return {
         success: false,
         error: 'Failed to send email',
@@ -246,10 +249,10 @@ This is an automated message, please do not reply to this email.
   async testConnection(): Promise<{ success: boolean; error?: string }> {
     try {
       await this.transporter.verify();
-      console.log('Email service connection test successful');
+      logger.debug('Email service connection test successful');
       return { success: true };
     } catch (error) {
-      console.error('Email service connection test failed:', error);
+      logger.error(`Email service connection test failed: ${error}`);
       return {
         success: false,
         error: 'Email service connection failed',
