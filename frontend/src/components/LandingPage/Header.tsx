@@ -1,3 +1,5 @@
+import { Link } from 'react-router-dom'
+
 export default function Header() {
   return (
     <header className="sticky top-0 z-50 bg-primary border-b border-slate-700/50 shadow-xl">
@@ -36,9 +38,12 @@ export default function Header() {
               type="text"
             />
           </div>
-          <button className="bg-accent-orange hover:bg-[#E64A19] text-white px-6 py-2.5 rounded-full font-semibold transition-all shadow-lg active:scale-95">
+          <Link
+            to="/login"
+            className="bg-accent-orange hover:bg-[#E64A19] text-white px-6 py-2.5 rounded-full font-semibold transition-all shadow-lg active:scale-95"
+          >
             Sign In
-          </button>
+          </Link>
         </div>
       </div>
     </header>
