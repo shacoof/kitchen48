@@ -30,5 +30,5 @@ npm-debug.log*
 # Testing
 coverage/
 
-# Claude Code
-.claude/
+# Claude Code (local settings only, commands are tracked)
+.claude/settings.local.json
