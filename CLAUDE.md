@@ -93,6 +93,56 @@ model User {
 
 ---
 
+## ⚠️ CENTRAL LOGGING - MANDATORY ⚠️
+
+**NEVER use `console.log`, `console.warn`, or `console.error` in this codebase.**
+
+Always use the central logging system instead:
+
+### Backend Usage
+```typescript
+import { createLogger } from '../lib/logger.js';
+
+const logger = createLogger('ServiceName');
+
+logger.debug('Debug message');           // For development info
+logger.warning('Warning message');       // For concerning situations
+logger.error('Error message');           // For errors
+logger.object('Description', data);      // For logging objects
+logger.timing('Operation', startTime);   // For performance timing
+```
+
+### Frontend Usage
+```typescript
+import { createLogger } from '../lib/logger';
+
+const logger = createLogger('ComponentName');
+
+logger.debug('Component mounted');
+logger.error('API call failed');
+```
+
+### Why This Matters
+- **Consistent format**: All logs have caller ID, timestamp, severity icons
+- **File logging**: Backend logs written to `logs/YYYY-MM-DD.log`
+- **Configurable**: Console level controlled via database parameter
+- **Searchable**: Caller names make logs easy to filter
+
+### Database Parameters
+| Parameter | Default | Description |
+|-----------|---------|-------------|
+| `system.logging.console.minLevel` | `error` | Console filter (debug/warning/error) |
+| `system.logging.timezone` | `Asia/Jerusalem` | Timestamp timezone |
+
+### Log Output Format
+```
+🔍 DEBUG [2026-01-24 15:30:45] AuthService: User login attempt
+⚠️  WARN [2026-01-24 15:30:46] EmailService: Rate limit approaching
+❌ ERROR [2026-01-24 15:30:47] AuthController: Registration failed
+```
+
+---
+
 ## Application URLs
 
 ### Development (Local)
@@ -220,6 +270,43 @@ Set environment variables during deployment:
 gcloud run deploy SERVICE_NAME \
   --set-env-vars "KEY1=value1,KEY2=value2"
 ```
+
+### Cloud SQL (Production Database)
+
+Kitchen48 uses Cloud SQL PostgreSQL for production with private-only access.
+
+**Deploy database:**
+```bash
+./scripts/deploy-cloud-sql.sh
+```
+
+This script will:
+1. Create a Cloud SQL PostgreSQL 16 instance (no public IP)
+2. Create the `kitchen48_prod` database
+3. Create the `kitchen48_user` with your password
+4. Store the password in Secret Manager
+
+**Deploy backend with Cloud SQL:**
+```bash
+# Get connection name
+CONNECTION_NAME=$(gcloud sql instances describe kitchen48-db --format="value(connectionName)")
+
+# Deploy with Cloud SQL connector
+gcloud run deploy kitchen48-backend \
+  --source ./backend \
+  --region us-central1 \
+  --add-cloudsql-instances=$CONNECTION_NAME \
+  --set-env-vars="DATABASE_URL=postgresql://kitchen48_user:\$DB_PASSWORD@localhost/kitchen48_prod?host=/cloudsql/$CONNECTION_NAME" \
+  --set-secrets="DB_PASSWORD=kitchen48-db-password:latest" \
+  --allow-unauthenticated
+```
+
+**Database environments:**
+
+| Environment | Database | Access |
+|-------------|----------|--------|
+| Local dev | Docker PostgreSQL (port 5433) | localhost only |
+| Production | Cloud SQL `kitchen48-db` | Cloud Run only (private IP) |
 
 ---
 
