@@ -64,4 +64,13 @@ frontend/
 - Uses placeholder images from Google - need to replace for production
 - Newsletter form currently client-side only - needs backend integration
 
+### Subdomain Routing - 2026-01-24
+- Two landing pages based on subdomain:
+  - `www.kitchen48.com` → Public LandingPage
+  - `admin.kitchen48.com` → AdminLandingPage (requires login)
+- Subdomain detection: `src/utils/subdomain.ts`
+- Dev testing: Use `?subdomain=admin` query param
+- Auth context: `src/contexts/AuthContext.tsx`
+- Admin users must have `userType === 'admin'` to access admin portal
+
 ---
