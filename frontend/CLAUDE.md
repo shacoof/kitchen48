@@ -112,4 +112,31 @@ const [currentPage, setCurrentPage] = useState<'dashboard' | 'parameters'>('dash
 - Grid theme in `ParametersPage/tabulator-theme.css`
 - Uses CSS variables for dark mode support
 
+### Central Logging System - 2026-01-24
+- Located in `src/lib/logger.ts`
+- **NEVER use `console.log/warn/error`** - always use the logger
+- Console-only output (no file logging in browser)
+- Same API as backend for consistency
+
+#### Usage Pattern
+```typescript
+import { createLogger } from '../lib/logger';
+
+const logger = createLogger('MyComponent');
+
+function MyComponent() {
+  logger.debug('Component mounted');
+  logger.warning('Something concerning');
+  logger.error('Something failed');
+  logger.object('API response', data);
+}
+```
+
+#### Log Format (browser console)
+```
+🔍 DEBUG [2026-01-24 15:30:45] ComponentName: Message
+⚠️  WARN [2026-01-24 15:30:46] ComponentName: Warning message
+❌ ERROR [2026-01-24 15:30:47] ComponentName: Error message
+```
+
 ---
