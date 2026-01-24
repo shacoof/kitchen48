@@ -40,12 +40,15 @@ export type LoginInput = z.infer<typeof loginSchema>;
 export type VerifyEmailInput = z.infer<typeof verifyEmailSchema>;
 export type ResendVerificationInput = z.infer<typeof resendVerificationSchema>;
 
+export type UserType = 'regular' | 'admin';
+
 export interface AuthUser {
   id: string;
   email: string;
   firstName: string | null;
   lastName: string | null;
   emailVerified: boolean;
+  userType: UserType;
 }
 
 export interface JwtPayload {

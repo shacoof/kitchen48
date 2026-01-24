@@ -9,7 +9,7 @@ import crypto from 'crypto';
 import { prisma } from '../../core/database/prisma.js';
 import { emailService } from '../../services/email.service.js';
 import { env } from '../../config/env.js';
-import type { RegisterInput, LoginInput, AuthUser, AuthResponse, JwtPayload } from './auth.types.js';
+import type { RegisterInput, LoginInput, AuthUser, AuthResponse, JwtPayload, UserType } from './auth.types.js';
 
 const SALT_ROUNDS = 12;
 const VERIFICATION_TOKEN_EXPIRY_HOURS = 24;
@@ -227,6 +227,7 @@ class AuthService {
     firstName: string | null;
     lastName: string | null;
     emailVerified: boolean;
+    userType: UserType;
   }): AuthUser {
     return {
       id: user.id,
@@ -234,6 +235,7 @@ class AuthService {
       firstName: user.firstName,
       lastName: user.lastName,
       emailVerified: user.emailVerified,
+      userType: user.userType,
     };
   }
 }

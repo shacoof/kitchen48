@@ -5,6 +5,7 @@
 
 import type { Request, Response, NextFunction } from 'express';
 import { authService } from './auth.service.js';
+import { prisma } from '../../core/database/prisma.js';
 
 // Extend Express Request type
 declare global {
@@ -100,5 +101,51 @@ export function optionalAuth(req: Request, _res: Response, next: NextFunction): 
   } catch {
     // Silently continue without authentication
     next();
+  }
+}
+
+/**
+ * Require admin middleware
+ * Must be used after requireAuth middleware
+ * Checks if the authenticated user has admin role
+ */
+export async function requireAdmin(req: Request, res: Response, next: NextFunction): Promise<void> {
+  try {
+    if (!req.userId) {
+      res.status(401).json({
+        success: false,
+        error: 'Authentication required',
+      });
+      return;
+    }
+
+    const user = await prisma.user.findUnique({
+      where: { id: req.userId },
+      select: { userType: true },
+    });
+
+    if (!user) {
+      res.status(401).json({
+        success: false,
+        error: 'User not found',
+      });
+      return;
+    }
+
+    if (user.userType !== 'admin') {
+      res.status(403).json({
+        success: false,
+        error: 'Admin access required',
+      });
+      return;
+    }
+
+    next();
+  } catch (error) {
+    console.error('Admin middleware error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Authorization error',
+    });
   }
 }
