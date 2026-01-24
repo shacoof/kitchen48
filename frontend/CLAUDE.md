@@ -10,7 +10,7 @@ Module-specific instructions and context for Claude Code.
 frontend/
 ├── src/
 │   ├── components/
-│   │   ├── LandingPage/          # Landing page components
+│   │   ├── LandingPage/          # Public landing page (www.kitchen48.com)
 │   │   │   ├── index.tsx         # Main landing page export
 │   │   │   ├── Header.tsx        # Sticky navigation header
 │   │   │   ├── RecipeCard.tsx    # Reusable recipe card
@@ -21,10 +21,20 @@ frontend/
 │   │   │   ├── WhatsHot.tsx      # Trending recipes section
 │   │   │   ├── Newsletter.tsx    # Email subscription form
 │   │   │   └── Footer.tsx        # Site footer
-│   │   └── UnderConstruction.tsx # (deprecated) placeholder page
+│   │   └── AdminLandingPage/     # Admin portal (admin.kitchen48.com)
+│   │       ├── index.tsx         # Main admin page (routes based on auth)
+│   │       ├── Header.tsx        # Admin header with logout
+│   │       ├── LoginForm.tsx     # Admin login form
+│   │       ├── Dashboard.tsx     # Admin dashboard (for admins)
+│   │       ├── AccessDenied.tsx  # Shown to non-admin users
+│   │       └── Footer.tsx        # Admin footer
+│   ├── context/
+│   │   └── AuthContext.tsx       # Global auth state (user, isAdmin, login, logout)
+│   ├── utils/
+│   │   └── subdomain.ts          # Subdomain detection utility
 │   ├── index.css                 # Global styles & Tailwind
 │   ├── main.tsx                  # App entry point
-│   └── App.tsx                   # Root component
+│   └── App.tsx                   # Root component with subdomain routing
 ├── tailwind.config.js            # Tailwind theme configuration
 └── postcss.config.js             # PostCSS for Tailwind
 ```
@@ -70,7 +80,8 @@ frontend/
   - `admin.kitchen48.com` → AdminLandingPage (requires login)
 - Subdomain detection: `src/utils/subdomain.ts`
 - Dev testing: Use `?subdomain=admin` query param
-- Auth context: `src/contexts/AuthContext.tsx`
+- Auth context: `src/context/AuthContext.tsx`
 - Admin users must have `userType === 'admin'` to access admin portal
+- Non-admin users see "Access Denied" page after login
 
 ---
