@@ -1,0 +1,251 @@
+/**
+ * Tabulator Theme for Kitchen48 Admin
+ * Dark theme using Tailwind CSS variables
+ */
+
+/* Base Table Styles */
+.tabulator {
+  background-color: #1e293b !important; /* slate-800 */
+  border: 1px solid rgba(71, 85, 105, 0.5) !important; /* slate-700/50 */
+  border-radius: 0.75rem !important;
+  font-family: 'Inter', sans-serif !important;
+  font-size: 14px !important;
+}
+
+/* Header Styles */
+.tabulator .tabulator-header {
+  background-color: #334155 !important; /* slate-700 */
+  border-bottom: 1px solid rgba(71, 85, 105, 0.5) !important;
+  color: #f1f5f9 !important; /* slate-100 */
+  font-weight: 600 !important;
+}
+
+.tabulator .tabulator-header .tabulator-col {
+  background-color: transparent !important;
+  border-right: 1px solid rgba(71, 85, 105, 0.3) !important;
+}
+
+.tabulator .tabulator-header .tabulator-col:last-child {
+  border-right: none !important;
+}
+
+.tabulator .tabulator-header .tabulator-col .tabulator-col-content {
+  padding: 12px 16px !important;
+}
+
+.tabulator .tabulator-header .tabulator-col .tabulator-col-title {
+  color: #f1f5f9 !important;
+}
+
+/* Header Filters */
+.tabulator .tabulator-header .tabulator-col .tabulator-header-filter {
+  margin-top: 8px !important;
+}
+
+.tabulator .tabulator-header .tabulator-col .tabulator-header-filter input {
+  background-color: #1e293b !important;
+  border: 1px solid rgba(71, 85, 105, 0.5) !important;
+  border-radius: 0.375rem !important;
+  color: #f1f5f9 !important;
+  padding: 4px 8px !important;
+  font-size: 13px !important;
+}
+
+.tabulator .tabulator-header .tabulator-col .tabulator-header-filter input:focus {
+  outline: none !important;
+  border-color: #FF5722 !important; /* accent-orange */
+  box-shadow: 0 0 0 2px rgba(255, 87, 34, 0.2) !important;
+}
+
+.tabulator .tabulator-header .tabulator-col .tabulator-header-filter select {
+  background-color: #1e293b !important;
+  border: 1px solid rgba(71, 85, 105, 0.5) !important;
+  border-radius: 0.375rem !important;
+  color: #f1f5f9 !important;
+  padding: 4px 8px !important;
+  font-size: 13px !important;
+}
+
+/* Row Styles */
+.tabulator .tabulator-tableholder .tabulator-table .tabulator-row {
+  background-color: #1e293b !important; /* slate-800 */
+  border-bottom: 1px solid rgba(71, 85, 105, 0.3) !important;
+  color: #e2e8f0 !important; /* slate-200 */
+}
+
+.tabulator .tabulator-tableholder .tabulator-table .tabulator-row:hover {
+  background-color: #334155 !important; /* slate-700 */
+}
+
+.tabulator .tabulator-tableholder .tabulator-table .tabulator-row.tabulator-row-even {
+  background-color: rgba(30, 41, 59, 0.7) !important;
+}
+
+.tabulator .tabulator-tableholder .tabulator-table .tabulator-row.tabulator-row-even:hover {
+  background-color: #334155 !important;
+}
+
+/* Cell Styles */
+.tabulator .tabulator-tableholder .tabulator-table .tabulator-row .tabulator-cell {
+  border-right: 1px solid rgba(71, 85, 105, 0.2) !important;
+  padding: 10px 16px !important;
+}
+
+.tabulator .tabulator-tableholder .tabulator-table .tabulator-row .tabulator-cell:last-child {
+  border-right: none !important;
+}
+
+/* Editing Cell */
+.tabulator .tabulator-tableholder .tabulator-table .tabulator-row .tabulator-cell.tabulator-editing {
+  background-color: #0f172a !important; /* slate-900 */
+  border: 2px solid #FF5722 !important; /* accent-orange */
+  padding: 8px 14px !important;
+}
+
+.tabulator .tabulator-tableholder .tabulator-table .tabulator-row .tabulator-cell.tabulator-editing input {
+  background-color: transparent !important;
+  border: none !important;
+  color: #f1f5f9 !important;
+  font-size: 14px !important;
+  width: 100% !important;
+}
+
+.tabulator .tabulator-tableholder .tabulator-table .tabulator-row .tabulator-cell.tabulator-editing input:focus {
+  outline: none !important;
+}
+
+/* Select/List Editor */
+.tabulator .tabulator-tableholder .tabulator-table .tabulator-row .tabulator-cell.tabulator-editing select {
+  background-color: #1e293b !important;
+  border: none !important;
+  color: #f1f5f9 !important;
+  font-size: 14px !important;
+  width: 100% !important;
+}
+
+/* Sorter Arrow */
+.tabulator .tabulator-header .tabulator-col.tabulator-sortable .tabulator-col-sorter {
+  color: #94a3b8 !important; /* slate-400 */
+}
+
+.tabulator .tabulator-header .tabulator-col.tabulator-sortable[aria-sort="ascending"] .tabulator-col-sorter,
+.tabulator .tabulator-header .tabulator-col.tabulator-sortable[aria-sort="descending"] .tabulator-col-sorter {
+  color: #FF5722 !important;
+}
+
+/* Footer/Pagination */
+.tabulator .tabulator-footer {
+  background-color: #334155 !important;
+  border-top: 1px solid rgba(71, 85, 105, 0.5) !important;
+  color: #e2e8f0 !important;
+  padding: 8px 16px !important;
+}
+
+.tabulator .tabulator-footer .tabulator-paginator {
+  color: #e2e8f0 !important;
+}
+
+.tabulator .tabulator-footer .tabulator-paginator .tabulator-page {
+  background-color: transparent !important;
+  border: 1px solid rgba(71, 85, 105, 0.5) !important;
+  border-radius: 0.375rem !important;
+  color: #e2e8f0 !important;
+  margin: 0 2px !important;
+  padding: 4px 10px !important;
+}
+
+.tabulator .tabulator-footer .tabulator-paginator .tabulator-page:hover {
+  background-color: #475569 !important;
+}
+
+.tabulator .tabulator-footer .tabulator-paginator .tabulator-page.active {
+  background-color: #FF5722 !important;
+  border-color: #FF5722 !important;
+  color: white !important;
+}
+
+/* Placeholder */
+.tabulator .tabulator-tableholder .tabulator-placeholder {
+  color: #94a3b8 !important;
+}
+
+.tabulator .tabulator-tableholder .tabulator-placeholder span {
+  font-size: 14px !important;
+}
+
+/* Scrollbar */
+.tabulator .tabulator-tableholder::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.tabulator .tabulator-tableholder::-webkit-scrollbar-track {
+  background: #1e293b;
+}
+
+.tabulator .tabulator-tableholder::-webkit-scrollbar-thumb {
+  background: #475569;
+  border-radius: 4px;
+}
+
+.tabulator .tabulator-tableholder::-webkit-scrollbar-thumb:hover {
+  background: #64748b;
+}
+
+/* Color Swatch Display */
+.color-swatch {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.color-swatch .color-box {
+  width: 20px;
+  height: 20px;
+  border-radius: 4px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+/* Boolean/Checkbox Styles */
+.tabulator .tabulator-tableholder .tabulator-table .tabulator-row .tabulator-cell[tabulator-field] svg {
+  color: #4CAF50 !important;
+}
+
+/* Delete Button in Row */
+.delete-btn {
+  background: transparent;
+  border: none;
+  color: #ef4444;
+  cursor: pointer;
+  font-size: 18px;
+  padding: 4px 8px;
+  transition: color 0.2s;
+}
+
+.delete-btn:hover {
+  color: #f87171;
+}
+
+/* Color Editor */
+.color-editor-container {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.color-editor-container input[type="color"] {
+  width: 32px;
+  height: 24px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  padding: 0;
+}
+
+.color-editor-container input[type="text"] {
+  flex: 1;
+  background: transparent;
+  border: none;
+  color: #f1f5f9;
+  font-size: 14px;
+}
