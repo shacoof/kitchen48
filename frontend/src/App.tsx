@@ -1,7 +1,7 @@
-import UnderConstruction from './components/UnderConstruction'
+import LandingPage from './components/LandingPage'
 
 function App() {
-  return <UnderConstruction />
+  return <LandingPage />
 }
 
 export default App

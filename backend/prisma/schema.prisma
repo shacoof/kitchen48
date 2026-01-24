@@ -18,15 +18,46 @@ datasource db {
 model User {
   id        String   @id @default(cuid())
   email     String   @unique
-  name      String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  // Profile Information
+  firstName   String?
+  lastName    String?
+  phone       String?
+  phoneCountry String?  // ISO country code (e.g., "US", "IL")
+  description String?
+
+  // Authentication
+  passwordHash             String?
+  emailVerified            Boolean  @default(false)
+  emailVerificationToken   String?  @unique
+  emailVerificationExpires DateTime?
 
   // Relations
   recipes       Recipe[]
   savedRecipes  SavedRecipe[]
+  oauthAccounts OAuthAccount[]
 
   @@map("users")
+}
+
+model OAuthAccount {
+  id                String   @id @default(cuid())
+  provider          String   // "google", "facebook", "instagram"
+  providerAccountId String   // ID from the OAuth provider
+  accessToken       String?
+  refreshToken      String?
+  expiresAt         DateTime?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  // Relations
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@map("oauth_accounts")
 }
 
 model Recipe {
