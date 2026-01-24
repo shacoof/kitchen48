@@ -1,0 +1,229 @@
+/**
+ * Register Form Component
+ * Email/password registration form with validation
+ */
+
+import { useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
+import { authApi } from '../services/auth.api';
+
+const registerSchema = z
+  .object({
+    email: z.string().email('Please enter a valid email'),
+    password: z.string().min(8, 'Password must be at least 8 characters'),
+    confirmPassword: z.string(),
+    firstName: z.string().min(1, 'First name is required'),
+    lastName: z.string().min(1, 'Last name is required'),
+    phone: z.string().optional(),
+    phoneCountry: z
+      .string()
+      .length(2, 'Use 2-letter country code (e.g., US)')
+      .optional()
+      .or(z.literal('')),
+    description: z.string().optional(),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: 'Passwords do not match',
+    path: ['confirmPassword'],
+  });
+
+type RegisterFormData = z.infer<typeof registerSchema>;
+
+interface RegisterFormProps {
+  onSuccess?: () => void;
+}
+
+export function RegisterForm({ onSuccess }: RegisterFormProps) {
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
+  const [submitSuccess, setSubmitSuccess] = useState(false);
+
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<RegisterFormData>({
+    resolver: zodResolver(registerSchema),
+  });
+
+  const onSubmit = async (data: RegisterFormData) => {
+    setIsSubmitting(true);
+    setSubmitError(null);
+
+    const response = await authApi.register({
+      email: data.email,
+      password: data.password,
+      firstName: data.firstName,
+      lastName: data.lastName,
+      phone: data.phone,
+      phoneCountry: data.phoneCountry || undefined,
+      description: data.description,
+    });
+
+    setIsSubmitting(false);
+
+    if (response.success) {
+      setSubmitSuccess(true);
+      onSuccess?.();
+    } else {
+      setSubmitError(response.error || 'Registration failed. Please try again.');
+    }
+  };
+
+  if (submitSuccess) {
+    return (
+      <div className="text-center p-6 bg-green-50 rounded-lg">
+        <h3 className="text-lg font-semibold text-green-800 mb-2">
+          Registration Successful!
+        </h3>
+        <p className="text-green-700">
+          Please check your email to verify your account before logging in.
+        </p>
+      </div>
+    );
+  }
+
+  return (
+    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+      {submitError && (
+        <div className="p-3 bg-red-50 border border-red-200 rounded text-red-700 text-sm">
+          {submitError}
+        </div>
+      )}
+
+      <div className="grid grid-cols-2 gap-4">
+        <div>
+          <label htmlFor="firstName" className="block text-sm font-medium text-gray-700 mb-1">
+            First Name *
+          </label>
+          <input
+            id="firstName"
+            type="text"
+            {...register('firstName')}
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500"
+          />
+          {errors.firstName && (
+            <p className="text-red-500 text-sm mt-1">{errors.firstName.message}</p>
+          )}
+        </div>
+
+        <div>
+          <label htmlFor="lastName" className="block text-sm font-medium text-gray-700 mb-1">
+            Last Name *
+          </label>
+          <input
+            id="lastName"
+            type="text"
+            {...register('lastName')}
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500"
+          />
+          {errors.lastName && (
+            <p className="text-red-500 text-sm mt-1">{errors.lastName.message}</p>
+          )}
+        </div>
+      </div>
+
+      <div>
+        <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+          Email *
+        </label>
+        <input
+          id="email"
+          type="email"
+          {...register('email')}
+          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500"
+        />
+        {errors.email && (
+          <p className="text-red-500 text-sm mt-1">{errors.email.message}</p>
+        )}
+      </div>
+
+      <div>
+        <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
+          Password *
+        </label>
+        <input
+          id="password"
+          type="password"
+          {...register('password')}
+          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500"
+        />
+        {errors.password && (
+          <p className="text-red-500 text-sm mt-1">{errors.password.message}</p>
+        )}
+      </div>
+
+      <div>
+        <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 mb-1">
+          Confirm Password *
+        </label>
+        <input
+          id="confirmPassword"
+          type="password"
+          {...register('confirmPassword')}
+          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500"
+        />
+        {errors.confirmPassword && (
+          <p className="text-red-500 text-sm mt-1">{errors.confirmPassword.message}</p>
+        )}
+      </div>
+
+      <div className="grid grid-cols-3 gap-4">
+        <div className="col-span-2">
+          <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-1">
+            Phone (optional)
+          </label>
+          <input
+            id="phone"
+            type="tel"
+            {...register('phone')}
+            placeholder="+1234567890"
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500"
+          />
+        </div>
+
+        <div>
+          <label htmlFor="phoneCountry" className="block text-sm font-medium text-gray-700 mb-1">
+            Country
+          </label>
+          <input
+            id="phoneCountry"
+            type="text"
+            {...register('phoneCountry')}
+            placeholder="US"
+            maxLength={2}
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500 uppercase"
+          />
+          {errors.phoneCountry && (
+            <p className="text-red-500 text-sm mt-1">{errors.phoneCountry.message}</p>
+          )}
+        </div>
+      </div>
+
+      <div>
+        <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-1">
+          About You (optional)
+        </label>
+        <textarea
+          id="description"
+          {...register('description')}
+          rows={3}
+          placeholder="Tell us a bit about yourself..."
+          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500"
+        />
+      </div>
+
+      <button
+        type="submit"
+        disabled={isSubmitting}
+        className="w-full py-3 px-4 bg-orange-500 text-white font-semibold rounded-md hover:bg-orange-600 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+      >
+        {isSubmitting ? 'Creating Account...' : 'Create Account'}
+      </button>
+    </form>
+  );
+}
+
+export default RegisterForm;
