@@ -63,6 +63,26 @@ import { prisma } from '@/core/database/prisma';
 const users = await prisma.user.findMany();
 ```
 
+### Database Naming Conventions
+
+**Rule:** All database columns use `snake_case`, TypeScript fields use `camelCase`.
+
+Prisma's `@map()` directive handles the translation:
+
+```prisma
+model User {
+  firstName String? @map("first_name")  // DB column: first_name
+  createdAt DateTime @map("created_at") // DB column: created_at
+}
+```
+
+**Guidelines:**
+- Always add `@map("snake_case_name")` for multi-word fields
+- Table names use `@@map("plural_snake_case")` (e.g., `@@map("users")`)
+- Foreign keys: `userId` maps to `user_id`
+- Timestamps: `createdAt` maps to `created_at`
+- Booleans: `isPublished` maps to `is_published`
+
 ---
 
 ## Project Structure

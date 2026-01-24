@@ -3,13 +3,11 @@
  * User registration page with form and social login options
  */
 
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { RegisterForm } from '../components/RegisterForm';
 import { SocialLoginButtons } from '../components/SocialLoginButtons';
 
 export function RegisterPage() {
-  const navigate = useNavigate();
-
   const handleSuccess = () => {
     // Form shows success message, no navigation needed
     // User needs to verify email before logging in
