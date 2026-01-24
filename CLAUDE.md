@@ -93,6 +93,49 @@ model User {
 
 ---
 
+## Application URLs
+
+### Development (Local)
+
+| Service | URL | Description |
+|---------|-----|-------------|
+| Frontend (Public) | http://localhost:5173 | Public landing page |
+| Frontend (Admin) | http://localhost:5173/?subdomain=admin | Admin portal (use query param for testing) |
+| Backend API | http://localhost:3000 | Express API server |
+| API Health Check | http://localhost:3000/api/health | Backend health endpoint |
+| Prisma Studio | http://localhost:5555 | Database GUI (run `cd backend && npm run db:studio`) |
+| pgAdmin | http://localhost:5051 | PostgreSQL admin GUI |
+
+### Production
+
+| Service | URL | Description |
+|---------|-----|-------------|
+| Public Site | https://www.kitchen48.com | Public landing page for users |
+| Admin Portal | https://admin.kitchen48.com | Admin dashboard (requires admin login) |
+| Backend API | https://api.kitchen48.com | Production API server |
+
+### API Endpoints
+
+| Method | Endpoint | Auth | Description |
+|--------|----------|------|-------------|
+| POST | `/api/auth/register` | No | Register new user |
+| POST | `/api/auth/login` | No | Login (returns JWT + userType) |
+| POST | `/api/auth/verify-email` | No | Verify email with token |
+| POST | `/api/auth/resend-verification` | No | Resend verification email |
+| GET | `/api/auth/me` | Yes | Get current user |
+| GET | `/api/auth/google` | No | Initiate Google OAuth |
+| GET | `/api/auth/google/callback` | No | Google OAuth callback |
+
+### Default Admin Credentials
+
+| Field | Value |
+|-------|-------|
+| Email | shacoof@gmail.com |
+| Password | k48shacoof |
+| User Type | admin |
+
+---
+
 ## Development Commands
 
 ```bash
