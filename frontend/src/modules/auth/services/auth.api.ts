@@ -5,12 +5,15 @@
 
 const API_BASE = '/api/auth';
 
+export type UserType = 'regular' | 'admin';
+
 export interface AuthUser {
   id: string;
   email: string;
   firstName: string | null;
   lastName: string | null;
   emailVerified: boolean;
+  userType: UserType;
 }
 
 export interface RegisterInput {
