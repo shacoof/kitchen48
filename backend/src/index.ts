@@ -3,6 +3,7 @@ import cors from 'cors';
 import passport from 'passport';
 import { configurePassport } from './config/passport.js';
 import authRoutes from './modules/auth/auth.routes.js';
+import parameterRoutes from './modules/parameters/parameter.routes.js';
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -17,6 +18,7 @@ app.use(passport.initialize());
 
 // Routes
 app.use('/api/auth', authRoutes);
+app.use('/api/parameters', parameterRoutes);
 
 // Health check endpoint
 app.get('/api/health', (_req, res) => {
