@@ -53,7 +53,7 @@ export default function ParametersGrid({ onError }: ParametersGridProps) {
   // Load parameters from API
   const loadParameters = async () => {
     try {
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem('auth_token');
       const response = await fetch('/api/parameters', {
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -79,7 +79,7 @@ export default function ParametersGrid({ onError }: ParametersGridProps) {
   // Update parameter via API
   const updateParameter = async (parameter: Parameter) => {
     try {
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem('auth_token');
       const response = await fetch(`/api/parameters/${parameter.id}`, {
         method: 'PUT',
         headers: {
@@ -113,7 +113,7 @@ export default function ParametersGrid({ onError }: ParametersGridProps) {
   // Delete parameter via API
   const deleteParameter = async (id: string) => {
     try {
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem('auth_token');
       const response = await fetch(`/api/parameters/${id}`, {
         method: 'DELETE',
         headers: {
@@ -377,7 +377,7 @@ export default function ParametersGrid({ onError }: ParametersGridProps) {
   // Create new parameter
   const handleCreateParameter = async () => {
     try {
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem('auth_token');
       const response = await fetch('/api/parameters', {
         method: 'POST',
         headers: {
