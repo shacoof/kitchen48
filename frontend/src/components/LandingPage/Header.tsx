@@ -5,8 +5,8 @@ export default function Header() {
         <div className="flex items-center">
           <img
             alt="Kitchen48 Logo"
-            className="h-14 w-auto object-contain"
-            src="https://lh3.googleusercontent.com/aida-public/AB6AXuDXiM2QyC5ObRArrU5R7U5VDH7jePP6Vqai-nuTmOHkz94bt85F47ch6V5LFHrReqcNhIfs9iOxKYulyNgrbzP0i5H22QsbMSxSNOcUy8QXolDFq3JY6YGnN7pDyTPfSNlyU19h0U8iIDJbpjwtunK3fgPkwa9abjCxhsDV7s8mV7OsKi2y9UmyiZ374hSGNRLsbDg_fKwaEgmBcXyNCS_pSP8hWddORd_aYpKsFSbGED2SZvopl4OqEFSeVY1hCcGo-DvE5Z1eEfI"
+            className="h-12 w-auto object-contain"
+            src="/kitchen48-logo.jpg"
           />
         </div>
 

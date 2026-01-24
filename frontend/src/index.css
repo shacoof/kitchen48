@@ -1,6 +1,17 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
+
+@theme {
+  --color-primary: #2C3E50;
+  --color-accent-green: #4CAF50;
+  --color-accent-orange: #FF5722;
+  --color-background-light: #f8fafc;
+  --color-background-dark: #1a252f;
+
+  --font-family-display: "Playfair Display", serif;
+  --font-family-sans: "Inter", sans-serif;
+
+  --radius: 0.75rem;
+}
 
 body {
   font-family: 'Inter', sans-serif;
