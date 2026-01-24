@@ -1,0 +1,93 @@
+// Prisma Schema for Kitchen48
+// https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_DATABASE_URL") // For DBaaS with connection pooling (e.g., Neon, Supabase)
+}
+
+// ============================================================================
+// Core Models
+// ============================================================================
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  recipes       Recipe[]
+  savedRecipes  SavedRecipe[]
+
+  @@map("users")
+}
+
+model Recipe {
+  id          String   @id @default(cuid())
+  title       String
+  description String?
+  prepTime    Int?     // in minutes
+  cookTime    Int?     // in minutes
+  servings    Int?
+  imageUrl    String?
+  videoUrl    String?
+  isPublished Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  authorId    String
+  author      User          @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  ingredients Ingredient[]
+  steps       Step[]
+  savedBy     SavedRecipe[]
+
+  @@map("recipes")
+}
+
+model Ingredient {
+  id       String  @id @default(cuid())
+  name     String
+  amount   String? // e.g., "2 cups", "1 tbsp"
+  order    Int     @default(0)
+
+  // Relations
+  recipeId String
+  recipe   Recipe @relation(fields: [recipeId], references: [id], onDelete: Cascade)
+
+  @@map("ingredients")
+}
+
+model Step {
+  id          String  @id @default(cuid())
+  instruction String
+  order       Int
+  duration    Int?    // in seconds (for voice playback timing)
+
+  // Relations
+  recipeId String
+  recipe   Recipe @relation(fields: [recipeId], references: [id], onDelete: Cascade)
+
+  @@map("steps")
+}
+
+model SavedRecipe {
+  id        String   @id @default(cuid())
+  savedAt   DateTime @default(now())
+
+  // Relations
+  userId   String
+  user     User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  recipeId String
+  recipe   Recipe @relation(fields: [recipeId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, recipeId])
+  @@map("saved_recipes")
+}

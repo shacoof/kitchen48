@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Kitchen48 | Your Personalized Culinary Hub</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;family=Playfair+Display:wght@700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        primary: "#2C3E50",
+                        accent: {
+                            green: "#4CAF50",
+                            orange: "#FF5722"
+                        },
+                        "background-light": "#f8fafc",
+                        "background-dark": "#1a252f",
+                    },
+                    fontFamily: {
+                        display: ["Playfair Display", "serif"],
+                        sans: ["Inter", "sans-serif"],
+                    },
+                    borderRadius: {
+                        DEFAULT: "0.75rem",
+                    },
+                },
+            },
+        };
+    </script>
+<style type="text/tailwindcss">
+        .custom-scrollbar::-webkit-scrollbar {
+            height: 6px;
+            width: 8px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #1a252f;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #4a5568;
+            border-radius: 10px;
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+    </style>
+</head>
+<body class="bg-background-dark text-slate-100 min-h-screen">
+<header class="sticky top-0 z-50 bg-[#2C3E50] border-b border-slate-700/50 shadow-xl">
+<div class="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
+<div class="flex items-center">
+<img alt="Kitchen48 Logo" class="h-14 w-auto object-contain" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDXiM2QyC5ObRArrU5R7U5VDH7jePP6Vqai-nuTmOHkz94bt85F47ch6V5LFHrReqcNhIfs9iOxKYulyNgrbzP0i5H22QsbMSxSNOcUy8QXolDFq3JY6YGnN7pDyTPfSNlyU19h0U8iIDJbpjwtunK3fgPkwa9abjCxhsDV7s8mV7OsKi2y9UmyiZ374hSGNRLsbDg_fKwaEgmBcXyNCS_pSP8hWddORd_aYpKsFSbGED2SZvopl4OqEFSeVY1hCcGo-DvE5Z1eEfI"/>
+</div>
+<nav class="hidden md:flex items-center gap-8">
+<a class="text-white/90 hover:text-white transition-colors font-medium" href="#">Explore</a>
+<a class="text-white/90 hover:text-white transition-colors font-medium" href="#">Recipes</a>
+<a class="text-white/90 hover:text-white transition-colors font-medium" href="#">Chefs</a>
+<a class="text-white/90 hover:text-white transition-colors font-medium" href="#">Community</a>
+</nav>
+<div class="flex items-center gap-6">
+<div class="relative group hidden lg:block">
+<span class="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-400">
+<span class="material-symbols-outlined text-[20px]">search</span>
+</span>
+<input class="bg-[#2C3E50]/50 border border-slate-500/50 rounded-full py-2 pl-10 pr-4 w-64 text-sm text-white focus:outline-none focus:ring-2 focus:ring-[#FF5722] transition-all placeholder:text-slate-400" placeholder="Search recipes..." type="text"/>
+</div>
+<button class="bg-[#FF5722] hover:bg-[#E64A19] text-white px-6 py-2.5 rounded-full font-semibold transition-all shadow-lg active:scale-95">
+                Sign In
+            </button>
+</div>
+</div>
+</header>
+<main class="max-w-7xl mx-auto px-6 py-12 space-y-20">
+<section>
+<div class="flex items-end justify-between mb-8">
+<div>
+<h2 class="font-display text-3xl font-bold text-white">Your Recipes</h2>
+<p class="text-slate-400 mt-2">Personalized collection based on your taste</p>
+</div>
+<a class="text-[#FF5722] font-semibold flex items-center gap-1 hover:underline" href="#">View all <span class="material-symbols-outlined text-sm">arrow_forward</span></a>
+</div>
+<div class="flex overflow-x-auto gap-8 pb-6 custom-scrollbar scroll-smooth">
+<div class="group cursor-pointer flex-shrink-0 w-72">
+<div class="relative rounded-2xl overflow-hidden mb-4 aspect-[4/5]">
+<img alt="Healthy Bowl" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBLxd9mw3pky6hxeLqYISqQkeCym4EdENUEKK3QH9etCq4_f2Kz1pVDqoWv1ckNOH7Yr8-xvbTnjYnXGlGxo4oozfwZ8idSNKNl0UmAzUKe4Mb3FepprjQahnBRd6RBqcSsm-_rMgkjnUISRMwWXdh_kei4z1_fXE7pGHaZCYTlaBx3O3_mWDYxFRGGEXltZM93QEJFSk4EcbC6Al9bEDlK2wMbrnyU7qe8QnIMpmMG4rlpWyxbhbkv4EMpnd8FCNk_wMKlI4xdfSo"/>
+<span class="absolute top-4 left-4 bg-[#4CAF50] text-white text-[10px] font-bold px-2 py-1 rounded uppercase">Healthy</span>
+<div class="absolute bottom-4 right-4 bg-[#2C3E50]/90 backdrop-blur-md p-2 rounded-lg text-white text-xs flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px]">schedule</span> 20m
+                    </div>
+</div>
+<h3 class="font-bold text-xl text-white group-hover:text-[#FF5722] transition-colors">Tuna Poke Bowl with Avocado</h3>
+<p class="text-slate-500 text-sm mt-1">Fresh, vibrant, and packed with protein.</p>
+</div>
+<div class="group cursor-pointer flex-shrink-0 w-72">
+<div class="relative rounded-2xl overflow-hidden mb-4 aspect-[4/5]">
+<img alt="Pancakes" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD4UpeMauocXn7wO2w_Mrf4Yx9PjX1kiHzynAnnGoKfC9NOml99uH9ec-GUBhj2vAQWeI09z7YoPeynjbBqLdCXZL4-ePhQ7sgaCDoiGzdiB0XKeRZhZy5KhDMrM3p9E_mDlsGyY5GNy-aAwq1r_IX0T4mfbH0fjbSXa92lL9zysKPk9Rtxmr_fy11UkLfi8PgoGh3BL3Mnk0Nf7I6o9tgYyztq9edsXtxBaIR3hUlJAskJR_a9953Zhfk6CimcD3nltH8cM3GN0Y0"/>
+<span class="absolute top-4 left-4 bg-[#4CAF50] text-white text-[10px] font-bold px-2 py-1 rounded uppercase">Breakfast</span>
+<div class="absolute bottom-4 right-4 bg-[#2C3E50]/90 backdrop-blur-md p-2 rounded-lg text-white text-xs flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px]">schedule</span> 15m
+                    </div>
+</div>
+<h3 class="font-bold text-xl text-white group-hover:text-[#FF5722] transition-colors">Fluffy Maple Pancakes</h3>
+<p class="text-slate-500 text-sm mt-1">The classic morning comfort food.</p>
+</div>
+<div class="group cursor-pointer flex-shrink-0 w-72">
+<div class="relative rounded-2xl overflow-hidden mb-4 aspect-[4/5]">
+<img alt="Grilled Chicken" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCZFXvEDbO5bIfmTTJGISHycBzlQBuPzlalJO5r9R7BmZGAMsY3hrb5e8ZP-3-IS1UtzOSDjS3Ui59QX1Bk-vyBCSVdIQ535Q2IdWMpU4herf-263aSqZH1nsGEE5qxuIciOyIwlVEa9XcsJiqSXwdisUubUi4vZJKLWeGMQB_cyaeICOK8n7lhWpK1rVjScRj-PPS05IgmZMFlEZIRdbdgSSXlXUeIROFLAsdUKhZP_vVaEczZBFBYwjTH37tfS4_Hm3JChauZx5c"/>
+<span class="absolute top-4 left-4 bg-[#4CAF50] text-white text-[10px] font-bold px-2 py-1 rounded uppercase">Dinner</span>
+<div class="absolute bottom-4 right-4 bg-[#2C3E50]/90 backdrop-blur-md p-2 rounded-lg text-white text-xs flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px]">schedule</span> 45m
+                    </div>
+</div>
+<h3 class="font-bold text-xl text-white group-hover:text-[#FF5722] transition-colors">Mediterranean Herb Chicken</h3>
+<p class="text-slate-500 text-sm mt-1">Slow roasted with rosemary and thyme.</p>
+</div>
+<div class="group cursor-pointer flex-shrink-0 w-72">
+<div class="relative rounded-2xl overflow-hidden mb-4 aspect-[4/5]">
+<img alt="Garden Salad" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCHsKGuaxDNu3rhU8yAEV7Bbl-mgQ3C_LC4q4llBUBCusUqvADoHWEjE1smHbalSB5pl3ZkvcNFZalorBxY1mJPZp60QlaXci89sA0o2HeBYHyxFZt11IHF3Gr0nEt5MnFmlfZxgeH16BFzbTL6mJKXW-1zIrBf0CM8O7lChZVik9QPDfSkC0ckT8mbG267Bxpldt4Eh3MjNOu283E06BQTkOw1cgKDCilDJ-VR1kbD3ZzntxEWKlObsvWYlTOuBfkP5hA6IrBOErg"/>
+<span class="absolute top-4 left-4 bg-[#4CAF50] text-white text-[10px] font-bold px-2 py-1 rounded uppercase">Vegan</span>
+<div class="absolute bottom-4 right-4 bg-[#2C3E50]/90 backdrop-blur-md p-2 rounded-lg text-white text-xs flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px]">schedule</span> 10m
+                    </div>
+</div>
+<h3 class="font-bold text-xl text-white group-hover:text-[#FF5722] transition-colors">Zen Garden Salad</h3>
+<p class="text-slate-500 text-sm mt-1">Light vinaigrette and seasonal greens.</p>
+</div>
+<div class="group cursor-pointer flex-shrink-0 w-72">
+<div class="relative rounded-2xl overflow-hidden mb-4 aspect-[4/5]">
+<img alt="Spicy Pizza" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCHbs0ltbP54P_slcLAbGGDiQtODG7oxl5OBmf_f-dBmaeCyThsoEIYLm4mfBjnHJvoE8UIWw8aQaGdTRayAxr9bzRvjnquHshjtMgY4PnE8-WdbiUeXZQbvO5f3e7hKkK7GI3yNhT34UyKhq_mT3fJ0aI0PU84PD9YhsCaBUucYG_v79sZEzkZsEaQG1Jkxfj29OU4MHwi7RrT-0KHC2WvplZcuakIdZXQ_djcEq1F33u71G4XtRNFEJ2-OQHpbz-kVlbg1EdB_5M"/>
+<span class="absolute top-4 left-4 bg-[#4CAF50] text-white text-[10px] font-bold px-2 py-1 rounded uppercase">Italian</span>
+<div class="absolute bottom-4 right-4 bg-[#2C3E50]/90 backdrop-blur-md p-2 rounded-lg text-white text-xs flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px]">schedule</span> 30m
+                    </div>
+</div>
+<h3 class="font-bold text-xl text-white group-hover:text-[#FF5722] transition-colors">Authentic Neapolitan Pizza</h3>
+<p class="text-slate-500 text-sm mt-1">Classic sourdough with fresh basil.</p>
+</div>
+</div>
+</section>
+<section class="bg-[#2C3E50]/40 rounded-[2rem] p-12">
+<div class="text-center mb-12">
+<h2 class="font-display text-4xl font-bold text-white mb-2">Meet Our Masters</h2>
+<p class="text-slate-400">The culinary visionaries trending this week</p>
+</div>
+<div class="flex flex-wrap justify-center gap-12">
+<div class="text-center group">
+<div class="relative mb-4">
+<div class="w-32 h-32 rounded-full border-4 border-[#FF5722] p-1 group-hover:rotate-12 transition-transform duration-300">
+<img alt="Chef Mario" class="w-full h-full rounded-full object-cover grayscale group-hover:grayscale-0 transition-all" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBuHnKOmfDUV6thSXfxLvRHCaFnueB-5Nzjm3GtpSH7rYFxBfp8XhpnHIRiph9SL6trbxmxiqJAFWelXP48hqpqEYW0-_VW4zcFMz7FldaxIiuJq7hw2Cma9UVdvxnND4fOdDTwQcI4bTXSslajflqcif9DFLRksuHFaymbnW6k0JXkDaUI830_f0uBWYDcWMvHfGG9J2oSxAZwbfpAcIIp1llrXA8gF59PGSRGu91vzt-H03r98gThpS8gZb6hi5aQongmLcQb9F0"/>
+</div>
+<div class="absolute -bottom-1 right-2 bg-[#FF5722] rounded-full p-1 border-2 border-[#2C3E50]">
+<span class="material-symbols-outlined text-white text-[14px] block">verified</span>
+</div>
+</div>
+<h4 class="font-bold text-white">Mario Batali</h4>
+<p class="text-xs text-slate-500 uppercase tracking-wider">Italian Fusion</p>
+</div>
+<div class="text-center group">
+<div class="relative mb-4">
+<div class="w-32 h-32 rounded-full border-4 border-[#FF5722] p-1 group-hover:-rotate-12 transition-transform duration-300">
+<img alt="Chef Sarah" class="w-full h-full rounded-full object-cover grayscale group-hover:grayscale-0 transition-all" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA87WiGPzwsit1mwHfEExpnWdLyvzqDh9kQg7oZVylg_RbtMwe1uhtFjGLLJ8Tw44h_EjzVAXrHjR1BAmjryTaiNWblCKOcrUqDdAQWud4jwIxP0tEIVd7c2OuHboudj_mX7xmg-1rWUodkIHMLtrw5UzqxnYS3MfbCTvGsINQlE_XxFl_13UPOZO2_8_1gEXpWdvSpsC4JHIDZpfuKj_Wn6wyqwvleO7rEl0gWxen3uJlGiffAAfdZNLaBWs9Or_F8Pj-cpJMlHoc"/>
+</div>
+</div>
+<h4 class="font-bold text-white">Sarah Jenkins</h4>
+<p class="text-xs text-slate-500 uppercase tracking-wider">Pastry Expert</p>
+</div>
+<div class="text-center group">
+<div class="relative mb-4">
+<div class="w-32 h-32 rounded-full border-4 border-[#FF5722] p-1 group-hover:rotate-12 transition-transform duration-300">
+<img alt="Chef Kenji" class="w-full h-full rounded-full object-cover grayscale group-hover:grayscale-0 transition-all" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDaYsdklEBdIYrdTIFFWXP2E5Hayk9RhKAZSLgE2EE6XhL-lw6_fVcVJM0eUXW0vqMpxs5aD7gj0VWCdqSsJ_pKC4mHOBsbHZItL_F6eja8eMjjJusX28Jql5cf3fx_ZLI_D9kug5zlES3hOnL_wGNZ8ZWIgJYhNWcyaUCMonnybEPmb2FnUhBAIO78O0gncYa7c-6NOVpWFPvYYtsJ5WINIh_upRRdOTqS9y1kxB4CVTUq4i8zjr348QrfmVvZdTrQQ9FP75n29RA"/>
+</div>
+<div class="absolute -bottom-1 right-2 bg-[#FF5722] rounded-full p-1 border-2 border-[#2C3E50]">
+<span class="material-symbols-outlined text-white text-[14px] block">verified</span>
+</div>
+</div>
+<h4 class="font-bold text-white">Kenji Lopez</h4>
+<p class="text-xs text-slate-500 uppercase tracking-wider">Modernist Cuisine</p>
+</div>
+<div class="text-center group">
+<div class="relative mb-4">
+<div class="w-32 h-32 rounded-full border-4 border-[#FF5722] p-1 group-hover:-rotate-12 transition-transform duration-300">
+<img alt="Chef Elena" class="w-full h-full rounded-full object-cover grayscale group-hover:grayscale-0 transition-all" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCy_zo00H5Q_rHcWk7y936SUOB_oHethhm4s95VjusyWP5agI8h1qSg_ofdd0lWd78I5Ck294sUGIQh9vxybUl3E_btMj1Z3kJs92nQtWP2S8KO-ub-ymqZCHZbV-DV3luuspy7eu17cSBZCc26GSin7-HQIARxvE4TkOvsSBfaNDsuyRv83xDBgSXrOZOFI4UtTXHs4CwOWaqltYnjOdWMxCLGD1OVogQM1LipdbZs7JA8G0mmDCHYB5Z74MaaH4LtM0NOHuPR4x0"/>
+</div>
+</div>
+<h4 class="font-bold text-white">Elena Rodriguez</h4>
+<p class="text-xs text-slate-500 uppercase tracking-wider">Tapas Specialist</p>
+</div>
+</div>
+</section>
+<section>
+<div class="flex items-center gap-4 mb-8">
+<span class="material-symbols-outlined text-[#FF5722]">trending_up</span>
+<h2 class="font-display text-3xl font-bold text-white">What's Hot Right Now</h2>
+</div>
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+<div class="relative group h-[400px] rounded-3xl overflow-hidden shadow-2xl">
+<img alt="Spicy Pizza" class="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCHbs0ltbP54P_slcLAbGGDiQtODG7oxl5OBmf_f-dBmaeCyThsoEIYLm4mfBjnHJvoE8UIWw8aQaGdTRayAxr9bzRvjnquHshjtMgY4PnE8-WdbiUeXZQbvO5f3e7hKkK7GI3yNhT34UyKhq_mT3fJ0aI0PU84PD9YhsCaBUucYG_v79sZEzkZsEaQG1Jkxfj29OU4MHwi7RrT-0KHC2WvplZcuakIdZXQ_djcEq1F33u71G4XtRNFEJ2-OQHpbz-kVlbg1EdB_5M"/>
+<div class="absolute inset-0 bg-gradient-to-t from-black via-black/30 to-transparent"></div>
+<div class="absolute bottom-0 left-0 p-8 w-full">
+<div class="flex gap-2 mb-3">
+<span class="bg-[#FF5722] text-white text-[10px] font-bold px-2 py-1 rounded">TRENDING</span>
+<span class="bg-white/20 backdrop-blur-sm text-white text-[10px] font-bold px-2 py-1 rounded">SPICY</span>
+</div>
+<h3 class="text-3xl font-display text-white mb-2">Authentic Neapolitan Pizza</h3>
+<div class="flex items-center justify-between text-white/80 text-sm">
+<div class="flex items-center gap-4">
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-sm">favorite</span> 12.4k</span>
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-sm">mode_comment</span> 342</span>
+</div>
+<button class="bg-white text-[#2C3E50] px-4 py-2 rounded-lg font-bold text-sm hover:bg-[#FF5722] hover:text-white transition-colors">Get Recipe</button>
+</div>
+</div>
+</div>
+<div class="relative group h-[400px] rounded-3xl overflow-hidden shadow-2xl">
+<img alt="Steak Platter" class="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAVuplc26jwPMezFlPNt2i2EexAALD6Bg1xqVdOErYlh8djlDi9Bygk49R-yN_o2x3qxlj_oOUTL5Z9O940dVkNmKExW_PNIK2yd4A16sdkMp3xmlVI-SFw3Gby5hDBO6ZOynHKUfRSqmXf6N4XbsV8x_2iBlsrCACAKbxDFdBEaPDMJTclTduC-DA9eEF2Z7IxHdlbUERd49yfbz4dD94kykCA47OdJBmGASG4Czna_gQnlKQ0GyrEqHEpj_1R3M9V5pU9Jam19BY"/>
+<div class="absolute inset-0 bg-gradient-to-t from-black via-black/30 to-transparent"></div>
+<div class="absolute bottom-0 left-0 p-8 w-full">
+<div class="flex gap-2 mb-3">
+<span class="bg-[#FF5722] text-white text-[10px] font-bold px-2 py-1 rounded">TRENDING</span>
+<span class="bg-white/20 backdrop-blur-sm text-white text-[10px] font-bold px-2 py-1 rounded">PREMIUM</span>
+</div>
+<h3 class="text-3xl font-display text-white mb-2">Tomahawk Steak with Chimichurri</h3>
+<div class="flex items-center justify-between text-white/80 text-sm">
+<div class="flex items-center gap-4">
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-sm">favorite</span> 8.9k</span>
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-sm">mode_comment</span> 128</span>
+</div>
+<button class="bg-white text-[#2C3E50] px-4 py-2 rounded-lg font-bold text-sm hover:bg-[#FF5722] hover:text-white transition-colors">Get Recipe</button>
+</div>
+</div>
+</div>
+</div>
+</section>
+<section class="bg-[#4CAF50]/10 border border-[#4CAF50]/20 rounded-[2.5rem] p-16 text-center">
+<h2 class="font-display text-5xl text-white mb-6">Never miss a <span class="text-[#4CAF50] underline decoration-wavy">delicious</span> beat.</h2>
+<p class="text-slate-400 text-lg max-w-xl mx-auto mb-10 leading-relaxed">Join 50,000+ food lovers and get weekly recipes, chef tips, and exclusive kitchen hacks delivered to your inbox.</p>
+<form class="max-w-md mx-auto flex gap-3">
+<input class="flex-1 bg-slate-800 border-slate-700 rounded-xl px-4 py-4 text-sm focus:ring-2 focus:ring-[#4CAF50] focus:border-transparent outline-none transition-all text-white" placeholder="Enter your email" type="email"/>
+<button class="bg-[#4CAF50] text-white px-8 py-4 rounded-xl font-bold hover:shadow-xl hover:-translate-y-1 transition-all" type="submit">Subscribe</button>
+</form>
+<p class="mt-4 text-xs text-slate-400">We respect your privacy. Unsubscribe at any time.</p>
+</section>
+</main>
+<footer class="bg-[#2C3E50] pt-20 pb-10 border-t border-slate-700/50 mt-20">
+<div class="max-w-7xl mx-auto px-6">
+<div class="grid grid-cols-1 md:grid-cols-4 gap-12 mb-16">
+<div class="space-y-6">
+<div class="flex items-center gap-3">
+<img alt="Kitchen48" class="h-10 w-auto" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAVNRIQGQ3cCtTjE2UO6kZHho0mG3R8KCp5vgh9q_ORj6fpYJqgpF65uItmz2NqPEaA3107ANmnHfWBQzN4AQq_pv3ShQezNW4p4Br2AXbvmbGolQrZDAu_ff0gKVR1T5ryqqwq9dRHY8bcAGcPNkBLBGVwLEpl0ffHoKY4r5V8suS9MTXsT0HW29qFCa0BU9vyajrqbEBiC9TneMByvG76-dgelzqyeNJbIiEDxXetXchRzwh7BVTqxeOfl3OPN319XbNPqJeImtM"/>
+<span class="font-display text-xl font-bold text-white">Kitchen48</span>
+</div>
+<p class="text-slate-400 text-sm leading-relaxed">Revolutionizing the way home cooks connect with professional culinary wisdom. Quality recipes for everyone.</p>
+<div class="flex gap-4">
+<a class="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center text-white hover:bg-[#FF5722] transition-colors" href="#">
+<span class="material-symbols-outlined text-[20px]">public</span>
+</a>
+<a class="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center text-white hover:bg-[#FF5722] transition-colors" href="#">
+<span class="material-symbols-outlined text-[20px]">share</span>
+</a>
+<a class="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center text-white hover:bg-[#FF5722] transition-colors" href="#">
+<span class="material-symbols-outlined text-[20px]">mail</span>
+</a>
+</div>
+</div>
+<div>
+<h5 class="text-white font-bold mb-6">Platform</h5>
+<ul class="space-y-4 text-slate-400 text-sm">
+<li><a class="hover:text-[#FF5722]" href="#">Browse Recipes</a></li>
+<li><a class="hover:text-[#FF5722]" href="#">Pro Subscriptions</a></li>
+<li><a class="hover:text-[#FF5722]" href="#">Cooking Classes</a></li>
+<li><a class="hover:text-[#FF5722]" href="#">Chef Partnerships</a></li>
+</ul>
+</div>
+<div>
+<h5 class="text-white font-bold mb-6">Support</h5>
+<ul class="space-y-4 text-slate-400 text-sm">
+<li><a class="hover:text-[#FF5722]" href="#">Help Center</a></li>
+<li><a class="hover:text-[#FF5722]" href="#">Kitchen Gear</a></li>
+<li><a class="hover:text-[#FF5722]" href="#">Privacy Policy</a></li>
+<li><a class="hover:text-[#FF5722]" href="#">Terms of Service</a></li>
+</ul>
+</div>
+<div>
+<h5 class="text-white font-bold mb-6">Mobile App</h5>
+<p class="text-slate-400 text-sm mb-6">Get the best of Kitchen48 on the go. Available on iOS &amp; Android.</p>
+<div class="space-y-3">
+<button class="w-full bg-slate-800 text-white p-3 rounded-lg flex items-center gap-3 hover:bg-slate-700 transition-all border border-slate-700">
+<span class="material-symbols-outlined">android</span>
+<div class="text-left">
+<p class="text-[10px] uppercase font-bold leading-none">Get it on</p>
+<p class="text-sm font-bold">Google Play</p>
+</div>
+</button>
+<button class="w-full bg-slate-800 text-white p-3 rounded-lg flex items-center gap-3 hover:bg-slate-700 transition-all border border-slate-700">
+<span class="material-symbols-outlined">ios</span>
+<div class="text-left">
+<p class="text-[10px] uppercase font-bold leading-none">Download on the</p>
+<p class="text-sm font-bold">App Store</p>
+</div>
+</button>
+</div>
+</div>
+</div>
+<div class="pt-8 border-t border-slate-800 text-center text-slate-500 text-xs">
+            © 2024 Kitchen48 Inc. All rights reserved. Crafted for food lovers everywhere.
+        </div>
+</div>
+</footer>
+
+</body></html>

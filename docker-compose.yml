@@ -1,0 +1,31 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: kitchen48-postgres
+    environment:
+      POSTGRES_DB: kitchen48_dev
+      POSTGRES_USER: kitchen48_user
+      POSTGRES_PASSWORD: kitchen48_dev_password
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U kitchen48_user -d kitchen48_dev"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: kitchen48-pgadmin
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@kitchen48.com
+      PGADMIN_DEFAULT_PASSWORD: admin123
+    ports:
+      - "5051:80"
+    depends_on:
+      - postgres
+
+volumes:
+  postgres_data:

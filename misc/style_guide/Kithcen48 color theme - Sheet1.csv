@@ -1,0 +1,9 @@
+Color Name,Hex Code,RGB,Suggested Use,Color Swatch
+Primary Dark (Base),#2C3E50,"44, 62, 80","Backgrounds, navigation bars, dark theme foundation",https://via.placeholder.com/50/2C3E50
+Primary Light (Contrast),#FFFFFF,"255, 255, 255","Text on dark backgrounds, light theme foundation, icons",https://via.placeholder.com/50/FFFFFF
+Accent Orange,#FF5722,"255, 87, 34","Buttons, alerts, highlights (energetic accent)",https://via.placeholder.com/50/FF5722
+Accent Green,#4CAF50,"76, 175, 80","Success messages, eco-friendly elements, buttons",https://via.placeholder.com/50/4CAF50
+Orange Light (Tint),#FFAB91,"255, 171, 145","Hover states, subtle accents on orange",https://via.placeholder.com/50/FFAB91
+Green Dark (Shade),#388E3C,"56, 142, 60","Footers, borders, deeper green for contrast",https://via.placeholder.com/50/388E3C
+Neutral Gray (from Base),#95A5A6,"149, 165, 166","Dividers, secondary text, disabled states",https://via.placeholder.com/50/95A5A6
+Warning Orange (Deep),#E64A19,"230, 74, 25","Errors, warnings, intense accents",https://via.placeholder.com/50/E64A19

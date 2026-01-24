@@ -32,3 +32,10 @@ coverage/
 
 # Claude Code (local settings only, commands are tracked)
 .claude/settings.local.json
+
+# Database backups (contain sensitive data)
+backups/*
+!backups/.gitkeep
+
+# Prisma
+.prisma/
