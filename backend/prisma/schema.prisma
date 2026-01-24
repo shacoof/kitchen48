@@ -20,6 +20,22 @@ enum UserType {
   admin
 }
 
+enum DataType {
+  STRING
+  NUMBER
+  BOOLEAN
+  JSON
+  DATE
+  COLOR
+  ARRAY
+}
+
+enum OwnerType {
+  SYSTEM
+  ORGANIZATION
+  USER
+}
+
 // ============================================================================
 // Core Models
 // ============================================================================
@@ -133,4 +149,33 @@ model SavedRecipe {
 
   @@unique([userId, recipeId])
   @@map("saved_recipes")
+}
+
+// ============================================================================
+// System Configuration
+// ============================================================================
+
+model Parameter {
+  id        String   @id @default(cuid())
+  key       String
+  value     String?
+  dataType  DataType @default(STRING) @map("data_type")
+  ownerType OwnerType @default(SYSTEM) @map("owner_type")
+  ownerId   String?  @map("owner_id")
+  category  String?
+  description String?
+
+  // Metadata
+  isEncrypted     Boolean  @default(false) @map("is_encrypted")
+  defaultValue    String?  @map("default_value")
+  validationRules String?  @map("validation_rules") // JSON string
+
+  // Audit fields
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  createdBy String?  @map("created_by")
+  updatedBy String?  @map("updated_by")
+
+  @@unique([key, ownerType, ownerId])
+  @@map("parameters")
 }
