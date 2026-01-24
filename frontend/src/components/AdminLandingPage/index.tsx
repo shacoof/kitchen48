@@ -1,12 +1,15 @@
+import { useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
-import Header from './Header';
+import Header, { type AdminPage } from './Header';
 import Footer from './Footer';
 import LoginForm from './LoginForm';
 import Dashboard from './Dashboard';
 import AccessDenied from './AccessDenied';
+import ParametersPage from './ParametersPage';
 
 export default function AdminLandingPage() {
   const { isAuthenticated, isAdmin, isLoading } = useAuth();
+  const [currentPage, setCurrentPage] = useState<AdminPage>('dashboard');
 
   // Show loading state while checking auth
   if (isLoading) {
@@ -17,17 +20,28 @@ export default function AdminLandingPage() {
     );
   }
 
+  const renderContent = () => {
+    if (!isAuthenticated) {
+      return <LoginForm />;
+    }
+    if (!isAdmin) {
+      return <AccessDenied />;
+    }
+
+    switch (currentPage) {
+      case 'parameters':
+        return <ParametersPage />;
+      case 'dashboard':
+      default:
+        return <Dashboard />;
+    }
+  };
+
   return (
     <div className="min-h-screen bg-background-dark flex flex-col">
-      <Header />
+      <Header currentPage={currentPage} onNavigate={setCurrentPage} />
       <main className="flex-1">
-        {!isAuthenticated ? (
-          <LoginForm />
-        ) : isAdmin ? (
-          <Dashboard />
-        ) : (
-          <AccessDenied />
-        )}
+        {renderContent()}
       </main>
       <Footer />
     </div>
