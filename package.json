@@ -8,7 +8,9 @@
     "backend"
   ],
   "scripts": {
-    "dev": "npm run db:start && npm run dev:frontend & npm run dev:backend",
+    "dev": "npm run dev:kill && npm run db:start && npm run dev:frontend & npm run dev:backend",
+    "dev:kill": "fuser -k 3000/tcp 5173/tcp 5174/tcp 5175/tcp 5176/tcp 2>/dev/null || true",
+    "dev:stop": "npm run dev:kill",
     "dev:frontend": "npm run dev --workspace=frontend",
     "dev:backend": "npm run dev --workspace=backend",
     "build": "npm run build --workspace=frontend && npm run build --workspace=backend",
