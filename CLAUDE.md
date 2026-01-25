@@ -308,6 +308,52 @@ gcloud run deploy kitchen48-backend \
 | Local dev | Docker PostgreSQL (port 5433) | localhost only |
 | Production | Cloud SQL `kitchen48-db` | Cloud Run only (private IP) |
 
+### One-Click Deployment
+
+Deploy the entire application (Cloud SQL + Backend + Frontend) with a single command:
+
+```bash
+./scripts/deploy.sh
+```
+
+**Setup:**
+
+1. Copy the example env file and fill in your secrets:
+   ```bash
+   cp scripts/.env.production.example scripts/.env.production
+   # Edit scripts/.env.production with your values
+   ```
+
+2. Run the deployment:
+   ```bash
+   ./scripts/deploy.sh
+   ```
+
+**Required secrets in `.env.production`:**
+- `GCP_PROJECT_ID` - Your Google Cloud project ID
+- `DB_PASSWORD` - Database password (min 8 chars)
+- `JWT_SECRET` - JWT signing key (min 32 chars)
+- `EMAIL_SERVER_*` - Gmail SMTP configuration
+
+**Command options:**
+```bash
+./scripts/deploy.sh                    # Full deployment
+./scripts/deploy.sh --skip-db          # Skip Cloud SQL (use existing)
+./scripts/deploy.sh --backend-only     # Deploy backend only
+./scripts/deploy.sh --frontend-only    # Deploy frontend only
+./scripts/deploy.sh --env-file FILE    # Use custom env file
+./scripts/deploy.sh --help             # Show help
+```
+
+**What it does:**
+1. Checks prerequisites (gcloud CLI, authentication)
+2. Enables required GCP APIs
+3. Creates/updates Cloud SQL instance and database
+4. Stores secrets in Secret Manager
+5. Deploys backend to Cloud Run with Cloud SQL connection
+6. Deploys frontend to Cloud Run
+7. Outputs URLs and summary
+
 ---
 
 # ⚠️ MANDATORY WORKFLOW CHECKLIST - READ BEFORE EVERY TASK ⚠️
@@ -406,6 +452,170 @@ const prisma = new PrismaClient();
 
 # Restore (requires confirmation, use carefully)
 ./scripts/restore-database.sh backups/my-backup.dump
+```
+
+---
+
+## DEV TO PRODUCTION DATABASE SYNC
+
+**CRITICAL: Never manually modify production database. Always use scripts.**
+
+### Overview
+
+| Change Type | Dev Action | Production Deployment |
+|-------------|------------|----------------------|
+| New table (schema) | Prisma migration | `npx prisma migrate deploy` |
+| New column | Prisma migration | `npx prisma migrate deploy` |
+| Seed data (initial) | `backend/prisma/seed.ts` | Run seed script once after deploy |
+| Add data to existing table | Create SQL script | Run SQL script via Cloud SQL |
+
+### Rule 1: Schema Changes (New Tables/Columns)
+
+Schema changes are handled automatically by Prisma migrations.
+
+**Development:**
+```bash
+# 1. Edit backend/prisma/schema.prisma
+# 2. Create migration
+cd backend && npx prisma migrate dev --name add_table_name
+```
+
+**Production:**
+```bash
+# Migrations are applied during deployment
+cd backend && npx prisma migrate deploy
+```
+
+**Checklist:**
+- [ ] Migration file created in `backend/prisma/migrations/`
+- [ ] Migration committed to git
+- [ ] Production deploy runs `migrate deploy`
+
+### Rule 2: Seed Data (Initial/Reference Data)
+
+Seed data goes in `backend/prisma/seed.ts`. This runs once to populate reference data.
+
+**Development:**
+```bash
+cd backend && npx prisma db seed
+```
+
+**Production:**
+```bash
+# Run seed after first deployment or when adding new seed data
+cd backend && npx prisma db seed
+```
+
+**Guidelines:**
+- Use `upsert` to make seed scripts idempotent (safe to run multiple times)
+- Seed data should be reference/config data, not user data
+- Document what the seed adds in comments
+
+**Example idempotent seed:**
+```typescript
+// backend/prisma/seed.ts
+await prisma.parameter.upsert({
+  where: { key: 'system.timezone' },
+  update: {},  // Don't overwrite if exists
+  create: {
+    key: 'system.timezone',
+    value: 'Asia/Jerusalem',
+    dataType: 'STRING',
+  },
+});
+```
+
+### Rule 3: Insert Data to Existing Tables (Non-Seed)
+
+For data that needs to be added to production but isn't seed data:
+
+**MANDATORY: Create a SQL script file**
+
+Location: `backend/prisma/scripts/`
+
+**Naming convention:** `YYYY-MM-DD_description.sql`
+
+**Example:**
+```sql
+-- backend/prisma/scripts/2026-01-25_add_new_parameters.sql
+-- Description: Add new system parameters for feature X
+-- Author: [name]
+-- Run on production: [date]
+
+-- ALWAYS use INSERT ... ON CONFLICT for safety
+INSERT INTO parameters (key, value, data_type, description, is_active, created_at, updated_at)
+VALUES
+  ('feature.x.enabled', 'true', 'BOOLEAN', 'Enable feature X', true, NOW(), NOW()),
+  ('feature.x.limit', '100', 'NUMBER', 'Feature X rate limit', true, NOW(), NOW())
+ON CONFLICT (key) DO NOTHING;  -- Skip if already exists
+```
+
+**Running on production (Cloud SQL):**
+```bash
+# Connect to Cloud SQL and run script
+gcloud sql connect kitchen48-db --user=kitchen48_user --database=kitchen48_prod < backend/prisma/scripts/2026-01-25_add_new_parameters.sql
+```
+
+**Checklist:**
+- [ ] SQL script created in `backend/prisma/scripts/`
+- [ ] Script uses `ON CONFLICT DO NOTHING` or `ON CONFLICT DO UPDATE` for safety
+- [ ] Script committed to git before running on production
+- [ ] Script has header comment with description, author, date
+- [ ] After running on production, add comment with execution date
+
+### Rule 4: Deleting or Modifying Production Data
+
+**FORBIDDEN without explicit approval:**
+- DELETE statements
+- UPDATE statements that modify user data
+- DROP statements
+
+**If absolutely necessary:**
+1. Create a backup first: `./scripts/backup-database.sh before-deletion`
+2. Create SQL script with exact WHERE clause
+3. Test on dev database first
+4. Get explicit user approval
+5. Run on production with transaction:
+
+```sql
+-- backend/prisma/scripts/2026-01-25_remove_old_data.sql
+BEGIN;
+
+-- Show what will be deleted (dry run)
+SELECT * FROM table_name WHERE condition;
+
+-- Uncomment to actually delete after verifying
+-- DELETE FROM table_name WHERE condition;
+
+COMMIT;
+```
+
+### Summary: Dev to Production Workflow
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                    SCHEMA CHANGES                           │
+│  1. Edit schema.prisma                                      │
+│  2. npx prisma migrate dev --name description               │
+│  3. Commit migration file                                   │
+│  4. Deploy: npx prisma migrate deploy                       │
+└─────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────┐
+│                    SEED DATA                                │
+│  1. Edit backend/prisma/seed.ts                             │
+│  2. Use upsert (idempotent)                                 │
+│  3. Test: npx prisma db seed                                │
+│  4. Deploy: npx prisma db seed                              │
+└─────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────┐
+│                    INSERT DATA                              │
+│  1. Create: backend/prisma/scripts/YYYY-MM-DD_desc.sql      │
+│  2. Use INSERT ... ON CONFLICT                              │
+│  3. Commit script to git                                    │
+│  4. Run on production via Cloud SQL                         │
+└─────────────────────────────────────────────────────────────┘
 ```
 
 ---
