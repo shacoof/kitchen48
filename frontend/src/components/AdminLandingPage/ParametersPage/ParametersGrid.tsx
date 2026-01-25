@@ -248,7 +248,7 @@ export default function ParametersGrid({ onError }: ParametersGridProps) {
         editor: 'input',
         validator: ['required', 'minLength:1'],
         headerFilter: 'input',
-        sorter: 'string',
+        sorter: 'string' as const,
         width: 180,
       },
       {
@@ -279,7 +279,7 @@ export default function ParametersGrid({ onError }: ParametersGridProps) {
             'ARRAY': 'Array',
           },
         },
-        sorter: 'string',
+        sorter: 'string' as const,
         width: 120,
       },
       {
@@ -298,7 +298,7 @@ export default function ParametersGrid({ onError }: ParametersGridProps) {
             'USER': 'User',
           },
         },
-        sorter: 'string',
+        sorter: 'string' as const,
         width: 130,
       },
       {
@@ -306,7 +306,7 @@ export default function ParametersGrid({ onError }: ParametersGridProps) {
         field: 'category',
         editor: 'input',
         headerFilter: 'input',
-        sorter: 'string',
+        sorter: 'string' as const,
         width: 130,
       },
       {
