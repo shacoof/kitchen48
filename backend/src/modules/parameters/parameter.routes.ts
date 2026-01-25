@@ -14,7 +14,7 @@ const router = Router();
  * GET /api/parameters
  * List all parameters (admin only)
  */
-router.get('/', requireAuth, requireAdmin, async (req, res) => {
+router.get('/', requireAuth, requireAdmin, async (_req, res) => {
   try {
     const parameters = await parameterService.getAll();
     res.json({ parameters });
@@ -28,7 +28,7 @@ router.get('/', requireAuth, requireAdmin, async (req, res) => {
  * GET /api/parameters/categories
  * List unique categories (admin only)
  */
-router.get('/categories', requireAuth, requireAdmin, async (req, res) => {
+router.get('/categories', requireAuth, requireAdmin, async (_req, res) => {
   try {
     const categories = await parameterService.getCategories();
     res.json({ categories });
@@ -71,7 +71,7 @@ router.get('/value', requireAuth, async (req, res) => {
  */
 router.get('/:id', requireAuth, requireAdmin, async (req, res) => {
   try {
-    const { id } = req.params;
+    const id = req.params.id as string;
     const parameter = await parameterService.getById(id);
 
     if (!parameter) {
@@ -122,7 +122,7 @@ router.post('/', requireAuth, requireAdmin, async (req, res) => {
  */
 router.put('/:id', requireAuth, requireAdmin, async (req, res) => {
   try {
-    const { id } = req.params;
+    const id = req.params.id as string;
     const validation = updateParameterSchema.safeParse(req.body);
 
     if (!validation.success) {
@@ -159,7 +159,7 @@ router.put('/:id', requireAuth, requireAdmin, async (req, res) => {
  */
 router.delete('/:id', requireAuth, requireAdmin, async (req, res) => {
   try {
-    const { id } = req.params;
+    const id = req.params.id as string;
     await parameterService.delete(id);
     res.status(204).send();
   } catch (error) {
