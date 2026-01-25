@@ -10,6 +10,7 @@ import { prisma } from '../../core/database/prisma.js';
 import { emailService } from '../../services/email.service.js';
 import { env } from '../../config/env.js';
 import { createLogger } from '../../lib/logger.js';
+import { parameterService } from '../parameters/parameter.service.js';
 import type { RegisterInput, LoginInput, AuthUser, AuthResponse, JwtPayload, UserType } from './auth.types.js';
 
 const logger = createLogger('AuthService');
@@ -99,7 +100,7 @@ class AuthService {
     }
 
     // Generate JWT token
-    const token = this.generateToken(user.id, user.email);
+    const token = await this.generateToken(user.id, user.email);
 
     return {
       success: true,
@@ -201,11 +202,13 @@ class AuthService {
 
   /**
    * Generate JWT token
+   * Reads expiration from database parameter with .env fallback
    */
-  generateToken(userId: string, email: string): string {
+  async generateToken(userId: string, email: string): Promise<string> {
     const payload: JwtPayload = { userId, email };
+    const expiresIn = await parameterService.getSystemValue('auth.sessionDuration', env.JWT_EXPIRES_IN);
     return jwt.sign(payload, env.JWT_SECRET, {
-      expiresIn: env.JWT_EXPIRES_IN as string,
+      expiresIn: expiresIn || '7d',
     } as jwt.SignOptions);
   }
 

@@ -1,11 +1,13 @@
 /**
  * Email Service
  * Handles sending emails via Gmail SMTP
+ * Configuration from database parameters with .env fallback
  */
 
 import nodemailer from 'nodemailer';
 import { env } from '../config/env.js';
 import { createLogger } from '../lib/logger.js';
+import { parameterService } from '../modules/parameters/parameter.service.js';
 
 const logger = createLogger('EmailService');
 
@@ -23,24 +25,48 @@ export interface VerificationEmailOptions {
 }
 
 class EmailService {
-  private transporter: nodemailer.Transporter;
+  private transporter: nodemailer.Transporter | null = null;
   private rateLimiter: Map<string, { count: number; lastReset: number }>;
   private readonly maxEmailsPerMinute = 1;
 
   constructor() {
     this.rateLimiter = new Map();
+  }
+
+  /**
+   * Get or create transporter with config from database parameters
+   */
+  private async getTransporter(): Promise<nodemailer.Transporter> {
+    if (this.transporter) {
+      return this.transporter;
+    }
+
+    // Get config from database parameters with env fallback
+    const host = await parameterService.getSystemValue('email.smtp.host', env.EMAIL_SERVER_HOST);
+    const port = await parameterService.getSystemValue('email.smtp.port', env.EMAIL_SERVER_PORT);
+    const user = await parameterService.getSystemValue('email.smtp.user', env.EMAIL_SERVER_USER);
+
     this.transporter = nodemailer.createTransport({
-      host: env.EMAIL_SERVER_HOST,
-      port: parseInt(env.EMAIL_SERVER_PORT),
+      host: host || 'smtp.gmail.com',
+      port: parseInt(port || '587'),
       secure: false, // true for 465, false for 587
       auth: {
-        user: env.EMAIL_SERVER_USER,
-        pass: env.EMAIL_SERVER_PASSWORD,
+        user: user || '',
+        pass: env.EMAIL_SERVER_PASSWORD, // Password always from env (sensitive)
       },
       tls: {
         rejectUnauthorized: false,
       },
     });
+
+    return this.transporter;
+  }
+
+  /**
+   * Reset transporter (call after config changes)
+   */
+  resetTransporter(): void {
+    this.transporter = null;
   }
 
   /**
@@ -90,9 +116,13 @@ class EmailService {
         };
       }
 
+      // Get transporter and from address from parameters
+      const transporter = await this.getTransporter();
+      const fromAddress = await parameterService.getSystemValue('email.fromAddress', env.EMAIL_FROM);
+
       // Send email
-      const result = await this.transporter.sendMail({
-        from: env.EMAIL_FROM,
+      const result = await transporter.sendMail({
+        from: fromAddress || 'noreply@kitchen48.com',
         to: options.to,
         subject: options.subject,
         html: options.html,
@@ -248,7 +278,8 @@ This is an automated message, please do not reply to this email.
    */
   async testConnection(): Promise<{ success: boolean; error?: string }> {
     try {
-      await this.transporter.verify();
+      const transporter = await this.getTransporter();
+      await transporter.verify();
       logger.debug('Email service connection test successful');
       return { success: true };
     } catch (error) {

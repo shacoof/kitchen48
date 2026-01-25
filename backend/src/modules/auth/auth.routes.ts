@@ -72,7 +72,7 @@ router.get(
     session: false,
     failureRedirect: `${env.FRONTEND_URL}/login?error=oauth_failed`,
   }),
-  (req, res) => {
+  async (req, res) => {
     try {
       const user = req.user as { id: string; email: string };
 
@@ -82,7 +82,7 @@ router.get(
       }
 
       // Generate JWT token
-      const token = authService.generateToken(user.id, user.email);
+      const token = await authService.generateToken(user.id, user.email);
 
       // Redirect to frontend with token
       res.redirect(`${env.FRONTEND_URL}/auth/callback?token=${token}`);

@@ -12,6 +12,7 @@ const SALT_ROUNDS = 12;
 
 // System parameters to seed
 const systemParameters = [
+  // Logging
   {
     key: 'system.logging.console.minLevel',
     value: 'error',
@@ -29,6 +30,53 @@ const systemParameters = [
     category: 'logging',
     description: 'Timezone for log timestamps (IANA timezone identifier)',
     defaultValue: 'Asia/Jerusalem',
+  },
+  // Authentication
+  {
+    key: 'auth.sessionDuration',
+    value: '7d',
+    dataType: DataType.STRING,
+    ownerType: OwnerType.SYSTEM,
+    category: 'auth',
+    description: 'JWT token expiration duration (e.g., "7d", "24h", "60m")',
+    defaultValue: '7d',
+  },
+  // Email
+  {
+    key: 'email.fromAddress',
+    value: 'shacoof@gmail.com',
+    dataType: DataType.STRING,
+    ownerType: OwnerType.SYSTEM,
+    category: 'email',
+    description: 'Default "from" address for outgoing emails',
+    defaultValue: 'noreply@kitchen48.com',
+  },
+  {
+    key: 'email.smtp.host',
+    value: 'smtp.gmail.com',
+    dataType: DataType.STRING,
+    ownerType: OwnerType.SYSTEM,
+    category: 'email',
+    description: 'SMTP server hostname',
+    defaultValue: 'smtp.gmail.com',
+  },
+  {
+    key: 'email.smtp.port',
+    value: '587',
+    dataType: DataType.NUMBER,
+    ownerType: OwnerType.SYSTEM,
+    category: 'email',
+    description: 'SMTP server port (typically 587 for TLS, 465 for SSL)',
+    defaultValue: '587',
+  },
+  {
+    key: 'email.smtp.user',
+    value: 'shacoof@gmail.com',
+    dataType: DataType.STRING,
+    ownerType: OwnerType.SYSTEM,
+    category: 'email',
+    description: 'SMTP authentication username',
+    defaultValue: '',
   },
 ];
 

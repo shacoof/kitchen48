@@ -175,6 +175,24 @@ class ParameterService {
 
     return result.map(r => r.category).filter((c): c is string => c !== null);
   }
+
+  /**
+   * Get system parameter value with env fallback
+   * Use this for configuration values that can be overridden by database
+   */
+  async getSystemValue(key: string, envFallback?: string): Promise<string | null> {
+    const param = await this.getByKeyAndOwner(key, 'SYSTEM', null);
+
+    if (param?.value !== undefined && param.value !== null) {
+      return param.value;
+    }
+
+    if (param?.defaultValue !== undefined && param.defaultValue !== null) {
+      return param.defaultValue;
+    }
+
+    return envFallback ?? null;
+  }
 }
 
 export const parameterService = new ParameterService();
