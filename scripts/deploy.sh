@@ -400,9 +400,8 @@ deploy_backend() {
         exit 1
     fi
 
-    # Build environment variables string
+    # Build environment variables string (NOTE: PORT is reserved by Cloud Run, don't set it)
     local env_vars="NODE_ENV=production"
-    env_vars+=",PORT=8080"
     env_vars+=",DATABASE_URL=postgresql://${DB_USER}:\${DB_PASSWORD}@localhost/${DB_NAME}?host=/cloudsql/${CONNECTION_NAME}"
     env_vars+=",JWT_EXPIRES_IN=7d"
 

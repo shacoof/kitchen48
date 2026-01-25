@@ -339,7 +339,8 @@ export default function ParametersGrid({ onError }: ParametersGridProps) {
       },
     ];
 
-    tabulatorRef.current = new Tabulator(tableRef.current, {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const options: any = {
       height: '100%',
       layout: 'fitData',
       responsiveLayout: 'collapse',
@@ -359,7 +360,8 @@ export default function ParametersGrid({ onError }: ParametersGridProps) {
           tabulatorRef.current?.setData(parameters);
         }
       },
-    });
+    };
+    tabulatorRef.current = new Tabulator(tableRef.current, options);
 
     // Load initial data
     loadParameters().then((parameters) => {
