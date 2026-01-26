@@ -6,15 +6,18 @@ set -e
 # ============================================================================
 # Deploys the complete Kitchen48 application to Google Cloud:
 #   - Cloud SQL (PostgreSQL 16)
-#   - Backend (Cloud Run)
-#   - Frontend (Cloud Run)
+#   - Combined App (Cloud Run) - nginx + Node.js in single container
+#
+# Architecture: BFF (Backend-for-Frontend)
+#   - Single Cloud Run service serves both frontend and API
+#   - nginx proxies /api/* to Node.js backend
+#   - Eliminates CORS issues and simplifies deployment
 #
 # Usage:
-#   ./scripts/deploy.sh                    # Interactive mode
+#   ./scripts/deploy.sh                    # Full deployment
 #   ./scripts/deploy.sh --env-file FILE    # Use env file for secrets
 #   ./scripts/deploy.sh --skip-db          # Skip Cloud SQL setup
-#   ./scripts/deploy.sh --backend-only     # Deploy backend only
-#   ./scripts/deploy.sh --frontend-only    # Deploy frontend only
+#   ./scripts/deploy.sh --help             # Show help
 # ============================================================================
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -36,14 +39,11 @@ DB_NAME="kitchen48_prod"
 DB_USER="kitchen48_user"
 DB_TIER="db-f1-micro"
 
-# Service names
-BACKEND_SERVICE="kitchen48-backend"
-FRONTEND_SERVICE="kitchen48-frontend"
+# Service name (single combined service)
+APP_SERVICE="kitchen48-app"
 
 # Flags
 SKIP_DB=false
-BACKEND_ONLY=false
-FRONTEND_ONLY=false
 ENV_FILE=""
 
 # ============================================================================
@@ -54,6 +54,7 @@ print_banner() {
     echo ""
     echo -e "${CYAN}╔════════════════════════════════════════════════════════════════╗${NC}"
     echo -e "${CYAN}║${NC}           ${BOLD}Kitchen48 One-Click Deployment${NC}                      ${CYAN}║${NC}"
+    echo -e "${CYAN}║${NC}              (Combined BFF Architecture)                      ${CYAN}║${NC}"
     echo -e "${CYAN}╚════════════════════════════════════════════════════════════════╝${NC}"
     echo ""
 }
@@ -91,14 +92,6 @@ while [[ $# -gt 0 ]]; do
             SKIP_DB=true
             shift
             ;;
-        --backend-only)
-            BACKEND_ONLY=true
-            shift
-            ;;
-        --frontend-only)
-            FRONTEND_ONLY=true
-            shift
-            ;;
         --env-file)
             ENV_FILE="$2"
             shift 2
@@ -109,9 +102,16 @@ while [[ $# -gt 0 ]]; do
             echo "Options:"
             echo "  --env-file FILE    Load secrets from environment file"
             echo "  --skip-db          Skip Cloud SQL setup (use existing)"
-            echo "  --backend-only     Deploy backend only"
-            echo "  --frontend-only    Deploy frontend only"
             echo "  --help, -h         Show this help message"
+            echo ""
+            echo "Environment Variables (in .env.production):"
+            echo "  GCP_PROJECT_ID     Google Cloud project ID"
+            echo "  GCP_REGION         Deployment region (default: us-central1)"
+            echo "  DB_PASSWORD        Database password (min 8 chars)"
+            echo "  JWT_SECRET         JWT signing key (min 32 chars)"
+            echo "  EMAIL_SERVER_*     Email configuration"
+            echo "  GOOGLE_CLIENT_*    Google OAuth configuration"
+            echo "  FRONTEND_DOMAIN    Custom domain (e.g., www.kitchen48.com)"
             exit 0
             ;;
         *)
@@ -206,7 +206,7 @@ collect_secrets() {
     print_step "Collecting Required Secrets"
 
     # Database password
-    if [[ -z "$DB_PASSWORD" ]] && [[ "$SKIP_DB" != "true" ]] && [[ "$FRONTEND_ONLY" != "true" ]]; then
+    if [[ -z "$DB_PASSWORD" ]] && [[ "$SKIP_DB" != "true" ]]; then
         echo -e "${YELLOW}Enter database password (min 8 characters):${NC}"
         read -s DB_PASSWORD
         echo ""
@@ -217,7 +217,7 @@ collect_secrets() {
     fi
 
     # JWT Secret
-    if [[ -z "$JWT_SECRET" ]] && [[ "$FRONTEND_ONLY" != "true" ]]; then
+    if [[ -z "$JWT_SECRET" ]]; then
         echo -e "${YELLOW}Enter JWT secret (min 32 characters, or press Enter to generate):${NC}"
         read -s JWT_SECRET
         echo ""
@@ -231,7 +231,7 @@ collect_secrets() {
     fi
 
     # Email configuration
-    if [[ -z "$EMAIL_SERVER_PASSWORD" ]] && [[ "$FRONTEND_ONLY" != "true" ]]; then
+    if [[ -z "$EMAIL_SERVER_PASSWORD" ]]; then
         print_warning "EMAIL_SERVER_PASSWORD not set - email functionality will be disabled"
         EMAIL_SERVER_PASSWORD=""
     fi
@@ -267,7 +267,7 @@ enable_apis() {
 # ============================================================================
 
 setup_cloud_sql() {
-    if [[ "$SKIP_DB" == "true" ]] || [[ "$FRONTEND_ONLY" == "true" ]]; then
+    if [[ "$SKIP_DB" == "true" ]]; then
         print_info "Skipping Cloud SQL setup"
         return
     fi
@@ -359,11 +359,6 @@ create_or_update_secret() {
 }
 
 setup_secrets() {
-    if [[ "$FRONTEND_ONLY" == "true" ]]; then
-        print_info "Skipping secrets setup for frontend-only deployment"
-        return
-    fi
-
     print_step "Setting Up Secret Manager"
 
     create_or_update_secret "kitchen48-db-password" "$DB_PASSWORD"
@@ -381,16 +376,11 @@ setup_secrets() {
 }
 
 # ============================================================================
-# Deploy Backend
+# Deploy Combined App
 # ============================================================================
 
-deploy_backend() {
-    if [[ "$FRONTEND_ONLY" == "true" ]]; then
-        print_info "Skipping backend deployment"
-        return
-    fi
-
-    print_step "Deploying Backend to Cloud Run"
+deploy_app() {
+    print_step "Deploying Combined App to Cloud Run"
 
     # Get Cloud SQL connection name
     CONNECTION_NAME=$(gcloud sql instances describe "$CLOUD_SQL_INSTANCE" --project="$GCP_PROJECT_ID" --format="value(connectionName)" 2>/dev/null || echo "")
@@ -400,10 +390,20 @@ deploy_backend() {
         exit 1
     fi
 
-    # Build environment variables string (NOTE: PORT is reserved by Cloud Run, don't set it)
+    # Determine frontend URL for email links
+    local frontend_url=""
+    if [[ -n "$FRONTEND_DOMAIN" ]]; then
+        frontend_url="https://${FRONTEND_DOMAIN}"
+    else
+        # Will be the Cloud Run URL
+        frontend_url="https://${APP_SERVICE}-${GCP_PROJECT_ID}.${REGION}.run.app"
+    fi
+
+    # Build environment variables string
     local env_vars="NODE_ENV=production"
     env_vars+=",DATABASE_URL=postgresql://${DB_USER}:\${DB_PASSWORD}@localhost/${DB_NAME}?host=/cloudsql/${CONNECTION_NAME}"
     env_vars+=",JWT_EXPIRES_IN=7d"
+    env_vars+=",FRONTEND_URL=${frontend_url}"
 
     # Email config
     env_vars+=",EMAIL_SERVER_HOST=${EMAIL_SERVER_HOST:-smtp.gmail.com}"
@@ -414,7 +414,12 @@ deploy_backend() {
     # Google OAuth
     if [[ -n "$GOOGLE_CLIENT_ID" ]]; then
         env_vars+=",GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}"
-        env_vars+=",GOOGLE_CALLBACK_URL=https://${BACKEND_SERVICE}-${GCP_PROJECT_ID}.${REGION}.run.app/api/auth/google/callback"
+        # OAuth callback goes to the same service
+        if [[ -n "$FRONTEND_DOMAIN" ]]; then
+            env_vars+=",GOOGLE_CALLBACK_URL=https://${FRONTEND_DOMAIN}/api/auth/google/callback"
+        else
+            env_vars+=",GOOGLE_CALLBACK_URL=https://${APP_SERVICE}-${GCP_PROJECT_ID}.${REGION}.run.app/api/auth/google/callback"
+        fi
     fi
 
     # Build secrets string
@@ -429,10 +434,11 @@ deploy_backend() {
         secrets+=",GOOGLE_CLIENT_SECRET=kitchen48-google-client-secret:latest"
     fi
 
-    print_info "Building and deploying backend..."
+    print_info "Building and deploying combined app..."
+    print_info "This builds both frontend and backend into a single container"
 
-    gcloud run deploy "$BACKEND_SERVICE" \
-        --source "$PROJECT_ROOT/backend" \
+    gcloud run deploy "$APP_SERVICE" \
+        --source "$PROJECT_ROOT" \
         --project="$GCP_PROJECT_ID" \
         --region="$REGION" \
         --platform=managed \
@@ -446,101 +452,51 @@ deploy_backend() {
         --max-instances=10 \
         --quiet
 
-    # Get backend URL
-    BACKEND_URL=$(gcloud run services describe "$BACKEND_SERVICE" --project="$GCP_PROJECT_ID" --region="$REGION" --format="value(status.url)")
-    print_success "Backend deployed: $BACKEND_URL"
+    # Get app URL
+    APP_URL=$(gcloud run services describe "$APP_SERVICE" --project="$GCP_PROJECT_ID" --region="$REGION" --format="value(status.url)")
+    print_success "App deployed: $APP_URL"
 
-    # Update FRONTEND_URL in backend for email links
-    print_info "Updating FRONTEND_URL environment variable..."
-
-    # We'll set this after frontend is deployed or use a placeholder
-    if [[ -n "$FRONTEND_DOMAIN" ]]; then
-        gcloud run services update "$BACKEND_SERVICE" \
+    # Update FRONTEND_URL if using Cloud Run URL
+    if [[ -z "$FRONTEND_DOMAIN" ]]; then
+        print_info "Updating FRONTEND_URL to actual deployed URL..."
+        gcloud run services update "$APP_SERVICE" \
             --project="$GCP_PROJECT_ID" \
             --region="$REGION" \
-            --update-env-vars="FRONTEND_URL=https://${FRONTEND_DOMAIN}" \
+            --update-env-vars="FRONTEND_URL=${APP_URL}" \
             --quiet
     fi
 }
 
 # ============================================================================
-# Run Database Migrations
+# Test Deployment
 # ============================================================================
 
-run_migrations() {
-    if [[ "$FRONTEND_ONLY" == "true" ]]; then
-        return
+test_deployment() {
+    print_step "Testing Deployment"
+
+    if [[ -z "$APP_URL" ]]; then
+        APP_URL=$(gcloud run services describe "$APP_SERVICE" --project="$GCP_PROJECT_ID" --region="$REGION" --format="value(status.url)" 2>/dev/null || echo "")
     fi
 
-    print_step "Running Database Migrations"
+    if [[ -n "$APP_URL" ]]; then
+        print_info "Waiting for service to start..."
+        sleep 10
 
-    print_info "Migrations will run automatically on first backend request"
-    print_info "Or you can run them manually using Cloud SQL Auth Proxy"
-
-    # Test backend health
-    if [[ -n "$BACKEND_URL" ]]; then
-        print_info "Testing backend health endpoint..."
-        sleep 5  # Give the service a moment to start
-
-        if curl -sf "${BACKEND_URL}/api/health" > /dev/null 2>&1; then
-            print_success "Backend is healthy"
+        # Test frontend
+        print_info "Testing frontend..."
+        if curl -sf "${APP_URL}/" > /dev/null 2>&1; then
+            print_success "Frontend is responding"
         else
-            print_warning "Backend health check failed - service may still be starting"
+            print_warning "Frontend not responding yet (may still be starting)"
         fi
-    fi
-}
 
-# ============================================================================
-# Deploy Frontend
-# ============================================================================
-
-deploy_frontend() {
-    if [[ "$BACKEND_ONLY" == "true" ]]; then
-        print_info "Skipping frontend deployment"
-        return
-    fi
-
-    print_step "Deploying Frontend to Cloud Run"
-
-    # Get backend URL if not already set
-    if [[ -z "$BACKEND_URL" ]]; then
-        BACKEND_URL=$(gcloud run services describe "$BACKEND_SERVICE" --project="$GCP_PROJECT_ID" --region="$REGION" --format="value(status.url)" 2>/dev/null || echo "")
-    fi
-
-    if [[ -z "$BACKEND_URL" ]]; then
-        print_warning "Backend URL not found - frontend will need manual API configuration"
-        BACKEND_URL="https://${BACKEND_SERVICE}-${GCP_PROJECT_ID}.${REGION}.run.app"
-    fi
-
-    print_info "Building and deploying frontend..."
-    print_info "API URL: $BACKEND_URL"
-
-    # Frontend doesn't need secrets, just the API URL
-    gcloud run deploy "$FRONTEND_SERVICE" \
-        --source "$PROJECT_ROOT/frontend" \
-        --project="$GCP_PROJECT_ID" \
-        --region="$REGION" \
-        --platform=managed \
-        --set-env-vars="VITE_API_URL=${BACKEND_URL}" \
-        --allow-unauthenticated \
-        --memory=256Mi \
-        --cpu=1 \
-        --min-instances=0 \
-        --max-instances=10 \
-        --quiet
-
-    # Get frontend URL
-    FRONTEND_URL=$(gcloud run services describe "$FRONTEND_SERVICE" --project="$GCP_PROJECT_ID" --region="$REGION" --format="value(status.url)")
-    print_success "Frontend deployed: $FRONTEND_URL"
-
-    # Update backend with frontend URL for email links
-    if [[ "$BACKEND_ONLY" != "true" ]] && [[ -n "$FRONTEND_URL" ]]; then
-        print_info "Updating backend FRONTEND_URL..."
-        gcloud run services update "$BACKEND_SERVICE" \
-            --project="$GCP_PROJECT_ID" \
-            --region="$REGION" \
-            --update-env-vars="FRONTEND_URL=${FRONTEND_URL}" \
-            --quiet 2>/dev/null || true
+        # Test API health
+        print_info "Testing API health endpoint..."
+        if curl -sf "${APP_URL}/api/health" > /dev/null 2>&1; then
+            print_success "API is healthy"
+        else
+            print_warning "API health check failed (may still be starting)"
+        fi
     fi
 }
 
@@ -561,46 +517,42 @@ print_summary() {
     echo -e "${BOLD}Region:${NC}  $REGION"
     echo ""
 
-    if [[ "$FRONTEND_ONLY" != "true" ]]; then
-        echo -e "${BOLD}Cloud SQL:${NC}"
-        echo "  Instance: $CLOUD_SQL_INSTANCE"
-        echo "  Database: $DB_NAME"
-        echo "  User:     $DB_USER"
-        echo ""
+    echo -e "${BOLD}Architecture:${NC} BFF (Backend-for-Frontend)"
+    echo "  - Single Cloud Run service"
+    echo "  - nginx serves frontend + proxies /api/* to Node.js"
+    echo ""
 
-        echo -e "${BOLD}Backend:${NC}"
-        if [[ -n "$BACKEND_URL" ]]; then
-            echo "  URL:     $BACKEND_URL"
-            echo "  Health:  ${BACKEND_URL}/api/health"
-        fi
-        echo ""
-    fi
+    echo -e "${BOLD}Cloud SQL:${NC}"
+    echo "  Instance: $CLOUD_SQL_INSTANCE"
+    echo "  Database: $DB_NAME"
+    echo "  User:     $DB_USER"
+    echo ""
 
-    if [[ "$BACKEND_ONLY" != "true" ]]; then
-        echo -e "${BOLD}Frontend:${NC}"
-        if [[ -n "$FRONTEND_URL" ]]; then
-            echo "  URL:     $FRONTEND_URL"
-        fi
-        echo ""
+    echo -e "${BOLD}Application:${NC}"
+    if [[ -n "$APP_URL" ]]; then
+        echo "  URL:        $APP_URL"
+        echo "  API Health: ${APP_URL}/api/health"
     fi
+    echo ""
 
     echo -e "${YELLOW}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
     echo -e "${YELLOW}Next Steps:${NC}"
     echo ""
     echo "1. Test the deployment:"
-    if [[ -n "$BACKEND_URL" ]]; then
-        echo "   curl ${BACKEND_URL}/api/health"
-    fi
-    if [[ -n "$FRONTEND_URL" ]]; then
-        echo "   Open: $FRONTEND_URL"
+    if [[ -n "$APP_URL" ]]; then
+        echo "   curl ${APP_URL}/api/health"
+        echo "   Open: $APP_URL"
     fi
     echo ""
-    echo "2. Set up custom domains (optional):"
-    echo "   gcloud run domain-mappings create --service=$FRONTEND_SERVICE --domain=www.kitchen48.com --region=$REGION"
-    echo "   gcloud run domain-mappings create --service=$BACKEND_SERVICE --domain=api.kitchen48.com --region=$REGION"
+    echo "2. Set up custom domain (optional):"
+    echo "   gcloud beta run domain-mappings create --service=$APP_SERVICE --domain=www.kitchen48.com --region=$REGION"
     echo ""
     echo "3. View logs:"
-    echo "   gcloud run services logs read $BACKEND_SERVICE --region=$REGION --limit=50"
+    echo "   gcloud run services logs read $APP_SERVICE --region=$REGION --limit=50"
+    echo ""
+    echo "4. Clean up old services (if migrating from separate frontend/backend):"
+    echo "   gcloud run services delete kitchen48-frontend --region=$REGION --quiet"
+    echo "   gcloud run services delete kitchen48-backend --region=$REGION --quiet"
     echo ""
 }
 
@@ -616,9 +568,8 @@ main() {
     enable_apis
     setup_cloud_sql
     setup_secrets
-    deploy_backend
-    run_migrations
-    deploy_frontend
+    deploy_app
+    test_deployment
     print_summary
 }
 

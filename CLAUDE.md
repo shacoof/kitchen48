@@ -87,9 +87,35 @@ model User {
 
 ## Project Structure
 
-- **frontend/**: React + Vite application (builds to nginx container)
+- **frontend/**: React + Vite application
 - **backend/**: Node.js + Express API server
 - Both services use npm workspaces from the root
+
+### Production Architecture (BFF - Backend-for-Frontend)
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│              Cloud Run (kitchen48-app)                       │
+│                  www.kitchen48.com                           │
+├─────────────────────────────────────────────────────────────┤
+│  nginx (port 8080)                                          │
+│  ├── /*        → /usr/share/nginx/html (React SPA)          │
+│  └── /api/*    → localhost:3000 (Node.js backend)           │
+│                         │                                    │
+│                   Node.js Express                            │
+│                    (port 3000)                               │
+└─────────────────────────────────────────────────────────────┘
+                         │
+                   ┌─────┴─────┐
+                   │ Cloud SQL │
+                   │ PostgreSQL│
+                   └───────────┘
+```
+
+**Key Files:**
+- `Dockerfile` - Combined multi-stage build (frontend + backend)
+- `nginx.conf` - nginx config with `/api/*` proxy
+- `supervisord.conf` - Process manager for nginx + Node.js
 
 ---
 
@@ -160,9 +186,9 @@ logger.error('API call failed');
 
 | Service | URL | Description |
 |---------|-----|-------------|
-| Public Site | https://www.kitchen48.com | Public landing page for users |
-| Admin Portal | https://admin.kitchen48.com | Admin dashboard (requires admin login) |
-| Backend API | https://api.kitchen48.com | Production API server |
+| Application | https://www.kitchen48.com | Single service (frontend + API) |
+| Admin Portal | https://www.kitchen48.com/?subdomain=admin | Admin dashboard (requires admin login) |
+| API | https://www.kitchen48.com/api/* | API endpoints (same domain, no CORS) |
 
 ### API Endpoints
 
@@ -225,18 +251,15 @@ npm run build:backend
 ### Build and Deploy to Cloud Run
 
 ```bash
-# Deploy frontend
-gcloud run deploy kitchen48-frontend \
-  --source ./frontend \
-  --region us-central1 \
-  --allow-unauthenticated
-
-# Deploy backend
-gcloud run deploy kitchen48-backend \
-  --source ./backend \
+# Deploy combined app (recommended - single service)
+gcloud run deploy kitchen48-app \
+  --source . \
   --region us-central1 \
   --allow-unauthenticated
 ```
+
+**Note:** The combined architecture deploys frontend + backend in a single container.
+nginx serves static files and proxies `/api/*` to the Node.js backend.
 
 ### Manual Docker Build and Push (Artifact Registry)
 
@@ -350,9 +373,10 @@ Deploy the entire application (Cloud SQL + Backend + Frontend) with a single com
 2. Enables required GCP APIs
 3. Creates/updates Cloud SQL instance and database
 4. Stores secrets in Secret Manager
-5. Deploys backend to Cloud Run with Cloud SQL connection
-6. Deploys frontend to Cloud Run
-7. Outputs URLs and summary
+5. Deploys combined app (frontend + backend) to Cloud Run
+6. Outputs URLs and summary
+
+**Architecture:** Single Cloud Run service with nginx + Node.js (BFF pattern)
 
 ---
 
