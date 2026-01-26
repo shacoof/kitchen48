@@ -265,75 +265,59 @@ nginx serves static files and proxies `/api/*` to the Node.js backend.
 
 ```bash
 # Configure Docker for Artifact Registry
-gcloud auth configure-docker REGION-docker.pkg.dev
+gcloud auth configure-docker us-central1-docker.pkg.dev
 
-# Build images
-docker build -t REGION-docker.pkg.dev/PROJECT_ID/REPO/kitchen48-frontend:latest ./frontend
-docker build -t REGION-docker.pkg.dev/PROJECT_ID/REPO/kitchen48-backend:latest ./backend
+# Build combined image
+docker build -t us-central1-docker.pkg.dev/PROJECT_ID/cloud-run-source-deploy/kitchen48-app:latest .
 
-# Push images
-docker push REGION-docker.pkg.dev/PROJECT_ID/REPO/kitchen48-frontend:latest
-docker push REGION-docker.pkg.dev/PROJECT_ID/REPO/kitchen48-backend:latest
+# Push image
+docker push us-central1-docker.pkg.dev/PROJECT_ID/cloud-run-source-deploy/kitchen48-app:latest
 
 # Deploy from image
-gcloud run deploy kitchen48-frontend \
-  --image REGION-docker.pkg.dev/PROJECT_ID/REPO/kitchen48-frontend:latest \
+gcloud run deploy kitchen48-app \
+  --image us-central1-docker.pkg.dev/PROJECT_ID/cloud-run-source-deploy/kitchen48-app:latest \
   --region us-central1 \
   --allow-unauthenticated
-
-gcloud run deploy kitchen48-backend \
-  --image REGION-docker.pkg.dev/PROJECT_ID/REPO/kitchen48-backend:latest \
-  --region us-central1 \
-  --allow-unauthenticated
-```
-
-### Environment Variables
-Set environment variables during deployment:
-```bash
-gcloud run deploy SERVICE_NAME \
-  --set-env-vars "KEY1=value1,KEY2=value2"
 ```
 
 ### Cloud SQL (Production Database)
 
-Kitchen48 uses Cloud SQL PostgreSQL for production with private-only access.
-
-**Deploy database:**
-```bash
-./scripts/deploy-cloud-sql.sh
-```
-
-This script will:
-1. Create a Cloud SQL PostgreSQL 16 instance (no public IP)
-2. Create the `kitchen48_prod` database
-3. Create the `kitchen48_user` with your password
-4. Store the password in Secret Manager
-
-**Deploy backend with Cloud SQL:**
-```bash
-# Get connection name
-CONNECTION_NAME=$(gcloud sql instances describe kitchen48-db --format="value(connectionName)")
-
-# Deploy with Cloud SQL connector
-gcloud run deploy kitchen48-backend \
-  --source ./backend \
-  --region us-central1 \
-  --add-cloudsql-instances=$CONNECTION_NAME \
-  --set-env-vars="DATABASE_URL=postgresql://kitchen48_user:\$DB_PASSWORD@localhost/kitchen48_prod?host=/cloudsql/$CONNECTION_NAME" \
-  --set-secrets="DB_PASSWORD=kitchen48-db-password:latest" \
-  --allow-unauthenticated
-```
-
-**Database environments:**
+Kitchen48 uses Cloud SQL PostgreSQL for production.
 
 | Environment | Database | Access |
 |-------------|----------|--------|
 | Local dev | Docker PostgreSQL (port 5433) | localhost only |
-| Production | Cloud SQL `kitchen48-db` | Cloud Run only (private IP) |
+| Production | Cloud SQL `kitchen48-db` | Cloud Run only |
+
+### Domain Mapping
+
+```bash
+# List current mappings
+gcloud beta run domain-mappings list --region=us-central1
+
+# Create mapping for combined app
+gcloud beta run domain-mappings create \
+  --service=kitchen48-app \
+  --domain=www.kitchen48.com \
+  --region=us-central1
+
+# Delete old mapping (if migrating)
+gcloud beta run domain-mappings delete \
+  --domain=www.kitchen48.com \
+  --region=us-central1 --quiet
+```
+
+### Clean Up Old Services (After Migration)
+
+```bash
+# Delete old separate services
+gcloud run services delete kitchen48-frontend --region=us-central1 --quiet
+gcloud run services delete kitchen48-backend --region=us-central1 --quiet
+```
 
 ### One-Click Deployment
 
-Deploy the entire application (Cloud SQL + Backend + Frontend) with a single command:
+Deploy the entire application with a single command:
 
 ```bash
 ./scripts/deploy.sh
@@ -357,13 +341,12 @@ Deploy the entire application (Cloud SQL + Backend + Frontend) with a single com
 - `DB_PASSWORD` - Database password (min 8 chars)
 - `JWT_SECRET` - JWT signing key (min 32 chars)
 - `EMAIL_SERVER_*` - Gmail SMTP configuration
+- `FRONTEND_DOMAIN` - Custom domain (e.g., `www.kitchen48.com`)
 
 **Command options:**
 ```bash
 ./scripts/deploy.sh                    # Full deployment
 ./scripts/deploy.sh --skip-db          # Skip Cloud SQL (use existing)
-./scripts/deploy.sh --backend-only     # Deploy backend only
-./scripts/deploy.sh --frontend-only    # Deploy frontend only
 ./scripts/deploy.sh --env-file FILE    # Use custom env file
 ./scripts/deploy.sh --help             # Show help
 ```
@@ -373,10 +356,12 @@ Deploy the entire application (Cloud SQL + Backend + Frontend) with a single com
 2. Enables required GCP APIs
 3. Creates/updates Cloud SQL instance and database
 4. Stores secrets in Secret Manager
-5. Deploys combined app (frontend + backend) to Cloud Run
-6. Outputs URLs and summary
+5. Deploys combined app (`kitchen48-app`) to Cloud Run
+6. Tests deployment and outputs URLs
 
 **Architecture:** Single Cloud Run service with nginx + Node.js (BFF pattern)
+
+**Service Name:** `kitchen48-app` (replaces old `kitchen48-frontend` + `kitchen48-backend`)
 
 ---
 
