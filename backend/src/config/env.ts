@@ -17,12 +17,12 @@ const envSchema = z.object({
   JWT_SECRET: z.string().min(32),
   JWT_EXPIRES_IN: z.string().default('7d'),
 
-  // Email (Gmail SMTP)
+  // Email (Gmail SMTP) - all optional for servers without email
   EMAIL_SERVER_HOST: z.string().default('smtp.gmail.com'),
   EMAIL_SERVER_PORT: z.string().default('587'),
-  EMAIL_SERVER_USER: z.string().email(),
-  EMAIL_SERVER_PASSWORD: z.string(),
-  EMAIL_FROM: z.string().email(),
+  EMAIL_SERVER_USER: z.string().email().optional().or(z.literal('')),
+  EMAIL_SERVER_PASSWORD: z.string().optional().or(z.literal('')),
+  EMAIL_FROM: z.string().email().optional().or(z.literal('')),
 
   // Google OAuth
   GOOGLE_CLIENT_ID: z.string().optional(),
