@@ -55,6 +55,7 @@ COPY --from=backend-builder /app/backend/dist ./backend/dist
 COPY --from=backend-builder /app/backend/node_modules ./backend/node_modules
 COPY --from=backend-builder /app/backend/prisma ./backend/prisma
 COPY --from=backend-builder /app/backend/package.json ./backend/
+COPY backend/start.js ./backend/
 
 # Copy frontend build to nginx html directory
 COPY --from=frontend-builder /app/frontend/dist /usr/share/nginx/html
