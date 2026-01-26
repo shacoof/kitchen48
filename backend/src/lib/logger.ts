@@ -64,8 +64,13 @@ export function configureLogger(newConfig: Partial<LoggerConfig>): void {
   config = { ...config, ...newConfig };
 }
 
+// Flag to track if database is available
+let databaseAvailable = false;
+let databaseCheckInProgress = false;
+
 /**
  * Get parameter value from database with caching
+ * Non-blocking: returns default immediately if database is unavailable
  */
 async function getParameterFromDB(key: string, defaultValue: string): Promise<string> {
   const now = Date.now();
@@ -78,6 +83,18 @@ async function getParameterFromDB(key: string, defaultValue: string): Promise<st
     if (key === 'system.logging.timezone' && cachedTimezone) {
       return cachedTimezone;
     }
+  }
+
+  // If database is known to be unavailable or check is in progress, return default immediately
+  if (!databaseAvailable) {
+    // Try to establish connection in background (non-blocking)
+    if (!databaseCheckInProgress) {
+      databaseCheckInProgress = true;
+      checkDatabaseConnection().finally(() => {
+        databaseCheckInProgress = false;
+      });
+    }
+    return defaultValue;
   }
 
   try {
@@ -105,10 +122,32 @@ async function getParameterFromDB(key: string, defaultValue: string): Promise<st
       return parameter.value;
     }
   } catch {
-    // Silently fail and use default - don't log to avoid recursion
+    // Mark database as unavailable
+    databaseAvailable = false;
   }
 
   return defaultValue;
+}
+
+/**
+ * Check database connection in background
+ */
+async function checkDatabaseConnection(): Promise<void> {
+  try {
+    if (!prisma) {
+      const { prisma: prismaSingleton } = await import('../core/database/prisma.js');
+      prisma = prismaSingleton;
+    }
+    // Simple query to test connection
+    await prisma.$queryRaw`SELECT 1`;
+    databaseAvailable = true;
+  } catch {
+    databaseAvailable = false;
+    // Retry after 30 seconds
+    setTimeout(() => {
+      checkDatabaseConnection();
+    }, 30000);
+  }
 }
 
 /**
