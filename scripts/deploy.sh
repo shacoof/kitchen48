@@ -364,6 +364,13 @@ setup_secrets() {
     create_or_update_secret "kitchen48-db-password" "$DB_PASSWORD"
     create_or_update_secret "kitchen48-jwt-secret" "$JWT_SECRET"
 
+    # Create full DATABASE_URL as secret (Cloud Run doesn't expand nested vars)
+    CONNECTION_NAME=$(gcloud sql instances describe "$CLOUD_SQL_INSTANCE" --project="$GCP_PROJECT_ID" --format="value(connectionName)" 2>/dev/null || echo "")
+    if [[ -n "$CONNECTION_NAME" ]]; then
+        local database_url="postgresql://${DB_USER}:${DB_PASSWORD}@localhost/${DB_NAME}?host=/cloudsql/${CONNECTION_NAME}"
+        create_or_update_secret "kitchen48-database-url" "$database_url"
+    fi
+
     if [[ -n "$EMAIL_SERVER_PASSWORD" ]]; then
         create_or_update_secret "kitchen48-email-password" "$EMAIL_SERVER_PASSWORD"
     fi
@@ -399,9 +406,8 @@ deploy_app() {
         frontend_url="https://${APP_SERVICE}-${GCP_PROJECT_ID}.${REGION}.run.app"
     fi
 
-    # Build environment variables string
+    # Build environment variables string (DATABASE_URL is a secret)
     local env_vars="NODE_ENV=production"
-    env_vars+=",DATABASE_URL=postgresql://${DB_USER}:\${DB_PASSWORD}@localhost/${DB_NAME}?host=/cloudsql/${CONNECTION_NAME}"
     env_vars+=",JWT_EXPIRES_IN=7d"
     env_vars+=",FRONTEND_URL=${frontend_url}"
 
@@ -423,7 +429,7 @@ deploy_app() {
     fi
 
     # Build secrets string
-    local secrets="DB_PASSWORD=kitchen48-db-password:latest"
+    local secrets="DATABASE_URL=kitchen48-database-url:latest"
     secrets+=",JWT_SECRET=kitchen48-jwt-secret:latest"
 
     if gcloud secrets describe "kitchen48-email-password" --project="$GCP_PROJECT_ID" &>/dev/null; then
