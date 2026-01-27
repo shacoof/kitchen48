@@ -139,4 +139,31 @@ function MyComponent() {
 ❌ ERROR [2026-01-24 15:30:47] ComponentName: Error message
 ```
 
+### Header User Menu - 2026-01-26
+- Public landing page header shows auth-aware user menu
+- When logged out: "Sign In" button links to `/login`
+- When logged in: Shows user name with dropdown menu containing "Sign Out"
+- Uses `useAuth()` hook from `context/AuthContext.tsx`
+- Dropdown closes when clicking outside (useEffect with document click listener)
+- Pattern can be reused for other authenticated UI elements
+
+#### User Menu Pattern
+```tsx
+import { useAuth } from '../../context/AuthContext';
+
+const { user, isAuthenticated, logout } = useAuth();
+const [menuOpen, setMenuOpen] = useState(false);
+
+// Close menu when clicking outside
+useEffect(() => {
+  const handleClickOutside = () => setMenuOpen(false);
+  if (menuOpen) {
+    document.addEventListener('click', handleClickOutside);
+    return () => document.removeEventListener('click', handleClickOutside);
+  }
+}, [menuOpen]);
+
+// Render: isAuthenticated ? <UserMenu /> : <SignInButton />
+```
+
 ---
