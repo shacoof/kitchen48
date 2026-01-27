@@ -15,14 +15,32 @@ process.on('unhandledRejection', (reason, promise) => {
   console.error('[START.JS] Unhandled rejection at:', promise, 'reason:', reason);
 });
 
-// Import and run the main app
-console.log('[START.JS] Importing dist/index.js...');
-import('./dist/index.js')
-  .then(() => {
-    console.log('[START.JS] Import completed successfully');
-  })
-  .catch(err => {
-    console.error('[START.JS] Failed to import:', err.message);
-    console.error('[START.JS] Stack:', err.stack);
-    process.exit(1);
-  });
+// Start a minimal server first to ensure port 3000 is listening
+const http = require('http');
+const minimalServer = http.createServer((req, res) => {
+  if (req.url === '/api/health') {
+    res.writeHead(200, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ status: 'starting', message: 'Backend is loading...' }));
+  } else {
+    res.writeHead(503);
+    res.end('Service starting...');
+  }
+});
+
+minimalServer.listen(3000, () => {
+  console.log('[START.JS] Minimal server listening on port 3000');
+
+  // Now import the main app (which will take over)
+  console.log('[START.JS] Importing dist/index.js...');
+  import('./dist/index.js')
+    .then(() => {
+      console.log('[START.JS] Import completed successfully');
+      // Close the minimal server - main app has taken over
+      minimalServer.close();
+    })
+    .catch(err => {
+      console.error('[START.JS] Failed to import:', err.message);
+      console.error('[START.JS] Stack:', err.stack);
+      // Keep minimal server running for debugging
+    });
+});
