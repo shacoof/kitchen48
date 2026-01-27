@@ -1,68 +1,79 @@
-// eslint-disable-next-line no-console
-console.log('[STARTUP] Beginning server initialization...');
+/* eslint-disable no-console */
+/**
+ * Kitchen48 Backend Server
+ *
+ * Starts listening immediately with a minimal health endpoint,
+ * then loads the full application asynchronously.
+ */
 
 import express from 'express';
-import cors from 'cors';
-import passport from 'passport';
-
-// eslint-disable-next-line no-console
-console.log('[STARTUP] Core imports done');
-
-import { configurePassport } from './config/passport.js';
-// eslint-disable-next-line no-console
-console.log('[STARTUP] Passport config imported');
-
-import authRoutes from './modules/auth/auth.routes.js';
-// eslint-disable-next-line no-console
-console.log('[STARTUP] Auth routes imported');
-
-import parameterRoutes from './modules/parameters/parameter.routes.js';
-// eslint-disable-next-line no-console
-console.log('[STARTUP] Parameter routes imported');
-
-import { createLogger } from './lib/logger.js';
-// eslint-disable-next-line no-console
-console.log('[STARTUP] Logger imported');
-
-const logger = createLogger('Server');
 
 const app = express();
-const PORT = process.env.PORT || 3000;
-// eslint-disable-next-line no-console
-console.log(`[STARTUP] PORT = ${PORT}`);
+// Backend always listens on 3000 - nginx proxies from 8080
+const PORT = 3000;
 
-// Middleware
-app.use(cors());
-app.use(express.json());
-// eslint-disable-next-line no-console
-console.log('[STARTUP] Middleware configured');
+// Start listening immediately with minimal health endpoint
+let serverReady = false;
 
-// Initialize Passport
-configurePassport();
-app.use(passport.initialize());
-// eslint-disable-next-line no-console
-console.log('[STARTUP] Passport initialized');
-
-// Routes
-app.use('/api/auth', authRoutes);
-app.use('/api/parameters', parameterRoutes);
-// eslint-disable-next-line no-console
-console.log('[STARTUP] Routes configured');
-
-// Health check endpoint
 app.get('/api/health', (_req, res) => {
   res.json({
-    status: 'ok',
+    status: serverReady ? 'ok' : 'starting',
     timestamp: new Date().toISOString(),
     service: 'kitchen48-api',
   });
 });
 
-// eslint-disable-next-line no-console
-console.log('[STARTUP] Starting server...');
-
 app.listen(PORT, () => {
-  // eslint-disable-next-line no-console
-  console.log(`[STARTUP] Server running on http://localhost:${PORT}`);
-  logger.debug(`Server running on http://localhost:${PORT}`);
+  console.log(`[STARTUP] Server listening on port ${PORT}`);
+
+  // Now load the rest of the application asynchronously
+  loadApplication().catch((err) => {
+    console.error('[STARTUP] Failed to load application:', err.message);
+    console.error('[STARTUP] Stack:', err.stack);
+  });
 });
+
+async function loadApplication() {
+  console.log('[STARTUP] Loading application modules...');
+
+  // Import dependencies
+  const cors = (await import('cors')).default;
+  console.log('[STARTUP] cors imported');
+
+  const passport = (await import('passport')).default;
+  console.log('[STARTUP] passport imported');
+
+  const { configurePassport } = await import('./config/passport.js');
+  console.log('[STARTUP] passport config imported');
+
+  const authRoutes = (await import('./modules/auth/auth.routes.js')).default;
+  console.log('[STARTUP] auth routes imported');
+
+  const parameterRoutes = (await import('./modules/parameters/parameter.routes.js')).default;
+  console.log('[STARTUP] parameter routes imported');
+
+  const { createLogger } = await import('./lib/logger.js');
+  console.log('[STARTUP] logger imported');
+
+  const logger = createLogger('Server');
+
+  // Configure middleware
+  app.use(cors());
+  app.use(express.json());
+  console.log('[STARTUP] Middleware configured');
+
+  // Initialize Passport
+  configurePassport();
+  app.use(passport.initialize());
+  console.log('[STARTUP] Passport initialized');
+
+  // Mount routes
+  app.use('/api/auth', authRoutes);
+  app.use('/api/parameters', parameterRoutes);
+  console.log('[STARTUP] Routes configured');
+
+  // Mark server as ready
+  serverReady = true;
+  console.log('[STARTUP] Application fully loaded and ready');
+  logger.debug(`Server running on http://localhost:${PORT}`);
+}
