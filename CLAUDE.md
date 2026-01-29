@@ -119,6 +119,113 @@ model User {
 
 ---
 
+## Module Structure & Documentation
+
+### Convention
+
+Each feature/module in this project should:
+1. Have its own dedicated directory
+2. Include a `CLAUDE.md` file documenting that module
+
+### Directory Structure
+
+```
+frontend/
+├── CLAUDE.md                    # Frontend-level documentation
+└── src/
+    └── modules/
+        └── [module-name]/       # e.g., auth, recipes, users
+            ├── CLAUDE.md        # Module-specific documentation
+            ├── components/      # React components
+            ├── hooks/           # Custom hooks
+            ├── pages/           # Page components (routes)
+            └── services/        # API calls
+
+backend/
+├── CLAUDE.md                    # Backend-level documentation
+└── src/
+    ├── config/                  # App configuration (env, passport, etc.)
+    ├── core/                    # Core utilities (database, etc.)
+    ├── lib/                     # Shared libraries (logger, etc.)
+    └── modules/
+        └── [module-name]/       # e.g., auth, parameters, recipes
+            ├── CLAUDE.md        # Module-specific documentation
+            ├── [module].routes.ts
+            ├── [module].controller.ts
+            ├── [module].service.ts
+            ├── [module].middleware.ts (if needed)
+            └── [module].types.ts
+```
+
+### Module CLAUDE.md Template
+
+Each module's `CLAUDE.md` should include:
+
+```markdown
+# [Module Name] - CLAUDE.md
+
+Module-specific instructions and context for Claude Code.
+
+---
+
+## Requirements
+
+[What this module does, user-facing features]
+
+---
+
+## Directory Structure
+
+[Tree view of files in this module]
+
+---
+
+## API Endpoints (backend modules)
+
+| Method | Endpoint | Auth | Description |
+|--------|----------|------|-------------|
+| ...    | ...      | ...  | ...         |
+
+---
+
+## Patterns & Conventions
+
+[Module-specific patterns, naming conventions, etc.]
+
+---
+
+## Known Issues & TODOs
+
+- [ ] [Pending items]
+
+---
+
+## Implementation Date
+
+[YYYY-MM-DD]
+```
+
+### Existing Module Documentation
+
+| Module | Location | CLAUDE.md |
+|--------|----------|-----------|
+| Auth (Backend) | `backend/src/modules/auth/` | ✅ Exists |
+| Auth (Frontend) | `frontend/src/modules/auth/` | ❌ Needs creation |
+| Parameters | `backend/src/modules/parameters/` | ❌ Needs creation |
+| Landing Page | `frontend/src/components/LandingPage/` | ❌ Needs creation |
+| Admin Portal | `frontend/src/components/AdminLandingPage/` | ❌ Needs creation |
+
+### When to Create a New Module
+
+Create a new module directory when:
+- Adding a new feature area (e.g., recipes, orders, notifications)
+- The feature has 3+ related files (routes, service, components)
+- The feature has its own API endpoints
+
+**Always create the module's CLAUDE.md first** to document requirements before implementing.
+
+---
+
 ## ⚠️ CENTRAL LOGGING - MANDATORY ⚠️
 
 **NEVER use `console.log`, `console.warn`, or `console.error` in this codebase.**
