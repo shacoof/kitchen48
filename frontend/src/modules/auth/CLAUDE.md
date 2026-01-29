@@ -36,15 +36,15 @@ frontend/src/modules/auth/
 ├── CLAUDE.md              # This file
 ├── components/
 │   ├── RegisterForm.tsx   # Registration form with validation
-│   ├── LoginForm.tsx      # Login form with validation
-│   └── SocialLoginButtons.tsx  # OAuth buttons
+│   ├── LoginForm.tsx      # Login form
+│   └── SocialLoginButtons.tsx  # Google OAuth button
 ├── hooks/
 │   └── useAuth.ts         # Re-exports useAuth from context
 ├── pages/
-│   ├── RegisterPage.tsx   # Registration page
-│   ├── LoginPage.tsx      # Login page
-│   ├── VerifyEmailPage.tsx    # Email verification page
-│   └── AuthCallbackPage.tsx   # OAuth callback handler
+│   ├── RegisterPage.tsx   # /register route
+│   ├── LoginPage.tsx      # /login route
+│   ├── VerifyEmailPage.tsx    # /verify-email route
+│   └── AuthCallbackPage.tsx   # /auth/callback (OAuth return)
 └── services/
     └── auth.api.ts        # API client for auth endpoints
 ```
@@ -62,21 +62,21 @@ frontend/src/modules/auth/
 
 ---
 
-## Components
+## API Service (`auth.api.ts`)
 
-### RegisterForm
-- Uses react-hook-form with zod validation
-- Fields: firstName, lastName, email, password, confirmPassword, phone, phoneCountry, description
-- Shows success message after registration (user must verify email)
+Singleton class that handles all auth API calls:
 
-### LoginForm
-- Uses react-hook-form with zod validation
-- Fields: email, password
-- Shows resend verification option if email not verified
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `register(input)` | POST `/api/auth/register` | Register new user |
+| `login(input)` | POST `/api/auth/login` | Login, stores token |
+| `logout()` | (client-side) | Clears token from localStorage |
+| `verifyEmail(token)` | POST `/api/auth/verify-email` | Verify email |
+| `resendVerification(email)` | POST `/api/auth/resend-verification` | Resend verification |
+| `getCurrentUser()` | GET `/api/auth/me` | Get current user |
+| `getGoogleAuthUrl()` | (returns URL) | Returns `/api/auth/google` |
 
-### SocialLoginButtons
-- Google OAuth button
-- Redirects to `/api/auth/google`
+Token is stored in `localStorage` as `auth_token`.
 
 ---
 
@@ -85,37 +85,37 @@ frontend/src/modules/auth/
 Uses React Context (`AuthContext`) for global auth state:
 
 ```tsx
+import { useAuth } from '../../context/AuthContext';
+
 const { user, isLoading, isAuthenticated, login, logout, refreshUser } = useAuth();
 ```
 
-Token is stored in localStorage and sent as Bearer token in API requests.
-
 ---
 
-## Dependencies
+## Patterns & Conventions
 
-- `react-router-dom` - Routing
-- `react-hook-form` - Form handling
-- `@hookform/resolvers` - Zod integration
-- `zod` - Schema validation
+### Form Validation
+- Uses `react-hook-form` with `zod` schemas
+- Validation errors shown inline under each field
 
----
+### OAuth Flow
+1. User clicks "Sign in with Google" → redirects to `/api/auth/google`
+2. Google authenticates → redirects to `/api/auth/google/callback`
+3. Backend generates JWT → redirects to `/auth/callback?token=...`
+4. `AuthCallbackPage` extracts token, stores it, redirects to home
 
-## Styling
-
-Uses Tailwind CSS with orange color scheme:
-- Primary: `orange-500` / `orange-600`
-- Focus ring: `ring-orange-500`
+### Styling
+- Tailwind CSS with custom theme colors
+- Primary action: `bg-accent-orange` / `hover:bg-orange-600`
+- Focus: `ring-accent-orange`
 
 ---
 
 ## Known Issues & TODOs
 
-- [ ] Add "Remember me" checkbox
 - [ ] Add "Forgot password" flow
-- [ ] Add form field error animations
-- [ ] Add loading skeletons
 - [ ] Add password strength indicator
+- [ ] Add "Remember me" checkbox
 - [ ] Improve mobile responsiveness
 
 ---

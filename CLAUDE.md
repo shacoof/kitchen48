@@ -210,10 +210,10 @@ Module-specific instructions and context for Claude Code.
 | Module | Location | CLAUDE.md |
 |--------|----------|-----------|
 | Auth (Backend) | `backend/src/modules/auth/` | ✅ Exists |
-| Auth (Frontend) | `frontend/src/modules/auth/` | ❌ Needs creation |
-| Parameters | `backend/src/modules/parameters/` | ❌ Needs creation |
-| Landing Page | `frontend/src/components/LandingPage/` | ❌ Needs creation |
-| Admin Portal | `frontend/src/components/AdminLandingPage/` | ❌ Needs creation |
+| Auth (Frontend) | `frontend/src/modules/auth/` | ✅ Exists |
+| Parameters | `backend/src/modules/parameters/` | ✅ Exists |
+| Landing Page | `frontend/src/components/LandingPage/` | ✅ Exists |
+| Admin Portal | `frontend/src/components/AdminLandingPage/` | ✅ Exists |
 
 ### When to Create a New Module
 
