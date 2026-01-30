@@ -23,7 +23,7 @@ class UsersController {
    */
   async getPublicProfile(req: Request, res: Response): Promise<void> {
     try {
-      const { nickname } = req.params;
+      const nickname = req.params.nickname as string;
 
       if (!nickname) {
         res.status(400).json({ error: 'Nickname is required' });
@@ -89,7 +89,7 @@ class UsersController {
       if (!parseResult.success) {
         res.status(400).json({
           error: 'Validation failed',
-          details: parseResult.error.errors,
+          details: parseResult.error.issues,
         });
         return;
       }
@@ -132,7 +132,7 @@ class UsersController {
    */
   async getUserById(req: Request, res: Response): Promise<void> {
     try {
-      const { id } = req.params;
+      const id = req.params.id as string;
 
       if (!id) {
         res.status(400).json({ error: 'User ID is required' });
@@ -159,7 +159,7 @@ class UsersController {
    */
   async adminUpdateUser(req: Request, res: Response): Promise<void> {
     try {
-      const { id } = req.params;
+      const id = req.params.id as string;
 
       if (!id) {
         res.status(400).json({ error: 'User ID is required' });
@@ -171,7 +171,7 @@ class UsersController {
       if (!parseResult.success) {
         res.status(400).json({
           error: 'Validation failed',
-          details: parseResult.error.errors,
+          details: parseResult.error.issues,
         });
         return;
       }

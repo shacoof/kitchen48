@@ -5,6 +5,7 @@
 
 import multer from 'multer';
 import path from 'path';
+import { Request, Response, NextFunction } from 'express';
 import { createLogger } from '../../lib/logger.js';
 
 const logger = createLogger('UploadMiddleware');
@@ -70,9 +71,9 @@ export const profilePictureUpload = multer({
  */
 export function handleMulterError(
   err: Error,
-  _req: Express.Request,
-  res: Express.Response,
-  next: Express.NextFunction
+  _req: Request,
+  res: Response,
+  next: NextFunction
 ): void {
   if (err instanceof multer.MulterError) {
     if (err.code === 'LIMIT_FILE_SIZE') {
