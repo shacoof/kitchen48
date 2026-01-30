@@ -5,6 +5,12 @@
 
 import { PrismaClient, UserType, OwnerType, DataType } from '@prisma/client';
 import bcrypt from 'bcryptjs';
+import { readFileSync } from 'fs';
+import { resolve, dirname } from 'path';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 const prisma = new PrismaClient();
 
@@ -103,6 +109,53 @@ async function seedParameters() {
   }
 }
 
+async function seedMasterIngredients() {
+  console.log('Seeding master ingredients...');
+
+  // Read ingredients from file
+  const ingredientsPath = resolve(__dirname, '../../misc/ingredients.txt');
+  let ingredientsText: string;
+
+  try {
+    ingredientsText = readFileSync(ingredientsPath, 'utf-8');
+  } catch (error) {
+    console.log('  Warning: ingredients.txt not found, skipping...');
+    return;
+  }
+
+  // Parse unique ingredients (lowercase, trimmed, no empty lines)
+  const ingredientNames = [...new Set(
+    ingredientsText
+      .split('\n')
+      .map(line => line.trim().toLowerCase())
+      .filter(line => line.length > 0)
+  )];
+
+  console.log(`  Found ${ingredientNames.length} unique ingredients`);
+
+  let created = 0;
+  let skipped = 0;
+
+  for (const name of ingredientNames) {
+    try {
+      await prisma.masterIngredient.upsert({
+        where: { name },
+        update: {}, // Don't update if exists
+        create: {
+          name,
+          isActive: true,
+        },
+      });
+      created++;
+    } catch (error) {
+      // Skip duplicates or other errors
+      skipped++;
+    }
+  }
+
+  console.log(`  Created ${created} ingredients, skipped ${skipped}`);
+}
+
 async function seedAdminUser() {
   console.log('Seeding admin user...');
 
@@ -142,6 +195,7 @@ async function main() {
 
   await seedAdminUser();
   await seedParameters();
+  await seedMasterIngredients();
 
   console.log('Seeding complete!');
 }

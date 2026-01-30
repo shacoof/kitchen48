@@ -7,6 +7,7 @@ import Dashboard from './Dashboard';
 import AccessDenied from './AccessDenied';
 import ParametersPage from './ParametersPage';
 import UsersPage from './UsersPage';
+import IngredientsPage from './IngredientsPage';
 
 export default function AdminLandingPage() {
   const { isAuthenticated, isAdmin, isLoading } = useAuth();
@@ -34,6 +35,8 @@ export default function AdminLandingPage() {
         return <ParametersPage />;
       case 'users':
         return <UsersPage />;
+      case 'ingredients':
+        return <IngredientsPage />;
       case 'dashboard':
       default:
         return <Dashboard />;
