@@ -205,4 +205,41 @@ users/
 - `user` object now includes `nickname` and `profilePicture` fields
 - Can access via `useAuth()` hook
 
+### Password Visibility Toggle - 2026-01-30
+
+Password fields include a toggle button (eye icon) to show/hide the password.
+
+#### Implementation Pattern
+```tsx
+const [showPassword, setShowPassword] = useState(false);
+
+<div className="relative">
+  <input
+    type={showPassword ? 'text' : 'password'}
+    {...register('password')}
+    className="w-full pr-10 ..." // Extra right padding for icon
+  />
+  <button
+    type="button"
+    onClick={() => setShowPassword(!showPassword)}
+    className="absolute right-3 top-1/2 -translate-y-1/2 ..."
+  >
+    <span className="material-symbols-outlined">
+      {showPassword ? 'visibility_off' : 'visibility'}
+    </span>
+  </button>
+</div>
+```
+
+#### Key Details
+- Uses Material Symbols: `visibility` (eye open) / `visibility_off` (eye closed)
+- Button is `type="button"` to prevent form submission
+- Input has `pr-10` (right padding) to prevent text overlapping the icon
+- Icon button positioned with `absolute right-3 top-1/2 -translate-y-1/2`
+
+#### Files Using This Pattern
+- `src/modules/auth/components/LoginForm.tsx`
+- `src/modules/auth/components/RegisterForm.tsx` (2 fields)
+- `src/components/AdminLandingPage/LoginForm.tsx`
+
 ---
