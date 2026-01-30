@@ -216,7 +216,7 @@ export default function UsersGrid({ onError }: UsersGridProps) {
         title: 'Created',
         field: 'createdAt',
         formatter: dateFormatter,
-        sorter: 'datetime' as const,
+        sorter: 'string' as const,  // Changed from datetime to avoid luxon dependency
         width: 180,
         // Not editable
       },
@@ -232,19 +232,22 @@ export default function UsersGrid({ onError }: UsersGridProps) {
       initialSort: [
         { column: 'createdAt', dir: 'desc' },
       ],
-      cellEdited: async function(cell: { getField: () => string; getRow: () => { getData: () => User } }) {
-        const row = cell.getRow();
-        const data = row.getData();
-
-        const success = await updateUser(data);
-        if (!success) {
-          // Reload data to reset
-          const users = await loadUsers();
-          tabulatorRef.current?.setData(users);
-        }
-      },
     };
     tabulatorRef.current = new Tabulator(tableRef.current, options);
+
+    // Attach cellEdited via on() method - this is the recommended approach
+    // Note: Using on() instead of options.cellEdited for reliable event handling
+    tabulatorRef.current.on('cellEdited', async function(cell: { getField: () => string; getRow: () => { getData: () => User } }) {
+      const row = cell.getRow();
+      const data = row.getData();
+
+      const success = await updateUser(data);
+      if (!success) {
+        // Reload data to reset
+        const users = await loadUsers();
+        tabulatorRef.current?.setData(users);
+      }
+    });
 
     // Load initial data
     loadUsers().then((users) => {
