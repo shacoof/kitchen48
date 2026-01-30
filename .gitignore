@@ -42,3 +42,7 @@ backups/*
 
 # Prisma
 .prisma/
+
+# Uploaded files (local dev only)
+backend/uploads/*
+!backend/uploads/.gitkeep
