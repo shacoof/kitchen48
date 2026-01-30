@@ -131,4 +131,43 @@ class MyService {
 ❌ ERROR [2026-01-24 15:30:47] ServiceName: Error message
 ```
 
+### User Profile Feature - 2026-01-30
+
+Added user profile support with nicknames and profile pictures.
+
+#### New User Model Fields
+```prisma
+nickname       String?   @unique @map("nickname")
+profilePicture String?   @map("profile_picture")
+```
+
+#### Nickname Generation Logic
+1. Take first letter of firstName + full lastName (lowercase, no spaces/special chars)
+2. If collision, append incrementing number (`jsmith`, `jsmith2`, `jsmith3`)
+3. Validation: 3-30 chars, alphanumeric + underscore only, lowercase
+
+#### Users Module (`src/modules/users/`)
+| Method | Endpoint | Auth | Description |
+|--------|----------|------|-------------|
+| GET | `/api/users/:nickname` | No | Get public profile by nickname |
+| GET | `/api/users/me/profile` | Yes | Get own full profile |
+| PUT | `/api/users/me/profile` | Yes | Update own profile |
+
+#### Admin Users Endpoints
+| Method | Endpoint | Auth | Description |
+|--------|----------|------|-------------|
+| GET | `/api/admin/users` | Admin | List all users |
+| GET | `/api/admin/users/:id` | Admin | Get user by ID |
+| PUT | `/api/admin/users/:id` | Admin | Update user |
+
+#### Upload Module (`src/modules/upload/`)
+| Method | Endpoint | Auth | Description |
+|--------|----------|------|-------------|
+| POST | `/api/upload/profile-picture` | Yes | Upload profile picture |
+
+- Uses `multer` for file handling
+- File validation: JPEG, PNG, WebP only, max 5MB
+- Storage: `uploads/` directory (dev), configurable for cloud (prod)
+- Static serving: `/uploads/:filename`
+
 ---

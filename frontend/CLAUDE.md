@@ -166,4 +166,43 @@ useEffect(() => {
 // Render: isAuthenticated ? <UserMenu /> : <SignInButton />
 ```
 
+### User Profile Feature - 2026-01-30
+
+Added user profile pages with nicknames (semantic URLs) and profile pictures.
+
+#### New Routes
+| Route | Component | Description |
+|-------|-----------|-------------|
+| `/:nickname` | UserProfilePage | Public profile page |
+| `/profile/edit` | EditProfilePage | Edit own profile (auth required) |
+
+#### Users Module (`src/modules/users/`)
+```
+users/
+├── CLAUDE.md
+├── services/
+│   └── users.api.ts         # API service
+├── pages/
+│   ├── UserProfilePage.tsx  # Public profile (/:nickname)
+│   └── EditProfilePage.tsx  # Edit own profile
+└── components/
+    └── ProfilePictureUpload.tsx  # Upload with preview
+```
+
+#### Shared Components
+- `src/components/common/UserAvatar.tsx` - Reusable avatar with Kitchen48 logo fallback
+
+#### Header Update
+- User dropdown menu now includes "My Profile" link
+- Links to `/profile/edit` for editing own profile
+
+#### Admin Users Page (`src/components/AdminLandingPage/UsersPage/`)
+- Tabulator grid for viewing/editing all users (same pattern as ParametersPage)
+- Admin can update user details inline
+- Navigation added to admin header
+
+#### AuthContext Update
+- `user` object now includes `nickname` and `profilePicture` fields
+- Can access via `useAuth()` hook
+
 ---
