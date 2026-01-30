@@ -52,6 +52,15 @@ async function loadApplication() {
   const parameterRoutes = (await import('./modules/parameters/parameter.routes.js')).default;
   console.log('[STARTUP] parameter routes imported');
 
+  const { usersRouter, adminUsersRouter } = await import('./modules/users/users.routes.js');
+  console.log('[STARTUP] users routes imported');
+
+  const { uploadRouter } = await import('./modules/upload/upload.routes.js');
+  console.log('[STARTUP] upload routes imported');
+
+  const path = (await import('path')).default;
+  console.log('[STARTUP] path module imported');
+
   const { createLogger } = await import('./lib/logger.js');
   console.log('[STARTUP] logger imported');
 
@@ -67,9 +76,17 @@ async function loadApplication() {
   app.use(passport.initialize());
   console.log('[STARTUP] Passport initialized');
 
+  // Serve uploaded files
+  const uploadsPath = path.join(process.cwd(), 'uploads');
+  app.use('/uploads', express.static(uploadsPath));
+  console.log('[STARTUP] Static file serving configured for /uploads');
+
   // Mount routes
   app.use('/api/auth', authRoutes);
   app.use('/api/parameters', parameterRoutes);
+  app.use('/api/users', usersRouter);
+  app.use('/api/admin/users', adminUsersRouter);
+  app.use('/api/upload', uploadRouter);
   console.log('[STARTUP] Routes configured');
 
   // Mark server as ready
