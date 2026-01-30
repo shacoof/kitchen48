@@ -47,11 +47,13 @@ model User {
   updatedAt DateTime @updatedAt @map("updated_at")
 
   // Profile Information
-  firstName    String?  @map("first_name")
-  lastName     String?  @map("last_name")
-  phone        String?
-  phoneCountry String?  @map("phone_country") // ISO country code (e.g., "US", "IL")
-  description  String?
+  firstName      String?  @map("first_name")
+  lastName       String?  @map("last_name")
+  nickname       String?  @unique @map("nickname") // Unique URL-friendly identifier (e.g., jsmith)
+  profilePicture String?  @map("profile_picture") // URL or path to profile image
+  phone          String?
+  phoneCountry   String?  @map("phone_country") // ISO country code (e.g., "US", "IL")
+  description    String?
 
   // Authentication
   passwordHash             String?   @map("password_hash")

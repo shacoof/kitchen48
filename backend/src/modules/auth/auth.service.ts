@@ -231,6 +231,8 @@ class AuthService {
     email: string;
     firstName: string | null;
     lastName: string | null;
+    nickname: string | null;
+    profilePicture: string | null;
     emailVerified: boolean;
     userType: UserType;
   }): AuthUser {
@@ -239,6 +241,8 @@ class AuthService {
       email: user.email,
       firstName: user.firstName,
       lastName: user.lastName,
+      nickname: user.nickname,
+      profilePicture: user.profilePicture,
       emailVerified: user.emailVerified,
       userType: user.userType,
     };

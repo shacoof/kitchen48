@@ -47,6 +47,8 @@ export interface AuthUser {
   email: string;
   firstName: string | null;
   lastName: string | null;
+  nickname: string | null;
+  profilePicture: string | null;
   emailVerified: boolean;
   userType: UserType;
 }
