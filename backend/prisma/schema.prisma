@@ -181,3 +181,20 @@ model Parameter {
   @@unique([key, ownerType, ownerId])
   @@map("parameters")
 }
+
+// ============================================================================
+// Deployment & Migration Tracking
+// ============================================================================
+
+model DataMigration {
+  id          String   @id @default(cuid())
+  scriptName  String   @unique @map("script_name")  // e.g., "1.1.0_add_user_nicknames.ts"
+  version     String                                 // Database version this belongs to
+  description String?
+  executedAt  DateTime @default(now()) @map("executed_at")
+  executedBy  String?  @map("executed_by")           // "deploy-script" or user email
+  success     Boolean  @default(true)
+  errorLog    String?  @map("error_log")
+
+  @@map("data_migrations")
+}

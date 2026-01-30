@@ -1,0 +1,11 @@
+{
+  "application": "kitchen48",
+  "version": "1.1.0",
+  "components": {
+    "frontend": "1.1.0",
+    "backend": "1.1.0",
+    "database": "1.1.0"
+  },
+  "lastDeployment": null,
+  "description": "Added user profile features (nickname, profile picture)"
+}

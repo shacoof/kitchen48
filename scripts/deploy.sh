@@ -516,6 +516,76 @@ deploy_app() {
 }
 
 # ============================================================================
+# Run Database Migrations
+# ============================================================================
+
+run_migrations() {
+    print_step "Running Database Migrations"
+
+    # Check if cloud_sql_proxy is available
+    if ! command -v cloud_sql_proxy &> /dev/null && ! command -v cloud-sql-proxy &> /dev/null; then
+        print_warning "cloud_sql_proxy not installed. Skipping migrations."
+        print_info "To run migrations manually:"
+        print_info "  1. Install Cloud SQL Auth Proxy"
+        print_info "  2. Run: cloud_sql_proxy -instances=${CONNECTION_NAME}=tcp:5432 &"
+        print_info "  3. Run: cd backend && npm run migrate:all"
+        return
+    fi
+
+    # Get connection name
+    CONNECTION_NAME=$(gcloud sql instances describe "$CLOUD_SQL_INSTANCE" --project="$GCP_PROJECT_ID" --format="value(connectionName)" 2>/dev/null || echo "")
+
+    if [[ -z "$CONNECTION_NAME" ]]; then
+        print_warning "Could not get Cloud SQL connection name. Skipping migrations."
+        return
+    fi
+
+    print_info "Starting Cloud SQL Auth Proxy..."
+
+    # Start proxy in background
+    if command -v cloud_sql_proxy &> /dev/null; then
+        cloud_sql_proxy -instances="${CONNECTION_NAME}=tcp:5433" &
+    else
+        cloud-sql-proxy "${CONNECTION_NAME}" --port=5433 &
+    fi
+    PROXY_PID=$!
+
+    # Wait for proxy to start
+    sleep 5
+
+    # Check if proxy is running
+    if ! kill -0 $PROXY_PID 2>/dev/null; then
+        print_warning "Cloud SQL Proxy failed to start. Skipping migrations."
+        return
+    fi
+
+    print_info "Running Prisma schema migrations..."
+    cd "$PROJECT_ROOT/backend"
+
+    # Build DATABASE_URL for local proxy
+    local proxy_db_url="postgresql://${DB_USER}:${DB_PASSWORD}@localhost:5433/${DB_NAME}"
+
+    if DATABASE_URL="$proxy_db_url" npx prisma migrate deploy 2>&1; then
+        print_success "Schema migrations complete"
+    else
+        print_warning "Schema migrations may have failed (check logs)"
+    fi
+
+    print_info "Running data migrations..."
+    if DATABASE_URL="$proxy_db_url" npm run migrate:data 2>&1; then
+        print_success "Data migrations complete"
+    else
+        print_warning "Data migrations may have failed (check logs)"
+    fi
+
+    cd "$PROJECT_ROOT"
+
+    # Stop proxy
+    kill $PROXY_PID 2>/dev/null || true
+    print_success "Database migrations finished"
+}
+
+# ============================================================================
 # Test Deployment
 # ============================================================================
 
@@ -618,6 +688,7 @@ main() {
     setup_cloud_sql
     setup_secrets
     deploy_app
+    run_migrations
     test_deployment
     print_summary
 }
