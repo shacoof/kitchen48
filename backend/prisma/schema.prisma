@@ -104,16 +104,16 @@ model Recipe {
   updatedAt   DateTime @updatedAt @map("updated_at")
 
   // Relations
-  authorId    String        @map("author_id")
-  author      User          @relation(fields: [authorId], references: [id], onDelete: Cascade)
-  ingredients Ingredient[]
+  authorId    String             @map("author_id")
+  author      User               @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  ingredients RecipeIngredient[]
   steps       Step[]
   savedBy     SavedRecipe[]
 
   @@map("recipes")
 }
 
-model Ingredient {
+model RecipeIngredient {
   id       String  @id @default(cuid())
   name     String
   amount   String? // e.g., "2 cups", "1 tbsp"
@@ -123,7 +123,19 @@ model Ingredient {
   recipeId String @map("recipe_id")
   recipe   Recipe @relation(fields: [recipeId], references: [id], onDelete: Cascade)
 
-  @@map("ingredients")
+  @@map("recipe_ingredients")
+}
+
+model MasterIngredient {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  category    String?
+  description String?
+  isActive    Boolean  @default(true) @map("is_active")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@map("master_ingredients")
 }
 
 model Step {
