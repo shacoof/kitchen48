@@ -461,13 +461,17 @@ deploy_app() {
 
     # Google OAuth
     if [[ -n "$GOOGLE_CLIENT_ID" ]]; then
-        env_vars+=",GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}"
-        # OAuth callback goes to the same service
-        if [[ -n "$FRONTEND_DOMAIN" ]]; then
-            env_vars+=",GOOGLE_CALLBACK_URL=https://${FRONTEND_DOMAIN}/api/auth/google/callback"
-        else
-            env_vars+=",GOOGLE_CALLBACK_URL=https://${APP_SERVICE}-${GCP_PROJECT_ID}.${REGION}.run.app/api/auth/google/callback"
+        # FRONTEND_DOMAIN is required for Google OAuth to work correctly
+        # Cloud Run auto-generated URLs are not predictable and cannot be pre-registered in Google Console
+        if [[ -z "$FRONTEND_DOMAIN" ]]; then
+            print_error "FRONTEND_DOMAIN is required when using Google OAuth (GOOGLE_CLIENT_ID is set)"
+            print_info "Set FRONTEND_DOMAIN in your .env.production file (e.g., FRONTEND_DOMAIN=www.kitchen48.com)"
+            print_info "The callback URL must be registered in Google Cloud Console OAuth credentials"
+            exit 1
         fi
+        env_vars+=",GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}"
+        env_vars+=",GOOGLE_CALLBACK_URL=https://${FRONTEND_DOMAIN}/api/auth/google/callback"
+        print_info "Google OAuth callback URL: https://${FRONTEND_DOMAIN}/api/auth/google/callback"
     fi
 
     # Build secrets string

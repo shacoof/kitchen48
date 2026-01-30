@@ -150,7 +150,23 @@ FRONTEND_URL="http://localhost:5173"
 
 ---
 
-## Known Issues & TODOs
+## Known Issues & Fixes
+
+### Fixed: Google OAuth redirect_uri mismatch in production (2026-01-30)
+**Symptom:** Google OAuth fails with "redirect_uri mismatch" error in production.
+**Root Cause:** The deploy script had a fallback that constructed an incorrect callback URL using `${APP_SERVICE}-${GCP_PROJECT_ID}.${REGION}.run.app` pattern, which is not a valid Cloud Run URL format.
+**Fix:**
+1. Updated `scripts/deploy.sh` to require `FRONTEND_DOMAIN` when `GOOGLE_CLIENT_ID` is set
+2. Removed the incorrect URL fallback
+3. The callback URL must be registered in Google Cloud Console OAuth credentials
+
+**Configuration Required:**
+- Set `FRONTEND_DOMAIN=www.kitchen48.com` in `scripts/.env.production`
+- Register `https://www.kitchen48.com/api/auth/google/callback` in Google Cloud Console
+
+---
+
+## TODOs
 
 - [ ] Add password reset flow
 - [ ] Add Facebook OAuth
