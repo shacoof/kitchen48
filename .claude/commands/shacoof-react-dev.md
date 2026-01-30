@@ -19,6 +19,21 @@ This workflow enforces a strict **Plan → Commit → Execute** sequence:
 
 ---
 
+## CLAUDE.md GUIDELINES QUICK REFERENCE
+
+**These guidelines MUST be followed. Show compliance in your implementation plan.**
+
+| Guideline | Rule |
+|-----------|------|
+| **Logging** | Use `createLogger('Name')` - NEVER `console.log/warn/error` |
+| **DB Naming** | TypeScript: `camelCase`, Database: `snake_case` via `@map()` |
+| **Prisma** | Import from `@/core/database/prisma` - never `new PrismaClient()` |
+| **Modules** | Each module must have its own `CLAUDE.md` file |
+| **Commits** | Pre-edit commit before changes, incremental commits during work |
+| **DB Safety** | Never use `migrate reset`, `db push --force-reset`, `DROP`, `TRUNCATE` |
+
+---
+
 ## PHASE 1: PLANNING (MANDATORY - NO CODE CHANGES)
 
 **You are in PLANNING MODE. Do NOT write any code yet.**
@@ -72,6 +87,16 @@ Document your plan with the following structure:
 
 ### Testing Approach
 [How to verify the implementation works]
+
+### CLAUDE.md Compliance Checklist
+[Show compliance with project guidelines]
+
+- [ ] **Logging**: Using `createLogger()` instead of `console.log/warn/error`
+- [ ] **Database naming**: `camelCase` in TypeScript, `snake_case` in DB via `@map()`
+- [ ] **Prisma singleton**: Importing from `@/core/database/prisma`, not creating new instances
+- [ ] **Module structure**: New modules include `CLAUDE.md` documentation
+- [ ] **No forbidden DB commands**: Not using `migrate reset`, `db push --force-reset`, etc.
+- [ ] **Security**: No hardcoded secrets, proper input validation, OWASP considerations
 ```
 
 ---
@@ -211,6 +236,9 @@ Types: `feat`, `fix`, `refactor`, `style`, `docs`, `test`, `chore`
 - Create safety commit before making changes
 - Document learnings in module CLAUDE.md
 - Commit after logical units of work
+- **Show CLAUDE.md compliance checklist in implementation plan**
+- Use `createLogger()` for all logging (never `console.log`)
+- Follow database naming conventions (`@map()` for snake_case)
 
 ---
 
