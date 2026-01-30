@@ -63,13 +63,6 @@ All source files must include an `@implements` comment at the top referencing th
 | `.md` | `<!-- @implements /docs/features/[name]-implementation-plan.md -->` |
 | `.sql` | `-- @implements /docs/features/[name]-implementation-plan.md` |
 
-### Multiple Plans
-```typescript
-/**
- * @implements /docs/features/user-management-implementation-plan.md
- * @implements /docs/features/permissions-implementation-plan.md
- */
-```
 
 ### Exempt Files (do NOT add @implements)
 - `node_modules/`, `.next/`, `dist/`, `build/` directories
@@ -88,7 +81,7 @@ Before making ANY changes, complete this investigation checklist:
 ### Step 1: Locate Implementation Plan (CRITICAL - BLOCKING)
 
 **Action Required**:
-- Search `/docs/features/` for `[feature-name]-implementation-plan.md`
+- Search CLAUDE.md in all relevant subfolders
 - The feature must have an implementation plan document
 
 **Questions to Answer**:
@@ -107,7 +100,7 @@ Before making ANY changes, complete this investigation checklist:
 ### Step 2: Review Development Guidelines
 
 **Action Required**:
-- Read `docs/DEVELOPMENT_GUIDELINES.md`
+- Read `CLAUDE.md`
 - Identify ALL relevant sections for this bug:
   - [ ] Grids & Tabulator (if data tables involved)
   - [ ] API Routes (if backend involved)
