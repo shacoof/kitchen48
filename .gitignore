@@ -12,6 +12,10 @@ build/
 .env.production
 scripts/.env.production
 
+# Google OAuth secrets
+client_secret*.json
+**/client_secret*.json
+
 # IDE
 .idea/
 .vscode/
