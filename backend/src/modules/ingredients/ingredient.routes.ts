@@ -21,7 +21,7 @@ router.get('/', requireAuth, requireAdmin, async (_req, res) => {
     const ingredients = await ingredientService.getAll();
     res.json({ ingredients });
   } catch (error) {
-    logger.error('Error fetching ingredients:', error);
+    logger.error(`Error fetching ingredients: ${error instanceof Error ? error.message : String(error)}`);
     res.status(500).json({ error: 'Failed to fetch ingredients' });
   }
 });
@@ -35,7 +35,7 @@ router.get('/categories', requireAuth, requireAdmin, async (_req, res) => {
     const categories = await ingredientService.getCategories();
     res.json({ categories });
   } catch (error) {
-    logger.error('Error fetching categories:', error);
+    logger.error(`Error fetching categories: ${error instanceof Error ? error.message : String(error)}`);
     res.status(500).json({ error: 'Failed to fetch categories' });
   }
 });
@@ -56,7 +56,7 @@ router.get('/:id', requireAuth, requireAdmin, async (req, res) => {
 
     res.json({ ingredient });
   } catch (error) {
-    logger.error('Error fetching ingredient:', error);
+    logger.error(`Error fetching ingredient: ${error instanceof Error ? error.message : String(error)}`);
     res.status(500).json({ error: 'Failed to fetch ingredient' });
   }
 });
@@ -80,7 +80,7 @@ router.post('/', requireAuth, requireAdmin, async (req, res) => {
     const ingredient = await ingredientService.create(validation.data);
     res.status(201).json({ ingredient });
   } catch (error) {
-    logger.error('Error creating ingredient:', error);
+    logger.error(`Error creating ingredient: ${error instanceof Error ? error.message : String(error)}`);
 
     if (error instanceof Error && error.message.includes('already exists')) {
       res.status(409).json({ error: error.message });
@@ -111,7 +111,7 @@ router.put('/:id', requireAuth, requireAdmin, async (req, res) => {
     const ingredient = await ingredientService.update(id, validation.data);
     res.json({ ingredient });
   } catch (error) {
-    logger.error('Error updating ingredient:', error);
+    logger.error(`Error updating ingredient: ${error instanceof Error ? error.message : String(error)}`);
 
     if (error instanceof Error) {
       if (error.message === 'Ingredient not found') {
@@ -138,7 +138,7 @@ router.delete('/:id', requireAuth, requireAdmin, async (req, res) => {
     await ingredientService.delete(id);
     res.status(204).send();
   } catch (error) {
-    logger.error('Error deleting ingredient:', error);
+    logger.error(`Error deleting ingredient: ${error instanceof Error ? error.message : String(error)}`);
 
     if (error instanceof Error && error.message === 'Ingredient not found') {
       res.status(404).json({ error: error.message });
