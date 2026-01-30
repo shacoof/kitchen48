@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
+import { UserAvatar } from '../common/UserAvatar'
 
 export default function Header() {
   const { user, isAuthenticated, logout } = useAuth()
@@ -60,8 +61,13 @@ export default function Header() {
                   e.stopPropagation()
                   setMenuOpen(!menuOpen)
                 }}
-                className="flex items-center gap-2 bg-accent-orange hover:bg-[#E64A19] text-white px-6 py-2.5 rounded-full font-semibold transition-all shadow-lg active:scale-95"
+                className="flex items-center gap-2 bg-accent-orange hover:bg-[#E64A19] text-white px-4 py-1.5 rounded-full font-semibold transition-all shadow-lg active:scale-95"
               >
+                <UserAvatar
+                  profilePicture={user?.profilePicture}
+                  name={displayName}
+                  size="sm"
+                />
                 <span>{displayName}</span>
                 <span className="material-symbols-outlined text-[18px]">
                   {menuOpen ? 'expand_less' : 'expand_more'}
@@ -73,12 +79,20 @@ export default function Header() {
                     <p className="text-white text-sm font-medium">{user?.firstName} {user?.lastName}</p>
                     <p className="text-slate-400 text-xs truncate">{user?.email}</p>
                   </div>
+                  <Link
+                    to="/profile/edit"
+                    onClick={() => setMenuOpen(false)}
+                    className="w-full text-left px-4 py-3 text-white hover:bg-slate-700 transition-colors flex items-center gap-2"
+                  >
+                    <span className="material-symbols-outlined text-[18px]">person</span>
+                    My Profile
+                  </Link>
                   <button
                     onClick={() => {
                       logout()
                       setMenuOpen(false)
                     }}
-                    className="w-full text-left px-4 py-3 text-white hover:bg-slate-700 transition-colors flex items-center gap-2"
+                    className="w-full text-left px-4 py-3 text-white hover:bg-slate-700 transition-colors flex items-center gap-2 border-t border-slate-600"
                   >
                     <span className="material-symbols-outlined text-[18px]">logout</span>
                     Sign Out
