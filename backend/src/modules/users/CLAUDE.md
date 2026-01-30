@@ -104,6 +104,39 @@ function generateNickname(firstName: string, lastName: string): string {
 
 ---
 
+## Known Issues & Fixes
+
+### 2026-01-30: Admin user update validation failing for cleared fields
+
+**Symptom:** Admin users screen updates not saving to database. Tabulator shows "Error updating user" toast.
+
+**Root Cause:** Zod validation schema rejected empty strings. When a user clears a field in Tabulator's inline editor, it sends `""` (empty string), but the schema used `.min(1)` which fails for empty strings. The schema didn't account for this Tabulator behavior.
+
+**Technical Details:**
+- Tabulator sends `""` when a field is cleared
+- `z.string().min(1).optional().nullable()` fails for `""` because:
+  - Empty string is not `undefined` (so `.optional()` doesn't help)
+  - Empty string is not `null` (so `.nullable()` doesn't help)
+  - Empty string fails `.min(1)` validation
+
+**Fix Applied:** Added `z.preprocess()` layer to convert empty strings to null before validation:
+
+```typescript
+const emptyStringToNull = (val: unknown) => (val === '' ? null : val);
+
+export const adminUpdateUserSchema = z.object({
+  firstName: z.preprocess(emptyStringToNull, z.string().min(1).optional().nullable()),
+  // ... other fields
+});
+```
+
+**Files Modified:**
+- `users.types.ts` - Added `emptyStringToNull` helper and updated all schemas
+
+**Lesson Learned:** When integrating with Tabulator (or any grid that sends empty strings for cleared fields), always use `z.preprocess()` to normalize input before Zod validation.
+
+---
+
 ## Implementation Date
 
 2026-01-30

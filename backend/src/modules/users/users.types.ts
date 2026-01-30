@@ -5,6 +5,17 @@
 import { z } from 'zod';
 
 // ============================================================================
+// Validation Helpers
+// ============================================================================
+
+/**
+ * Preprocess helper: Convert empty strings to null
+ * This is needed because Tabulator's input editor returns "" when a field is cleared,
+ * but our validation expects null for empty optional fields.
+ */
+const emptyStringToNull = (val: unknown) => (val === '' ? null : val);
+
+// ============================================================================
 // Validation Schemas
 // ============================================================================
 
@@ -19,26 +30,28 @@ export const nicknameSchema = z
 
 /**
  * Update own profile schema
+ * Uses preprocess to convert empty strings to null for consistency
  */
 export const updateProfileSchema = z.object({
-  nickname: nicknameSchema.optional(),
-  firstName: z.string().min(1).optional(),
-  lastName: z.string().min(1).optional(),
-  phone: z.string().optional().nullable(),
-  phoneCountry: z.string().length(2).optional().nullable(),
-  description: z.string().optional().nullable(),
+  nickname: z.preprocess(emptyStringToNull, nicknameSchema.optional()),
+  firstName: z.preprocess(emptyStringToNull, z.string().min(1).optional()),
+  lastName: z.preprocess(emptyStringToNull, z.string().min(1).optional()),
+  phone: z.preprocess(emptyStringToNull, z.string().optional().nullable()),
+  phoneCountry: z.preprocess(emptyStringToNull, z.string().length(2).optional().nullable()),
+  description: z.preprocess(emptyStringToNull, z.string().optional().nullable()),
 });
 
 /**
  * Admin update user schema
+ * Uses preprocess to convert empty strings to null (Tabulator sends "" for cleared fields)
  */
 export const adminUpdateUserSchema = z.object({
-  nickname: nicknameSchema.optional().nullable(),
-  firstName: z.string().min(1).optional().nullable(),
-  lastName: z.string().min(1).optional().nullable(),
-  phone: z.string().optional().nullable(),
-  phoneCountry: z.string().length(2).optional().nullable(),
-  description: z.string().optional().nullable(),
+  nickname: z.preprocess(emptyStringToNull, nicknameSchema.optional().nullable()),
+  firstName: z.preprocess(emptyStringToNull, z.string().min(1).optional().nullable()),
+  lastName: z.preprocess(emptyStringToNull, z.string().min(1).optional().nullable()),
+  phone: z.preprocess(emptyStringToNull, z.string().optional().nullable()),
+  phoneCountry: z.preprocess(emptyStringToNull, z.string().length(2).optional().nullable()),
+  description: z.preprocess(emptyStringToNull, z.string().optional().nullable()),
   emailVerified: z.boolean().optional(),
   userType: z.enum(['regular', 'admin']).optional(),
 });
