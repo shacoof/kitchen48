@@ -199,6 +199,39 @@ check_prerequisites() {
 }
 
 # ============================================================================
+# Validate Local Build (catches errors before cloud build)
+# ============================================================================
+
+validate_local_build() {
+    print_step "Validating Local Build"
+
+    print_info "Building frontend..."
+    cd "$PROJECT_ROOT/frontend"
+    if ! npm run build > /tmp/frontend-build.log 2>&1; then
+        print_error "Frontend build failed!"
+        echo ""
+        echo "Build output:"
+        tail -30 /tmp/frontend-build.log
+        exit 1
+    fi
+    print_success "Frontend build passed"
+
+    print_info "Compiling backend TypeScript..."
+    cd "$PROJECT_ROOT/backend"
+    if ! npx tsc --noEmit > /tmp/backend-build.log 2>&1; then
+        print_error "Backend TypeScript compilation failed!"
+        echo ""
+        echo "Build output:"
+        cat /tmp/backend-build.log
+        exit 1
+    fi
+    print_success "Backend TypeScript check passed"
+
+    cd "$PROJECT_ROOT"
+    print_success "Local build validation complete"
+}
+
+# ============================================================================
 # Collect Required Secrets
 # ============================================================================
 
@@ -344,6 +377,15 @@ create_or_update_secret() {
     fi
 
     if gcloud secrets describe "$secret_name" --project="$GCP_PROJECT_ID" &>/dev/null; then
+        # Check if secret value has changed before creating new version
+        local current_value
+        current_value=$(gcloud secrets versions access latest --secret="$secret_name" --project="$GCP_PROJECT_ID" 2>/dev/null || echo "")
+
+        if [[ "$current_value" == "$secret_value" ]]; then
+            print_info "Secret unchanged: $secret_name (skipped)"
+            return
+        fi
+
         echo -n "$secret_value" | gcloud secrets versions add "$secret_name" \
             --data-file=- \
             --project="$GCP_PROJECT_ID" \
@@ -570,6 +612,7 @@ main() {
     print_banner
 
     check_prerequisites
+    validate_local_build
     collect_secrets
     enable_apis
     setup_cloud_sql
