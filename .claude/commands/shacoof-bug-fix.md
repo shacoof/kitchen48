@@ -3,37 +3,89 @@
 You are now in workflow mode.
 
 ## Task Description
-{TASK_DESCRIPTION}
+$ARGUMENTS
 
 ---
 
+# STEP 0: GIT WORKTREE SETUP (MANDATORY - DO THIS FIRST)
 
-# Bug Fix Workflow
+**BEFORE ANY CODE WORK, you MUST follow the Git Worktree Workflow from the global ~/CLAUDE.md**
 
-You are now in workflow mode.
+## 0.1 Check for Existing Worktrees
 
-## Task Description
-[task description]
+**Execute immediately:**
+```bash
+git worktree list
+```
+
+**Then DISPLAY to the user:**
+```
+🔍 WORKTREE CHECK
+
+Current worktrees:
+<output from git worktree list>
+
+Options:
+1. Use existing worktree: [name] (if relevant to this task)
+2. Create NEW worktree for this bug fix
+3. Clean up stale worktrees first
+
+Which option? (1/2/3 or specify worktree name)
+```
+
+**WAIT for user response before proceeding.**
+
+## 0.2 If Creating New Worktree
+
+**ASK the user:**
+```
+🌳 WORKTREE SETUP
+
+I will create an isolated worktree for this bug fix:
+- Branch name: fix/<short-bug-description>
+- Worktree path: ../worktrees/fix-<bug-name>
+- Base: origin/main
+
+Proceed with worktree creation? (yes/no)
+```
+
+**If approved, execute:**
+```bash
+git fetch origin
+git worktree add -b fix/<bug-name> ../worktrees/fix-<bug-name> origin/main
+cd ../worktrees/fix-<bug-name>
+```
+
+**Confirm to user:**
+```
+✅ WORKTREE CREATED
+   Branch: fix/<bug-name>
+   Path: ../worktrees/fix-<bug-name>
+   Base: origin/main
+
+Now working in isolated environment. Proceeding to Phase 1...
+```
+
+## 0.3 If Using Existing Worktree
+
+```bash
+cd <existing-worktree-path>
+```
+
+**Confirm to user:**
+```
+✅ USING EXISTING WORKTREE
+   Branch: <branch-name>
+   Path: <worktree-path>
+
+Continuing work in this environment. Proceeding to Phase 1...
+```
 
 ---
-
-
-# Bug Fix Workflow
-
-You are now in workflow mode.
-
-## Task Description
-[task description]
-
----
-
 
 # Bug Fix Agent - Systematic Bug Investigation & Resolution
 
 You are now in **Bug Fix Mode** with mandatory investigation and compliance verification.
-
-## Task Description
-[task description]
 
 ---
 
@@ -424,11 +476,64 @@ fix: [One-line summary of bug fix]
 Related Files:
 - [List of modified files]
 
-🤖 Generated with [Claude Code](https://claude.com/claude-code)
-
 Co-Authored-By: Claude <noreply@anthropic.com>
 EOF
 )"
+```
+
+---
+
+## 🏁 PHASE 4: MERGE & CLEANUP (MANDATORY)
+
+**After all commits are complete, ASK THE USER:**
+
+```
+🏁 BUG FIX COMPLETE - READY TO MERGE
+
+Summary of changes:
+- [list of commits made]
+- Branch: fix/<bug-name>
+- Worktree: ../worktrees/fix-<bug-name>
+
+Actions to perform:
+1. Push branch to remote
+2. Merge to main (or create PR)
+3. Clean up worktree
+
+Proceed with merge and cleanup? (yes/no/pr-only)
+```
+
+**If "yes" (direct merge):**
+```bash
+git push -u origin fix/<bug-name>
+
+cd <original-repo-path>
+git fetch origin
+git checkout main
+git pull origin main
+git merge --no-ff fix/<bug-name> -m "Merge fix/<bug-name>: <description>"
+git push origin main
+
+git worktree remove ../worktrees/fix-<bug-name>
+git branch -d fix/<bug-name>
+git push origin --delete fix/<bug-name>
+```
+
+**If "pr-only" (create PR):**
+```bash
+git push -u origin fix/<bug-name>
+gh pr create --title "Fix: <bug-name>" --body "<description>"
+```
+
+**Confirm to user:**
+```
+✅ MERGE & CLEANUP COMPLETE
+   ✓ Branch merged to main (or PR created)
+   ✓ Pushed to remote
+   ✓ Worktree removed
+   ✓ Branch cleaned up
+
+Returned to main repository.
 ```
 
 ---
@@ -442,6 +547,7 @@ After committing, verify:
 3. **No Regressions**: ✅ Related features still work
 4. **Documentation Updated**: ✅ Implementation plan and/or guidelines updated
 5. **Commit Quality**: ✅ Detailed commit message with context
+6. **Worktree Cleaned**: ✅ Worktree removed after merge
 
 ---
 
@@ -449,18 +555,21 @@ After committing, verify:
 
 **The bug fix agent will STOP and request approval at these points:**
 
-1. **Missing implementation plan** → Ask user to create one first
-2. **Investigation incomplete** → Cannot proceed without understanding root cause
-3. **Solution not compliant** → Must revise plan to meet guidelines
-4. **Breaking changes detected** → Must get explicit user approval
-5. **Before implementing fix** → Present full plan and compliance matrix
-6. **Before updating guidelines** → Discuss whether update is warranted
+1. **Session start** → Check for existing worktrees, ask user which to use or create new
+2. **Missing implementation plan** → Ask user to create one first
+3. **Investigation incomplete** → Cannot proceed without understanding root cause
+4. **Solution not compliant** → Must revise plan to meet guidelines
+5. **Breaking changes detected** → Must get explicit user approval
+6. **Before implementing fix** → Present full plan and compliance matrix
+7. **Before updating guidelines** → Discuss whether update is warranted
+8. **After implementation complete** → Ask user about merge/PR/cleanup
 
 ---
 
 ## ⚠️ NEVER ALLOWED
 
 **The bug fix agent must NEVER**:
+- ❌ Skip the worktree setup check at session start
 - ❌ Make changes without understanding root cause
 - ❌ Skip the pre-fix commit
 - ❌ Bypass compliance checks
@@ -469,34 +578,38 @@ After committing, verify:
 - ❌ Use console.log, hardcoded text, or custom CSS
 - ❌ Skip documentation updates
 - ❌ Create destructive database operations
+- ❌ Leave worktrees uncleaned after task completion
 
 ---
 
 ## 🎯 SUCCESS CRITERIA
 
 **A successful bug fix includes**:
-1. ✅ Complete investigation report with root cause identified
-2. ✅ Compliance matrix showing adherence to all guidelines
-3. ✅ Pre-fix commit created
-4. ✅ Fix implemented according to approved plan
-5. ✅ Implementation plan updated with bug details
-6. ✅ Guidelines updated (if warranted)
-7. ✅ Detailed commit message with full context
-8. ✅ Build passes with no TypeScript errors
-9. ✅ Bug verified as fixed
-10. ✅ No regressions introduced
+1. ✅ Worktree created/selected at session start
+2. ✅ Complete investigation report with root cause identified
+3. ✅ Compliance matrix showing adherence to all guidelines
+4. ✅ Pre-fix commit created
+5. ✅ Fix implemented according to approved plan
+6. ✅ Implementation plan updated with bug details
+7. ✅ Guidelines updated (if warranted)
+8. ✅ Detailed commit message with full context
+9. ✅ Build passes with no TypeScript errors
+10. ✅ Bug verified as fixed
+11. ✅ No regressions introduced
+12. ✅ User asked about merge/PR at completion
+13. ✅ Worktree cleaned up after merge
 
 ---
 
 ## 📝 READY TO BEGIN
 
-**Current Task**: [task description]
+**Current Task**: $ARGUMENTS
 
-**I will now begin Phase 1: Investigation**
+**I will now begin Step 0: Worktree Setup**
 
 Starting with:
-1. Searching for implementation plan in `/docs/features/`
-2. If found → Proceed with investigation
-3. If not found → **STOP and request implementation plan creation**
+1. Checking for existing worktrees (`git worktree list`)
+2. Asking user which worktree to use or create new
+3. Then proceeding to Phase 1: Investigation
 
-**Proceeding with investigation...**
+**Proceeding with worktree check...**

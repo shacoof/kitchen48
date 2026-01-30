@@ -3,27 +3,83 @@
 You are now in workflow mode.
 
 ## Task Description
-{TASK_DESCRIPTION}
+$ARGUMENTS
 
 ---
 
+# STEP 0: GIT WORKTREE SETUP (MANDATORY - DO THIS FIRST)
 
-# Feature Update Workflow
+**BEFORE ANY CODE WORK, you MUST follow the Git Worktree Workflow from the global ~/CLAUDE.md**
 
-You are now in workflow mode.
+## 0.1 Check for Existing Worktrees
 
-## Task Description
-[task description]
+**Execute immediately:**
+```bash
+git worktree list
+```
 
----
+**Then DISPLAY to the user:**
+```
+🔍 WORKTREE CHECK
 
+Current worktrees:
+<output from git worktree list>
 
-# Feature Update Workflow
+Options:
+1. Use existing worktree: [name] (if relevant to this task)
+2. Create NEW worktree for this feature update
+3. Clean up stale worktrees first
 
-You are now in workflow mode.
+Which option? (1/2/3 or specify worktree name)
+```
 
-## Task Description
-[task description]
+**WAIT for user response before proceeding.**
+
+## 0.2 If Creating New Worktree
+
+**ASK the user:**
+```
+🌳 WORKTREE SETUP
+
+I will create an isolated worktree for this feature update:
+- Branch name: feature/<short-task-description>
+- Worktree path: ../worktrees/feature-<task-name>
+- Base: origin/main
+
+Proceed with worktree creation? (yes/no)
+```
+
+**If approved, execute:**
+```bash
+git fetch origin
+git worktree add -b feature/<task-name> ../worktrees/feature-<task-name> origin/main
+cd ../worktrees/feature-<task-name>
+```
+
+**Confirm to user:**
+```
+✅ WORKTREE CREATED
+   Branch: feature/<task-name>
+   Path: ../worktrees/feature-<task-name>
+   Base: origin/main
+
+Now working in isolated environment. Proceeding to Phase 1...
+```
+
+## 0.3 If Using Existing Worktree
+
+```bash
+cd <existing-worktree-path>
+```
+
+**Confirm to user:**
+```
+✅ USING EXISTING WORKTREE
+   Branch: <branch-name>
+   Path: <worktree-path>
+
+Continuing work in this environment. Proceeding to Phase 1...
+```
 
 ---
 
@@ -36,9 +92,6 @@ This workflow is for **intentional changes** to working features - not bug fixes
 - Changing UX/UI patterns
 - Modifying business logic
 - Improving performance of existing features
-
-## Task Description
-[task description]
 
 ---
 
@@ -474,11 +527,64 @@ update: [One-line summary of feature update]
 Related Files:
 - [List of modified files]
 
-🤖 Generated with [Claude Code](https://claude.com/claude-code)
-
 Co-Authored-By: Claude <noreply@anthropic.com>
 EOF
 )"
+```
+
+---
+
+## 🏁 PHASE 4: MERGE & CLEANUP (MANDATORY)
+
+**After all commits are complete, ASK THE USER:**
+
+```
+🏁 FEATURE UPDATE COMPLETE - READY TO MERGE
+
+Summary of changes:
+- [list of commits made]
+- Branch: feature/<task-name>
+- Worktree: ../worktrees/feature-<task-name>
+
+Actions to perform:
+1. Push branch to remote
+2. Merge to main (or create PR)
+3. Clean up worktree
+
+Proceed with merge and cleanup? (yes/no/pr-only)
+```
+
+**If "yes" (direct merge):**
+```bash
+git push -u origin feature/<task-name>
+
+cd <original-repo-path>
+git fetch origin
+git checkout main
+git pull origin main
+git merge --no-ff feature/<task-name> -m "Merge feature/<task-name>: <description>"
+git push origin main
+
+git worktree remove ../worktrees/feature-<task-name>
+git branch -d feature/<task-name>
+git push origin --delete feature/<task-name>
+```
+
+**If "pr-only" (create PR):**
+```bash
+git push -u origin feature/<task-name>
+gh pr create --title "<task-name>" --body "<description>"
+```
+
+**Confirm to user:**
+```
+✅ MERGE & CLEANUP COMPLETE
+   ✓ Branch merged to main (or PR created)
+   ✓ Pushed to remote
+   ✓ Worktree removed
+   ✓ Branch cleaned up
+
+Returned to main repository.
 ```
 
 ---
@@ -495,6 +601,7 @@ After committing, verify:
    - Change indicators point to changelog
    - Changelog entry documents old behavior
 5. **Commit Quality**: ✅ Detailed commit message with context
+6. **Worktree Cleaned**: ✅ Worktree removed after merge
 
 ---
 
@@ -502,18 +609,21 @@ After committing, verify:
 
 **The feature update agent will STOP and request approval at these points:**
 
-1. **Missing implementation plan** → Ask user to document feature first
-2. **Current state not documented** → Cannot proceed without understanding existing behavior
-3. **Change specification incomplete** → Must define before/after clearly
-4. **Breaking changes detected** → Must get explicit user approval
-5. **Before implementing update** → Present full plan and compliance matrix
-6. **Before updating documentation** → Confirm changelog format
+1. **Session start** → Check for existing worktrees, ask user which to use or create new
+2. **Missing implementation plan** → Ask user to document feature first
+3. **Current state not documented** → Cannot proceed without understanding existing behavior
+4. **Change specification incomplete** → Must define before/after clearly
+5. **Breaking changes detected** → Must get explicit user approval
+6. **Before implementing update** → Present full plan and compliance matrix
+7. **Before updating documentation** → Confirm changelog format
+8. **After implementation complete** → Ask user about merge/PR/cleanup
 
 ---
 
 ## ⚠️ NEVER ALLOWED
 
 **The feature update agent must NEVER**:
+- ❌ Skip the worktree setup check at session start
 - ❌ Make changes without documenting current behavior first
 - ❌ Skip the pre-update commit
 - ❌ Bypass compliance checks
@@ -523,54 +633,39 @@ After committing, verify:
 - ❌ Skip documentation updates (main sections AND changelog)
 - ❌ Create destructive database operations
 - ❌ Overwrite old behavior documentation without preserving in changelog
+- ❌ Leave worktrees uncleaned after task completion
 
 ---
 
 ## 🎯 SUCCESS CRITERIA
 
 **A successful feature update includes**:
-1. ✅ Current behavior documented BEFORE changes
-2. ✅ Change specification approved by user
-3. ✅ Pre-update commit created
-4. ✅ Update implemented according to approved plan
-5. ✅ Implementation plan main sections updated to reflect new behavior
-6. ✅ Changelog entry added with old behavior preserved
-7. ✅ Change indicators added linking to changelog
-8. ✅ Regression tests passed
-9. ✅ New behavior verified
-10. ✅ Detailed commit message with full context
-11. ✅ No unintended side effects
-
----
-
-## 📝 DOCUMENTATION UPDATE CHECKLIST
-
-Before marking the update complete, verify documentation:
-
-- [ ] **Main sections** show current (new) behavior
-- [ ] **Change indicators** added where behavior changed (format: `*Changed in [Update #N](#anchor)*`)
-- [ ] **Changelog section** exists (create if first update)
-- [ ] **Changelog entry** includes:
-  - [ ] Update number and title with anchor ID
-  - [ ] Date and commit hash
-  - [ ] Change type
-  - [ ] Before/after behavior table
-  - [ ] Migration notes
-  - [ ] Breaking changes
-  - [ ] Files modified
-- [ ] **Anchor links** work (test by clicking)
+1. ✅ Worktree created/selected at session start
+2. ✅ Current behavior documented BEFORE changes
+3. ✅ Change specification approved by user
+4. ✅ Pre-update commit created
+5. ✅ Update implemented according to approved plan
+6. ✅ Implementation plan main sections updated to reflect new behavior
+7. ✅ Changelog entry added with old behavior preserved
+8. ✅ Change indicators added linking to changelog
+9. ✅ Regression tests passed
+10. ✅ New behavior verified
+11. ✅ Detailed commit message with full context
+12. ✅ No unintended side effects
+13. ✅ User asked about merge/PR at completion
+14. ✅ Worktree cleaned up after merge
 
 ---
 
 ## 📝 READY TO BEGIN
 
-**Current Task**: [task description]
+**Current Task**: $ARGUMENTS
 
-**I will now begin Phase 1: Current State Analysis**
+**I will now begin Step 0: Worktree Setup**
 
 Starting with:
-1. Searching for implementation plan in `/docs/features/`
-2. If found → Document current behavior thoroughly
-3. If not found → **STOP and request feature documentation first**
+1. Checking for existing worktrees (`git worktree list`)
+2. Asking user which worktree to use or create new
+3. Then proceeding to Phase 1: Current State Analysis
 
-**Proceeding with analysis...**
+**Proceeding with worktree check...**

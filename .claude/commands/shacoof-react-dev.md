@@ -7,6 +7,82 @@ $ARGUMENTS
 
 ---
 
+# STEP 0: GIT WORKTREE SETUP (MANDATORY - DO THIS FIRST)
+
+**BEFORE ANY CODE WORK, you MUST follow the Git Worktree Workflow from the global ~/CLAUDE.md**
+
+## 0.1 Check for Existing Worktrees
+
+**Execute immediately:**
+```bash
+git worktree list
+```
+
+**Then DISPLAY to the user:**
+```
+🔍 WORKTREE CHECK
+
+Current worktrees:
+<output from git worktree list>
+
+Options:
+1. Use existing worktree: [name] (if relevant to this task)
+2. Create NEW worktree for this task
+3. Clean up stale worktrees first
+
+Which option? (1/2/3 or specify worktree name)
+```
+
+**WAIT for user response before proceeding.**
+
+## 0.2 If Creating New Worktree
+
+**ASK the user:**
+```
+🌳 WORKTREE SETUP
+
+I will create an isolated worktree for this task:
+- Branch name: feature/<short-task-description>
+- Worktree path: ../worktrees/feature-<task-name>
+- Base: origin/main
+
+Proceed with worktree creation? (yes/no)
+```
+
+**If approved, execute:**
+```bash
+git fetch origin
+git worktree add -b feature/<task-name> ../worktrees/feature-<task-name> origin/main
+cd ../worktrees/feature-<task-name>
+```
+
+**Confirm to user:**
+```
+✅ WORKTREE CREATED
+   Branch: feature/<task-name>
+   Path: ../worktrees/feature-<task-name>
+   Base: origin/main
+
+Now working in isolated environment. Proceeding to Phase 1...
+```
+
+## 0.3 If Using Existing Worktree
+
+```bash
+cd <existing-worktree-path>
+```
+
+**Confirm to user:**
+```
+✅ USING EXISTING WORKTREE
+   Branch: <branch-name>
+   Path: <worktree-path>
+
+Continuing work in this environment. Proceeding to Phase 1...
+```
+
+---
+
 ## WORKFLOW OVERVIEW
 
 This workflow enforces a strict **Plan → Commit → Execute** sequence:
@@ -16,6 +92,7 @@ This workflow enforces a strict **Plan → Commit → Execute** sequence:
 3. **PHASE 3: PRE-EXECUTION COMMIT** - Commit current state before any changes
 4. **PHASE 4: UPDATE MODULE CLAUDE.md** - Document relevant info in module's CLAUDE.md
 5. **PHASE 5: EXECUTION** - Implement according to approved plan
+6. **PHASE 6: MERGE & CLEANUP** - Merge branch and clean up worktree
 
 ---
 
@@ -221,16 +298,74 @@ Types: `feat`, `fix`, `refactor`, `style`, `docs`, `test`, `chore`
 
 ---
 
+## PHASE 6: MERGE & CLEANUP (MANDATORY)
+
+**After all implementation is complete, ASK THE USER:**
+
+```
+🏁 TASK COMPLETE - READY TO MERGE
+
+Summary of changes:
+- [list of commits made]
+- Branch: feature/<task-name>
+- Worktree: ../worktrees/feature-<task-name>
+
+Actions to perform:
+1. Push branch to remote
+2. Merge to main (or create PR)
+3. Clean up worktree
+
+Proceed with merge and cleanup? (yes/no/pr-only)
+```
+
+**If "yes" (direct merge):**
+```bash
+git push -u origin feature/<task-name>
+
+cd <original-repo-path>
+git fetch origin
+git checkout main
+git pull origin main
+git merge --no-ff feature/<task-name> -m "Merge feature/<task-name>: <description>"
+git push origin main
+
+git worktree remove ../worktrees/feature-<task-name>
+git branch -d feature/<task-name>
+git push origin --delete feature/<task-name>
+```
+
+**If "pr-only" (create PR):**
+```bash
+git push -u origin feature/<task-name>
+gh pr create --title "<task-name>" --body "<description>"
+```
+
+**Confirm to user:**
+```
+✅ MERGE & CLEANUP COMPLETE
+   ✓ Branch merged to main (or PR created)
+   ✓ Pushed to remote
+   ✓ Worktree removed
+   ✓ Branch cleaned up
+
+Returned to main repository.
+```
+
+---
+
 ## CRITICAL RULES
 
 ### NEVER:
+- Skip the worktree setup check at session start
 - Write code before completing Phase 1 (Planning)
 - Proceed to execution without user approval (Phase 2)
 - Skip the pre-execution commit (Phase 3)
 - Skip updating module CLAUDE.md (Phase 4)
 - Deviate from the approved plan without re-approval
+- Leave worktrees uncleaned after task completion
 
 ### ALWAYS:
+- Check for existing worktrees at session start
 - Plan first, code second
 - Get explicit approval before execution
 - Create safety commit before making changes
@@ -239,17 +374,17 @@ Types: `feat`, `fix`, `refactor`, `style`, `docs`, `test`, `chore`
 - **Show CLAUDE.md compliance checklist in implementation plan**
 - Use `createLogger()` for all logging (never `console.log`)
 - Follow database naming conventions (`@map()` for snake_case)
+- Ask user about merge/cleanup at task completion
 
 ---
 
 ## READY TO BEGIN
 
-**Starting Phase 1: Planning**
+**Starting Step 0: Worktree Setup**
 
 I will now:
-1. Analyze the task requirements
-2. Explore the relevant codebase
-3. Create an implementation plan
-4. Present it for your approval
+1. Check for existing worktrees (`git worktree list`)
+2. Ask which worktree to use or create new
+3. Then proceed to Phase 1: Planning
 
-**Proceeding with analysis...**
+**Proceeding with worktree check...**
