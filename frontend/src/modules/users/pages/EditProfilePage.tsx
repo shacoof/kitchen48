@@ -36,7 +36,7 @@ type ProfileFormData = z.infer<typeof profileSchema>;
 
 export function EditProfilePage() {
   const navigate = useNavigate();
-  const { user, isAuthenticated, isLoading: authLoading, refreshUser } = useAuth();
+  const { isAuthenticated, isLoading: authLoading, refreshUser } = useAuth();
   const [profile, setProfile] = useState<FullUserProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);

@@ -237,7 +237,8 @@ export default function UsersGrid({ onError }: UsersGridProps) {
 
     // Attach cellEdited via on() method - this is the recommended approach
     // Note: Using on() instead of options.cellEdited for reliable event handling
-    tabulatorRef.current.on('cellEdited', async function(cell: { getField: () => string; getRow: () => { getData: () => User } }) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    tabulatorRef.current.on('cellEdited', async function(cell: any) {
       const row = cell.getRow();
       const data = row.getData();
 
