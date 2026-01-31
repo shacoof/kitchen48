@@ -36,6 +36,13 @@ enum OwnerType {
   USER
 }
 
+enum TimeUnit {
+  SECONDS
+  MINUTES
+  HOURS
+  DAYS
+}
+
 // ============================================================================
 // Core Models
 // ============================================================================
@@ -98,13 +105,14 @@ model OAuthAccount {
 
 model Recipe {
   id          String   @id @default(cuid())
-  title       String
+  title       String   @db.VarChar(80) // Max 80 characters as per HLD
+  slug        String   // URL-friendly name, unique per author
   description String?
   prepTime    Int?     @map("prep_time") // in minutes
   cookTime    Int?     @map("cook_time") // in minutes
   servings    Int?
   imageUrl    String?  @map("image_url")
-  videoUrl    String?  @map("video_url")
+  videoUrl    String?  @map("video_url") // Intro video for the recipe
   isPublished Boolean  @default(false) @map("is_published")
   createdAt   DateTime @default(now()) @map("created_at")
   updatedAt   DateTime @updatedAt @map("updated_at")
@@ -116,6 +124,7 @@ model Recipe {
   steps       Step[]
   savedBy     SavedRecipe[]
 
+  @@unique([authorId, slug]) // Combination of author + slug must be unique
   @@map("recipes")
 }
 
@@ -132,6 +141,21 @@ model RecipeIngredient {
   @@map("recipe_ingredients")
 }
 
+model StepIngredient {
+  id     String  @id @default(cuid())
+  name   String  // Custom name if not from master, or copied from master
+  amount String? // e.g., "2 cups", "1 tbsp"
+  order  Int     @default(0)
+
+  // Relations
+  stepId             String            @map("step_id")
+  step               Step              @relation(fields: [stepId], references: [id], onDelete: Cascade)
+  masterIngredientId String?           @map("master_ingredient_id") // If from master table
+  masterIngredient   MasterIngredient? @relation(fields: [masterIngredientId], references: [id], onDelete: SetNull)
+
+  @@map("step_ingredients")
+}
+
 model MasterIngredient {
   id          String   @id @default(cuid())
   name        String   @unique
@@ -141,19 +165,30 @@ model MasterIngredient {
   createdAt   DateTime @default(now()) @map("created_at")
   updatedAt   DateTime @updatedAt @map("updated_at")
 
+  // Relations
+  stepIngredients StepIngredient[]
+
   @@map("master_ingredients")
 }
 
 model Step {
-  id          String  @id @default(cuid())
-  instruction String
+  id          String    @id @default(cuid())
+  slug        String?   // URL-friendly step name (step1, step2, or custom)
+  instruction String    // Step description (mandatory)
   order       Int
-  duration    Int?    // in seconds (for voice playback timing)
+  duration    Int?      // in seconds (for voice playback timing)
+  videoUrl    String?   @map("video_url") // Short video (up to 1 min)
+  workTime    Int?      @map("work_time") // How much work time this step takes
+  workTimeUnit TimeUnit? @map("work_time_unit")
+  waitTime    Int?      @map("wait_time") // Wait time (e.g., in oven, dough rising)
+  waitTimeUnit TimeUnit? @map("wait_time_unit")
 
   // Relations
-  recipeId String @map("recipe_id")
-  recipe   Recipe @relation(fields: [recipeId], references: [id], onDelete: Cascade)
+  recipeId    String           @map("recipe_id")
+  recipe      Recipe           @relation(fields: [recipeId], references: [id], onDelete: Cascade)
+  ingredients StepIngredient[]
 
+  @@unique([recipeId, slug]) // Step slug unique within recipe
   @@map("steps")
 }
 
