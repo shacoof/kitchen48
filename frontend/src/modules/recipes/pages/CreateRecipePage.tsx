@@ -7,7 +7,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../../auth/hooks/useAuth';
-import { recipesApi, Recipe, CreateRecipeInput, CreateStepInput } from '../services/recipes.api';
+import { recipesApi, CreateRecipeInput, CreateStepInput } from '../services/recipes.api';
 import { createLogger } from '../../../lib/logger';
 
 const logger = createLogger('CreateRecipePage');

@@ -161,7 +161,7 @@ export function RecipeStepPage() {
                 <UserAvatar
                   profilePicture={recipe.author?.profilePicture}
                   name={authorName}
-                  size="xs"
+                  size="sm"
                 />
                 <span>{authorName}</span>
               </Link>

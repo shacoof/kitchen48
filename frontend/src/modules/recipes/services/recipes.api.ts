@@ -125,7 +125,7 @@ export interface RecipeQueryParams {
 }
 
 // Response types
-export interface ApiResponse<T = void> {
+export interface ApiResponse {
   success?: boolean;
   error?: string;
   details?: Record<string, string[]>;
