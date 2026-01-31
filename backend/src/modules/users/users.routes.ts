@@ -1,11 +1,15 @@
 /**
  * Users Routes
- * Express routes for user profile management
+ * Express routes for user profile management and user recipes
  */
 
 import { Router } from 'express';
 import { usersController } from './users.controller.js';
 import { requireAuth, requireAdmin } from '../auth/auth.middleware.js';
+import { recipeService } from '../recipes/recipe.service.js';
+import { createLogger } from '../../lib/logger.js';
+
+const logger = createLogger('UsersRoutes');
 
 const router = Router();
 
@@ -35,6 +39,89 @@ router.put('/me/profile', requireAuth, usersController.updateOwnProfile.bind(use
  * Note: This comes after /me routes to avoid matching "me" as a nickname
  */
 router.get('/:nickname', usersController.getPublicProfile.bind(usersController));
+
+/**
+ * GET /api/users/:nickname/recipes
+ * Get user's public recipes by nickname
+ */
+router.get('/:nickname/recipes', async (req, res) => {
+  try {
+    const nickname = req.params.nickname as string;
+    const recipes = await recipeService.getByNickname(nickname);
+    res.json({ recipes });
+  } catch (error) {
+    logger.error(`Error fetching user recipes: ${error instanceof Error ? error.message : String(error)}`);
+    res.status(500).json({ error: 'Failed to fetch recipes' });
+  }
+});
+
+/**
+ * GET /api/users/:nickname/recipes/:recipeSlug
+ * Get recipe by semantic URL (nickname/recipe-slug)
+ */
+router.get('/:nickname/recipes/:recipeSlug', async (req, res) => {
+  try {
+    const { nickname, recipeSlug } = req.params;
+    const recipe = await recipeService.getBySemanticUrl(nickname, recipeSlug);
+
+    if (!recipe) {
+      res.status(404).json({ error: 'Recipe not found' });
+      return;
+    }
+
+    // Only return published recipes to non-authors
+    if (!recipe.isPublished) {
+      res.status(404).json({ error: 'Recipe not found' });
+      return;
+    }
+
+    res.json({ recipe });
+  } catch (error) {
+    logger.error(`Error fetching recipe: ${error instanceof Error ? error.message : String(error)}`);
+    res.status(500).json({ error: 'Failed to fetch recipe' });
+  }
+});
+
+/**
+ * GET /api/users/:nickname/recipes/:recipeSlug/:stepSlug
+ * Get specific step by semantic URL
+ */
+router.get('/:nickname/recipes/:recipeSlug/:stepSlug', async (req, res) => {
+  try {
+    const { nickname, recipeSlug, stepSlug } = req.params;
+    const recipe = await recipeService.getBySemanticUrl(nickname, recipeSlug);
+
+    if (!recipe || !recipe.isPublished) {
+      res.status(404).json({ error: 'Recipe not found' });
+      return;
+    }
+
+    // Find the step by slug or order
+    const step = recipe.steps.find(
+      s => s.slug === stepSlug || s.slug === null && `step${s.order + 1}` === stepSlug
+    );
+
+    if (!step) {
+      res.status(404).json({ error: 'Step not found' });
+      return;
+    }
+
+    res.json({
+      recipe: {
+        id: recipe.id,
+        title: recipe.title,
+        slug: recipe.slug,
+        author: recipe.author,
+      },
+      step,
+      totalSteps: recipe.steps.length,
+      stepIndex: recipe.steps.indexOf(step),
+    });
+  } catch (error) {
+    logger.error(`Error fetching step: ${error instanceof Error ? error.message : String(error)}`);
+    res.status(500).json({ error: 'Failed to fetch step' });
+  }
+});
 
 // ============================================================================
 // Admin Routes
