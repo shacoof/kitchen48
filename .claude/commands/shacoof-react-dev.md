@@ -85,14 +85,15 @@ Continuing work in this environment. Proceeding to Phase 1...
 
 ## WORKFLOW OVERVIEW
 
-This workflow enforces a strict **Plan → Commit → Execute** sequence:
+This workflow enforces a strict **Plan → Commit → Execute → Test** sequence:
 
 1. **PHASE 1: PLANNING** - Analyze and create implementation plan (NO code changes)
 2. **PHASE 2: APPROVAL** - User reviews and approves plan
 3. **PHASE 3: PRE-EXECUTION COMMIT** - Commit current state before any changes
 4. **PHASE 4: UPDATE MODULE CLAUDE.md** - Document relevant info in module's CLAUDE.md
 5. **PHASE 5: EXECUTION** - Implement according to approved plan
-6. **PHASE 6: MERGE & CLEANUP** - Merge branch and clean up worktree
+6. **PHASE 6: TESTING** - User tests in worktree before merge
+7. **PHASE 7: MERGE & CLEANUP** - Merge branch and clean up worktree
 
 ---
 
@@ -298,7 +299,47 @@ Types: `feat`, `fix`, `refactor`, `style`, `docs`, `test`, `chore`
 
 ---
 
-## PHASE 6: MERGE & CLEANUP (MANDATORY)
+## PHASE 6: TESTING (MANDATORY)
+
+**After implementation is complete, provide testing instructions and WAIT for user confirmation.**
+
+### Step 1: Provide Testing Instructions
+
+**DISPLAY to the user:**
+```
+🧪 TESTING PHASE
+
+Implementation complete! Please test the changes before we merge.
+
+To test in the worktree:
+1. Open a terminal and navigate to the worktree:
+   cd <worktree-path>
+
+2. Start the development servers:
+   npm run dev
+
+3. Test the following:
+   - [List specific features/pages to test]
+   - [List specific user flows to verify]
+   - [List any edge cases to check]
+
+4. The app will be available at:
+   - Frontend: http://localhost:5173
+   - Backend API: http://localhost:3000
+
+Please confirm when testing is complete: (done/issues)
+```
+
+### Step 2: Wait for User Confirmation
+
+**CRITICAL: Do NOT proceed to merge until user confirms testing is complete.**
+
+- If user says **"done"** → Proceed to Phase 7 (Merge & Cleanup)
+- If user says **"issues"** → Ask for details and fix before retesting
+
+---
+
+## PHASE 7: MERGE & CLEANUP (MANDATORY)
 
 **After all implementation is complete, ASK THE USER:**
 
@@ -362,6 +403,8 @@ Returned to main repository.
 - Skip the pre-execution commit (Phase 3)
 - Skip updating module CLAUDE.md (Phase 4)
 - Deviate from the approved plan without re-approval
+- Skip the testing phase (Phase 6) - always wait for user confirmation
+- Merge before user confirms testing is complete
 - Leave worktrees uncleaned after task completion
 
 ### ALWAYS:
@@ -374,6 +417,8 @@ Returned to main repository.
 - **Show CLAUDE.md compliance checklist in implementation plan**
 - Use `createLogger()` for all logging (never `console.log`)
 - Follow database naming conventions (`@map()` for snake_case)
+- **Provide testing instructions with worktree path and npm run dev command**
+- **Wait for user to confirm testing is complete before offering to merge**
 - Ask user about merge/cleanup at task completion
 
 ---

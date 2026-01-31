@@ -483,7 +483,47 @@ EOF
 
 ---
 
-## 🏁 PHASE 4: MERGE & CLEANUP (MANDATORY)
+## 🧪 PHASE 4: TESTING (MANDATORY)
+
+**After implementation is complete, provide testing instructions and WAIT for user confirmation.**
+
+### Step 1: Provide Testing Instructions
+
+**DISPLAY to the user:**
+```
+🧪 TESTING PHASE
+
+Bug fix implementation complete! Please test the fix before we merge.
+
+To test in the worktree:
+1. Open a terminal and navigate to the worktree:
+   cd <worktree-path>
+
+2. Start the development servers:
+   npm run dev
+
+3. Verify the fix:
+   - [Describe how to reproduce the original bug]
+   - [Confirm the bug no longer occurs]
+   - [Test any related functionality for regressions]
+
+4. The app will be available at:
+   - Frontend: http://localhost:5173
+   - Backend API: http://localhost:3000
+
+Please confirm when testing is complete: (done/issues)
+```
+
+### Step 2: Wait for User Confirmation
+
+**CRITICAL: Do NOT proceed to merge until user confirms testing is complete.**
+
+- If user says **"done"** → Proceed to Phase 5 (Merge & Cleanup)
+- If user says **"issues"** → Ask for details and fix before retesting
+
+---
+
+## 🏁 PHASE 5: MERGE & CLEANUP (MANDATORY)
 
 **After all commits are complete, ASK THE USER:**
 
@@ -578,6 +618,8 @@ After committing, verify:
 - ❌ Use console.log, hardcoded text, or custom CSS
 - ❌ Skip documentation updates
 - ❌ Create destructive database operations
+- ❌ Skip the testing phase - always provide worktree testing instructions
+- ❌ Merge before user confirms testing is complete
 - ❌ Leave worktrees uncleaned after task completion
 
 ---
@@ -594,10 +636,12 @@ After committing, verify:
 7. ✅ Guidelines updated (if warranted)
 8. ✅ Detailed commit message with full context
 9. ✅ Build passes with no TypeScript errors
-10. ✅ Bug verified as fixed
-11. ✅ No regressions introduced
-12. ✅ User asked about merge/PR at completion
-13. ✅ Worktree cleaned up after merge
+10. ✅ Testing instructions provided with worktree path
+11. ✅ User confirmed testing is complete
+12. ✅ Bug verified as fixed
+13. ✅ No regressions introduced
+14. ✅ User asked about merge/PR at completion
+15. ✅ Worktree cleaned up after merge
 
 ---
 

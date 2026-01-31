@@ -534,7 +534,47 @@ EOF
 
 ---
 
-## 🏁 PHASE 4: MERGE & CLEANUP (MANDATORY)
+## 🧪 PHASE 4: TESTING (MANDATORY)
+
+**After implementation is complete, provide testing instructions and WAIT for user confirmation.**
+
+### Step 1: Provide Testing Instructions
+
+**DISPLAY to the user:**
+```
+🧪 TESTING PHASE
+
+Feature update implementation complete! Please test the changes before we merge.
+
+To test in the worktree:
+1. Open a terminal and navigate to the worktree:
+   cd <worktree-path>
+
+2. Start the development servers:
+   npm run dev
+
+3. Verify the update:
+   - [List specific updated features to test]
+   - [List expected new behaviors]
+   - [List regression checks for existing functionality]
+
+4. The app will be available at:
+   - Frontend: http://localhost:5173
+   - Backend API: http://localhost:3000
+
+Please confirm when testing is complete: (done/issues)
+```
+
+### Step 2: Wait for User Confirmation
+
+**CRITICAL: Do NOT proceed to merge until user confirms testing is complete.**
+
+- If user says **"done"** → Proceed to Phase 5 (Merge & Cleanup)
+- If user says **"issues"** → Ask for details and fix before retesting
+
+---
+
+## 🏁 PHASE 5: MERGE & CLEANUP (MANDATORY)
 
 **After all commits are complete, ASK THE USER:**
 
@@ -633,6 +673,8 @@ After committing, verify:
 - ❌ Skip documentation updates (main sections AND changelog)
 - ❌ Create destructive database operations
 - ❌ Overwrite old behavior documentation without preserving in changelog
+- ❌ Skip the testing phase - always provide worktree testing instructions
+- ❌ Merge before user confirms testing is complete
 - ❌ Leave worktrees uncleaned after task completion
 
 ---
@@ -648,12 +690,14 @@ After committing, verify:
 6. ✅ Implementation plan main sections updated to reflect new behavior
 7. ✅ Changelog entry added with old behavior preserved
 8. ✅ Change indicators added linking to changelog
-9. ✅ Regression tests passed
-10. ✅ New behavior verified
-11. ✅ Detailed commit message with full context
-12. ✅ No unintended side effects
-13. ✅ User asked about merge/PR at completion
-14. ✅ Worktree cleaned up after merge
+9. ✅ Testing instructions provided with worktree path
+10. ✅ User confirmed testing is complete
+11. ✅ Regression tests passed
+12. ✅ New behavior verified
+13. ✅ Detailed commit message with full context
+14. ✅ No unintended side effects
+15. ✅ User asked about merge/PR at completion
+16. ✅ Worktree cleaned up after merge
 
 ---
 
