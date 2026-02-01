@@ -8,6 +8,7 @@ import AccessDenied from './AccessDenied';
 import ParametersPage from './ParametersPage';
 import UsersPage from './UsersPage';
 import IngredientsPage from './IngredientsPage';
+import StatisticsPage from './StatisticsPage';
 
 export default function AdminLandingPage() {
   const { isAuthenticated, isAdmin, isLoading } = useAuth();
@@ -37,6 +38,8 @@ export default function AdminLandingPage() {
         return <UsersPage />;
       case 'ingredients':
         return <IngredientsPage />;
+      case 'statistics':
+        return <StatisticsPage />;
       case 'dashboard':
       default:
         return <Dashboard />;
