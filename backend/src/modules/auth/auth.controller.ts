@@ -6,6 +6,8 @@
 import type { Request, Response } from 'express';
 import { authService } from './auth.service.js';
 import { createLogger } from '../../lib/logger.js';
+import { statisticsService } from '../statistics/statistics.service.js';
+import { StatEventTypes } from '../statistics/statistics.types.js';
 import {
   registerSchema,
   loginSchema,
@@ -42,6 +44,19 @@ export const authController = {
         });
         return;
       }
+
+      // Track registration event
+      const userAgent = req.headers['user-agent'];
+      const deviceType = statisticsService.detectDeviceType(userAgent);
+      statisticsService.track({
+        eventType: StatEventTypes.USER_REGISTER,
+        entityType: 'user',
+        metadata: {
+          deviceType,
+          userAgent,
+          email: parsed.data.email,
+        },
+      });
 
       res.status(201).json({
         success: true,
@@ -82,6 +97,21 @@ export const authController = {
         });
         return;
       }
+
+      // Track login event
+      const userAgent = req.headers['user-agent'];
+      const deviceType = statisticsService.detectDeviceType(userAgent);
+      statisticsService.track({
+        eventType: StatEventTypes.USER_LOGIN,
+        userId: result.data?.user.id,
+        entityType: 'user',
+        entityId: result.data?.user.id,
+        metadata: {
+          deviceType,
+          userAgent,
+          loginMethod: 'email',
+        },
+      });
 
       res.json({
         success: true,

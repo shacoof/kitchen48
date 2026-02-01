@@ -61,6 +61,9 @@ async function loadApplication() {
   const ingredientRoutes = (await import('./modules/ingredients/ingredient.routes.js')).default;
   console.log('[STARTUP] ingredient routes imported');
 
+  const statisticsRoutes = (await import('./modules/statistics/statistics.routes.js')).default;
+  console.log('[STARTUP] statistics routes imported');
+
   const path = (await import('path')).default;
   console.log('[STARTUP] path module imported');
 
@@ -91,6 +94,7 @@ async function loadApplication() {
   app.use('/api/admin/users', adminUsersRouter);
   app.use('/api/upload', uploadRouter);
   app.use('/api/ingredients', ingredientRoutes);
+  app.use('/api/admin/statistics', statisticsRoutes);
   console.log('[STARTUP] Routes configured');
 
   // Mark server as ready
