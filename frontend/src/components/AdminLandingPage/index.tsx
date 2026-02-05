@@ -9,6 +9,7 @@ import ParametersPage from './ParametersPage';
 import UsersPage from './UsersPage';
 import IngredientsPage from './IngredientsPage';
 import StatisticsPage from './StatisticsPage';
+import { ListTypeManagement } from '../../modules/list-types/components/ListTypeManagement';
 
 export default function AdminLandingPage() {
   const { isAuthenticated, isAdmin, isLoading } = useAuth();
@@ -40,6 +41,8 @@ export default function AdminLandingPage() {
         return <IngredientsPage />;
       case 'statistics':
         return <StatisticsPage />;
+      case 'list-values':
+        return <ListTypeManagement />;
       case 'dashboard':
       default:
         return <Dashboard />;

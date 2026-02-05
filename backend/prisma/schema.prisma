@@ -197,6 +197,38 @@ model Parameter {
 }
 
 // ============================================================================
+// List of Values (LOV) - Configurable Dropdowns
+// ============================================================================
+
+model ListType {
+  id          String      @id @default(cuid())
+  name        String      @unique
+  description String?
+  isActive    Boolean     @default(true) @map("is_active")
+  createdAt   DateTime    @default(now()) @map("created_at")
+  updatedAt   DateTime    @updatedAt @map("updated_at")
+  values      ListValue[]
+
+  @@map("list_types")
+}
+
+model ListValue {
+  id          String   @id @default(cuid())
+  listTypeId  String   @map("list_type_id")
+  value       String   // Internal code/key (e.g., "VEGETABLES")
+  label       String   // Display text (e.g., "Vegetables")
+  description String?
+  sortOrder   Int      @default(0) @map("sort_order")
+  isActive    Boolean  @default(true) @map("is_active")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+  listType    ListType @relation(fields: [listTypeId], references: [id], onDelete: Cascade)
+
+  @@unique([listTypeId, value])
+  @@map("list_values")
+}
+
+// ============================================================================
 // Deployment & Migration Tracking
 // ============================================================================
 
