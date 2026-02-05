@@ -17,31 +17,31 @@ const router = Router();
  * GET /api/list-types
  * Get all list types with value count
  */
-router.get('/', requireAdmin, listTypeController.getAllListTypes);
+router.get('/', requireAuth, requireAdmin, listTypeController.getAllListTypes);
 
 /**
  * POST /api/list-types
  * Create a new list type
  */
-router.post('/', requireAdmin, listTypeController.createListType);
+router.post('/', requireAuth, requireAdmin, listTypeController.createListType);
 
 /**
  * GET /api/list-types/:id
  * Get a single list type by ID
  */
-router.get('/:id', requireAdmin, listTypeController.getListTypeById);
+router.get('/:id', requireAuth, requireAdmin, listTypeController.getListTypeById);
 
 /**
  * PUT /api/list-types/:id
  * Update a list type
  */
-router.put('/:id', requireAdmin, listTypeController.updateListType);
+router.put('/:id', requireAuth, requireAdmin, listTypeController.updateListType);
 
 /**
  * DELETE /api/list-types/:id
  * Delete a list type (cascades to values)
  */
-router.delete('/:id', requireAdmin, listTypeController.deleteListType);
+router.delete('/:id', requireAuth, requireAdmin, listTypeController.deleteListType);
 
 // ============================================================================
 // List Value Routes (Admin only)
@@ -51,25 +51,25 @@ router.delete('/:id', requireAdmin, listTypeController.deleteListType);
  * GET /api/list-types/:listTypeId/values
  * Get all values for a list type
  */
-router.get('/:listTypeId/values', requireAdmin, listTypeController.getValuesByListType);
+router.get('/:listTypeId/values', requireAuth, requireAdmin, listTypeController.getValuesByListType);
 
 /**
  * POST /api/list-types/:listTypeId/values
  * Create a new list value
  */
-router.post('/:listTypeId/values', requireAdmin, listTypeController.createValue);
+router.post('/:listTypeId/values', requireAuth, requireAdmin, listTypeController.createValue);
 
 /**
  * PUT /api/list-types/:listTypeId/values/:valueId
  * Update a list value
  */
-router.put('/:listTypeId/values/:valueId', requireAdmin, listTypeController.updateValue);
+router.put('/:listTypeId/values/:valueId', requireAuth, requireAdmin, listTypeController.updateValue);
 
 /**
  * DELETE /api/list-types/:listTypeId/values/:valueId
  * Delete a list value
  */
-router.delete('/:listTypeId/values/:valueId', requireAdmin, listTypeController.deleteValue);
+router.delete('/:listTypeId/values/:valueId', requireAuth, requireAdmin, listTypeController.deleteValue);
 
 export default router;
 
