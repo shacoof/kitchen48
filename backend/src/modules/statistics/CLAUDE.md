@@ -150,6 +150,27 @@ model StatEvent {
 
 ---
 
+## Known Issues & Fixes
+
+### Fixed: Prisma client undefined for statistics models (2026-02-05)
+
+**Symptom:** `TypeError: Cannot read properties of undefined (reading 'findMany')` when accessing statistics API.
+
+**Root Cause:** The statistics tables were initially added using `prisma db push` instead of a proper migration. This meant:
+1. Tables existed in development database but no migration file existed
+2. Fresh environments wouldn't have the tables
+3. Prisma client might not be regenerated after schema changes
+
+**Fix:**
+1. Created proper migration file: `20260131150000_add_statistics_tables`
+2. Added `postinstall` script to `backend/package.json` to ensure Prisma client is always regenerated after `npm install`
+
+**Prevention:**
+- Always use `prisma migrate dev --name <name>` to create migrations
+- Never use `prisma db push` for schema changes that need to be deployed
+
+---
+
 ## Implementation Date
 
 2026-01-31
