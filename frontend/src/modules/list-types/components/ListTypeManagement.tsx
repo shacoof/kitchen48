@@ -5,7 +5,7 @@
  * Admin-only interface for configuring dropdown lists.
  */
 
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { ListTypesGrid } from './ListTypesGrid';
 import { ListValuesGrid } from './ListValuesGrid';
 

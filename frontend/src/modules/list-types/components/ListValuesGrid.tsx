@@ -5,7 +5,7 @@
  * Admin-only component for managing dropdown options.
  */
 
-import React, { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { authApi } from '../../auth/services/auth.api';
 
 interface ListValue {
