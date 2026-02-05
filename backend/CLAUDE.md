@@ -170,4 +170,46 @@ profilePicture String?   @map("profile_picture")
 - Storage: `uploads/` directory (dev), configurable for cloud (prod)
 - Static serving: `/uploads/:filename`
 
+### Statistics Module - 2026-01-31
+
+Centralized statistics tracking with queued writes and session/device tracking.
+
+#### Key Files
+- `src/modules/statistics/statistics.service.ts` - Core service with queue
+- `src/modules/statistics/statistics.routes.ts` - Admin API endpoints
+- `src/modules/statistics/statistics.types.ts` - Event types and schemas
+- `src/modules/statistics/CLAUDE.md` - Module documentation
+
+#### Statistics Endpoints
+| Method | Endpoint | Auth | Description |
+|--------|----------|------|-------------|
+| GET | `/api/admin/statistics` | Admin | List all events (with filters) |
+| GET | `/api/admin/statistics/sessions` | Admin | List all sessions |
+| GET | `/api/admin/statistics/event-types` | Admin | Get unique event types |
+
+#### Event Types
+- `user.login` - User logged in
+- `user.register` - New user registered
+- `user.logout` - User logged out (future)
+- `recipe.view`, `recipe.create`, etc. - Recipe events (future)
+
+#### Usage Pattern
+```typescript
+import { statisticsService } from '../statistics/statistics.service.js';
+import { StatEventTypes } from '../statistics/statistics.types.js';
+
+// Non-blocking - returns immediately
+statisticsService.track({
+  eventType: StatEventTypes.USER_LOGIN,
+  userId: user.id,
+  metadata: { deviceType: 'browser', loginMethod: 'email' }
+});
+```
+
+#### Queue Architecture
+- Events queued in memory
+- Flushed every 5 seconds or when 100 events accumulated
+- Graceful shutdown flushes remaining events
+- Uses `createMany` for batch inserts
+
 ---

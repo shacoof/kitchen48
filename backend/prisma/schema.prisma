@@ -68,6 +68,8 @@ model User {
   recipes       Recipe[]
   savedRecipes  SavedRecipe[]
   oauthAccounts OAuthAccount[]
+  sessions      Session[]
+  statEvents    StatEvent[]
 
   @@map("users")
 }
@@ -209,4 +211,47 @@ model DataMigration {
   errorLog    String?  @map("error_log")
 
   @@map("data_migrations")
+}
+
+// ============================================================================
+// Statistics & Analytics
+// ============================================================================
+
+model Session {
+  id           String   @id @default(cuid())
+  userId       String?  @map("user_id")
+  deviceType   String   @map("device_type")  // 'browser', 'mobile_app', 'tablet'
+  userAgent    String?  @map("user_agent")
+  ipAddress    String?  @map("ip_address")
+  startedAt    DateTime @default(now()) @map("started_at")
+  lastActiveAt DateTime @default(now()) @map("last_active_at")
+
+  // Relations
+  user   User?       @relation(fields: [userId], references: [id], onDelete: SetNull)
+  events StatEvent[]
+
+  @@index([userId])
+  @@index([startedAt])
+  @@map("sessions")
+}
+
+model StatEvent {
+  id         String   @id @default(cuid())
+  eventType  String   @map("event_type")   // e.g., 'user.login', 'recipe.view'
+  userId     String?  @map("user_id")
+  sessionId  String?  @map("session_id")
+  entityType String?  @map("entity_type")  // e.g., 'recipe', 'user'
+  entityId   String?  @map("entity_id")
+  metadata   Json?                         // Flexible additional data
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  // Relations
+  user    User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  session Session? @relation(fields: [sessionId], references: [id], onDelete: SetNull)
+
+  @@index([eventType])
+  @@index([userId])
+  @@index([sessionId])
+  @@index([createdAt])
+  @@map("stat_events")
 }

@@ -9,6 +9,11 @@ import { authController } from './auth.controller.js';
 import { requireAuth } from './auth.middleware.js';
 import { authService } from './auth.service.js';
 import { env } from '../../config/env.js';
+import { statisticsService } from '../statistics/statistics.service.js';
+import { StatEventTypes } from '../statistics/statistics.types.js';
+import { createLogger } from '../../lib/logger.js';
+
+const logger = createLogger('AuthRoutes');
 
 const router = Router();
 
@@ -81,13 +86,28 @@ router.get(
         return;
       }
 
+      // Track Google OAuth login
+      const userAgent = req.headers['user-agent'];
+      const deviceType = statisticsService.detectDeviceType(userAgent);
+      statisticsService.track({
+        eventType: StatEventTypes.USER_LOGIN,
+        userId: user.id,
+        entityType: 'user',
+        entityId: user.id,
+        metadata: {
+          deviceType,
+          userAgent,
+          loginMethod: 'google',
+        },
+      });
+
       // Generate JWT token
       const token = await authService.generateToken(user.id, user.email);
 
       // Redirect to frontend with token
       res.redirect(`${env.FRONTEND_URL}/auth/callback?token=${token}`);
     } catch (error) {
-      console.error('Google OAuth callback error:', error);
+      logger.error(`Google OAuth callback error: ${error}`);
       res.redirect(`${env.FRONTEND_URL}/login?error=oauth_failed`);
     }
   }

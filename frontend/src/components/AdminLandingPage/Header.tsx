@@ -1,6 +1,6 @@
 import { useAuth } from '../../context/AuthContext';
 
-export type AdminPage = 'dashboard' | 'parameters' | 'users' | 'ingredients';
+export type AdminPage = 'dashboard' | 'parameters' | 'users' | 'ingredients' | 'statistics';
 
 interface HeaderProps {
   currentPage?: AdminPage;
@@ -14,6 +14,7 @@ export default function Header({ currentPage = 'dashboard', onNavigate }: Header
     { id: 'dashboard', label: 'Dashboard' },
     { id: 'users', label: 'Users' },
     { id: 'ingredients', label: 'Ingredients' },
+    { id: 'statistics', label: 'Statistics' },
     { id: 'parameters', label: 'Parameters' },
   ];
 

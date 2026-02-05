@@ -276,6 +276,61 @@ logger.error('API call failed');
 
 ---
 
+## Statistics Tracking
+
+### When to Add Statistics
+
+**Every new feature MUST consider:**
+- [ ] Does this feature have user interactions worth tracking?
+- [ ] Are there key events (create, view, complete, delete)?
+- [ ] Would analytics/metrics be valuable for this feature?
+
+### How to Add Statistics
+
+1. **Identify events** - What user actions should be tracked?
+2. **Define event type** - Use format: `entity.action` (e.g., `recipe.view`)
+3. **Use StatisticsService** - Never write directly to stat_events table
+
+```typescript
+import { statisticsService } from '../statistics/statistics.service.js';
+import { StatEventTypes } from '../statistics/statistics.types.js';
+
+// Track an event (non-blocking)
+statisticsService.track({
+  eventType: StatEventTypes.USER_LOGIN,  // or custom 'entity.action' string
+  userId: user.id,
+  entityType: 'user',
+  entityId: user.id,
+  metadata: { source: 'email', deviceType: 'browser' }
+});
+```
+
+### Event Type Naming Convention
+
+Format: `<entity>.<action>`
+
+| Entity | Actions | Examples |
+|--------|---------|----------|
+| user | login, register, logout | `user.login`, `user.register` |
+| recipe | view, create, edit, delete | `recipe.view`, `recipe.create` |
+| video | play, complete | `video.play`, `video.complete` |
+
+### Statistics Checklist for New Features
+
+Include in your implementation plan:
+
+- [ ] **Events identified**: List events to track
+- [ ] **Privacy reviewed**: No PII in metadata unless necessary
+- [ ] **Admin excluded**: Consider if admin actions should be tracked separately
+- [ ] **Performance checked**: High-frequency events use the async queue automatically
+
+### Viewing Statistics
+
+- Admin portal: Statistics page (`/admin` → Statistics tab)
+- API: `GET /api/admin/statistics` (admin-only)
+
+---
+
 ## Application URLs
 
 ### Development (Local)
