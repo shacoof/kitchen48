@@ -55,6 +55,10 @@ model User {
   phoneCountry   String?  @map("phone_country") // ISO country code (e.g., "US", "IL")
   description    String?
 
+  // Language Preferences
+  videoLanguage     String @default("en") @map("video_language")     // ISO 639-1 code for video/audio content
+  interfaceLanguage String @default("en") @map("interface_language") // ISO 639-1 code for UI language
+
   // Authentication
   passwordHash             String?   @map("password_hash")
   emailVerified            Boolean   @default(false) @map("email_verified")
@@ -222,10 +226,25 @@ model ListValue {
   isActive    Boolean  @default(true) @map("is_active")
   createdAt   DateTime @default(now()) @map("created_at")
   updatedAt   DateTime @updatedAt @map("updated_at")
-  listType    ListType @relation(fields: [listTypeId], references: [id], onDelete: Cascade)
+  listType     ListType              @relation(fields: [listTypeId], references: [id], onDelete: Cascade)
+  translations ListValueTranslation[]
 
   @@unique([listTypeId, value])
   @@map("list_values")
+}
+
+model ListValueTranslation {
+  id          String   @id @default(cuid())
+  listValueId String   @map("list_value_id")
+  language    String   // ISO 639-1 code: 'en', 'he', 'es', etc.
+  label       String   // Translated display text
+  description String?  // Translated description (optional)
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+  listValue   ListValue @relation(fields: [listValueId], references: [id], onDelete: Cascade)
+
+  @@unique([listValueId, language])
+  @@map("list_value_translations")
 }
 
 // ============================================================================
