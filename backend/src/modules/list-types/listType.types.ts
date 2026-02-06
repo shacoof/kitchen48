@@ -84,3 +84,48 @@ export interface ListValueOption {
   label: string;
   sortOrder: number;
 }
+
+// ============================================================================
+// List Value Translation Schemas
+// ============================================================================
+
+export const createTranslationSchema = z.object({
+  language: z.string().min(2, 'Language code is required').max(5),
+  label: z.string().min(1, 'Label is required').max(255),
+  description: z.preprocess(emptyStringToNull, z.string().max(1000).nullable().optional()),
+});
+
+export const updateTranslationSchema = z.object({
+  label: z.string().min(1).max(255).optional(),
+  description: z.preprocess(emptyStringToNull, z.string().max(1000).nullable().optional()),
+});
+
+export const upsertTranslationsSchema = z.array(
+  z.object({
+    language: z.string().min(2).max(5),
+    label: z.string().min(1).max(255),
+    description: z.preprocess(emptyStringToNull, z.string().max(1000).nullable().optional()),
+  })
+);
+
+export type CreateTranslationInput = z.infer<typeof createTranslationSchema>;
+export type UpdateTranslationInput = z.infer<typeof updateTranslationSchema>;
+export type UpsertTranslationsInput = z.infer<typeof upsertTranslationsSchema>;
+
+export interface TranslationResponse {
+  id: string;
+  listValueId: string;
+  language: string;
+  label: string;
+  description: string | null;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+// Public API response with translations
+export interface ListValueOptionTranslated {
+  value: string;
+  label: string;
+  sortOrder: number;
+  translations: Record<string, string>;
+}

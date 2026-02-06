@@ -71,6 +71,28 @@ router.put('/:listTypeId/values/:valueId', requireAuth, requireAdmin, listTypeCo
  */
 router.delete('/:listTypeId/values/:valueId', requireAuth, requireAdmin, listTypeController.deleteValue);
 
+// ============================================================================
+// Translation Routes (Admin only)
+// ============================================================================
+
+/**
+ * GET /api/list-types/:listTypeId/values/:valueId/translations
+ * Get all translations for a list value
+ */
+router.get('/:listTypeId/values/:valueId/translations', requireAuth, requireAdmin, listTypeController.getTranslations);
+
+/**
+ * PUT /api/list-types/:listTypeId/values/:valueId/translations
+ * Upsert translations for a list value (bulk)
+ */
+router.put('/:listTypeId/values/:valueId/translations', requireAuth, requireAdmin, listTypeController.upsertTranslations);
+
+/**
+ * DELETE /api/list-types/:listTypeId/values/:valueId/translations/:language
+ * Delete a specific translation
+ */
+router.delete('/:listTypeId/values/:valueId/translations/:language', requireAuth, requireAdmin, listTypeController.deleteTranslation);
+
 export default router;
 
 // ============================================================================

@@ -39,6 +39,8 @@ export const updateProfileSchema = z.object({
   phone: z.preprocess(emptyStringToNull, z.string().optional().nullable()),
   phoneCountry: z.preprocess(emptyStringToNull, z.string().length(2).optional().nullable()),
   description: z.preprocess(emptyStringToNull, z.string().optional().nullable()),
+  videoLanguage: z.string().min(2).max(5).optional(),
+  interfaceLanguage: z.string().min(2).max(5).optional(),
 });
 
 /**
@@ -84,6 +86,8 @@ export interface FullUserProfile extends PublicUserProfile {
   phoneCountry: string | null;
   emailVerified: boolean;
   userType: 'regular' | 'admin';
+  videoLanguage: string;
+  interfaceLanguage: string;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -100,6 +104,8 @@ export interface AdminUserListItem {
   profilePicture: string | null;
   emailVerified: boolean;
   userType: 'regular' | 'admin';
+  videoLanguage: string;
+  interfaceLanguage: string;
   createdAt: Date;
   updatedAt: Date;
 }
