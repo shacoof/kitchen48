@@ -12,6 +12,7 @@ import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../../context/AuthContext';
 import { ProfilePictureUpload } from '../components/ProfilePictureUpload';
 import { usersApi, FullUserProfile } from '../services/users.api';
+import { useListValues } from '../../../hooks/useListValues';
 import { createLogger } from '../../../lib/logger';
 
 const logger = createLogger('EditProfilePage');
@@ -31,6 +32,8 @@ const profileSchema = z.object({
   firstName: z.string().min(1, 'First name is required'),
   lastName: z.string().min(1, 'Last name is required'),
   description: z.string().optional().nullable(),
+  videoLanguage: z.string().min(1),
+  interfaceLanguage: z.string().min(1),
 });
 
 type ProfileFormData = z.infer<typeof profileSchema>;
@@ -39,6 +42,7 @@ export function EditProfilePage() {
   const navigate = useNavigate();
   const { t } = useTranslation('profile');
   const { isAuthenticated, isLoading: authLoading, refreshUser } = useAuth();
+  const { values: languages } = useListValues({ typeName: 'Languages' });
   const [profile, setProfile] = useState<FullUserProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -80,6 +84,8 @@ export function EditProfilePage() {
           firstName: result.data.firstName || '',
           lastName: result.data.lastName || '',
           description: result.data.description || '',
+          videoLanguage: result.data.videoLanguage || 'en',
+          interfaceLanguage: result.data.interfaceLanguage || 'en',
         });
       }
 
@@ -99,6 +105,8 @@ export function EditProfilePage() {
       firstName: data.firstName,
       lastName: data.lastName,
       description: data.description || null,
+      videoLanguage: data.videoLanguage,
+      interfaceLanguage: data.interfaceLanguage,
     });
 
     if (result.error) {
@@ -115,6 +123,8 @@ export function EditProfilePage() {
         firstName: result.data.firstName || '',
         lastName: result.data.lastName || '',
         description: result.data.description || '',
+        videoLanguage: result.data.videoLanguage || 'en',
+        interfaceLanguage: result.data.interfaceLanguage || 'en',
       });
     }
 
@@ -269,6 +279,42 @@ export function EditProfilePage() {
                 placeholder={t('edit.about_placeholder')}
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-accent-orange focus:border-transparent resize-none"
               />
+            </div>
+
+            {/* Video Language */}
+            <div>
+              <label htmlFor="videoLanguage" className="block text-sm font-medium text-gray-700 mb-1">
+                {t('edit.video_language_label')}
+              </label>
+              <select
+                id="videoLanguage"
+                {...register('videoLanguage')}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-accent-orange focus:border-transparent"
+              >
+                {languages.map((lang) => (
+                  <option key={lang.value} value={lang.value}>
+                    {lang.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* Interface Language */}
+            <div>
+              <label htmlFor="interfaceLanguage" className="block text-sm font-medium text-gray-700 mb-1">
+                {t('edit.interface_language_label')}
+              </label>
+              <select
+                id="interfaceLanguage"
+                {...register('interfaceLanguage')}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-accent-orange focus:border-transparent"
+              >
+                {languages.map((lang) => (
+                  <option key={lang.value} value={lang.value}>
+                    {lang.label}
+                  </option>
+                ))}
+              </select>
             </div>
 
             {/* Submit Button */}
