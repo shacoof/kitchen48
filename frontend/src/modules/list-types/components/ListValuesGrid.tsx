@@ -7,6 +7,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { authApi } from '../../auth/services/auth.api';
+import { TranslationsEditor } from './TranslationsEditor';
 
 interface ListValue {
   id: string;
@@ -30,6 +31,7 @@ export function ListValuesGrid({ listTypeId }: ListValuesGridProps) {
   const [error, setError] = useState<string | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editForm, setEditForm] = useState<Partial<ListValue>>({});
+  const [translatingValue, setTranslatingValue] = useState<{ id: string; label: string } | null>(null);
 
   const loadValues = useCallback(async () => {
     if (!listTypeId) {
@@ -265,6 +267,9 @@ export function ListValuesGrid({ listTypeId }: ListValuesGridProps) {
                 Active
               </th>
               <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-24">
+                Translations
+              </th>
+              <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-24">
                 Actions
               </th>
             </tr>
@@ -335,6 +340,15 @@ export function ListValuesGrid({ listTypeId }: ListValuesGridProps) {
                   )}
                 </td>
                 <td className="px-4 py-3 text-center">
+                  <button
+                    onClick={() => setTranslatingValue({ id: value.id, label: value.label })}
+                    className="px-2 py-1 text-xs border border-blue-300 text-blue-600 rounded hover:bg-blue-50"
+                    title="Manage translations"
+                  >
+                    <span className="material-symbols-outlined text-sm align-middle">translate</span>
+                  </button>
+                </td>
+                <td className="px-4 py-3 text-center">
                   {editingId === value.id ? (
                     <div className="flex justify-center gap-1">
                       <button
@@ -373,7 +387,7 @@ export function ListValuesGrid({ listTypeId }: ListValuesGridProps) {
             ))}
             {listValues.length === 0 && (
               <tr>
-                <td colSpan={6} className="px-4 py-8 text-center text-gray-500">
+                <td colSpan={7} className="px-4 py-8 text-center text-gray-500">
                   No values found. Click "Add Value" to create one.
                 </td>
               </tr>
@@ -381,6 +395,16 @@ export function ListValuesGrid({ listTypeId }: ListValuesGridProps) {
           </tbody>
         </table>
       </div>
+
+      {/* Translations Modal */}
+      {translatingValue && listTypeId && (
+        <TranslationsEditor
+          listTypeId={listTypeId}
+          valueId={translatingValue.id}
+          valueName={translatingValue.label}
+          onClose={() => setTranslatingValue(null)}
+        />
+      )}
     </div>
   );
 }
