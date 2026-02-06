@@ -1,0 +1,46 @@
+{
+  "buttons": {
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "signIn": "Sign In",
+    "signUp": "Sign Up",
+    "signOut": "Sign Out",
+    "loading": "Loading...",
+    "submit": "Submit",
+    "refresh": "Refresh",
+    "add": "Add",
+    "edit": "Edit",
+    "update": "Update",
+    "close": "Close",
+    "retry": "Retry",
+    "save_changes": "Save Changes"
+  },
+  "validation": {
+    "required": "This field is required",
+    "email_invalid": "Please enter a valid email",
+    "password_required": "Password is required",
+    "password_min_8": "Password must be at least 8 characters",
+    "firstname_required": "First name is required",
+    "lastname_required": "Last name is required",
+    "nickname_min_3": "Nickname must be at least 3 characters",
+    "nickname_max_30": "Nickname must be at most 30 characters",
+    "nickname_invalid": "Nickname must start with a letter and contain only lowercase letters, numbers, and underscores",
+    "country_code_invalid": "Use 2-letter country code (e.g., US)",
+    "passwords_mismatch": "Passwords do not match"
+  },
+  "messages": {
+    "loading": "Loading...",
+    "error": "Error",
+    "success": "Success",
+    "failed": "Failed",
+    "please_try_again": "Please try again"
+  },
+  "navigation": {
+    "explore": "Explore",
+    "recipes": "Recipes",
+    "chefs": "Chefs",
+    "community": "Community",
+    "my_profile": "My Profile"
+  }
+}

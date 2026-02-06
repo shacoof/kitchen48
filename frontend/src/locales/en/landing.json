@@ -1,0 +1,60 @@
+{
+  "header": {
+    "search_placeholder": "Search recipes...",
+    "sign_in": "Sign In"
+  },
+  "footer": {
+    "tagline": "Revolutionizing the way home cooks connect with professional culinary wisdom. Quality recipes for everyone.",
+    "platform": "Platform",
+    "browse_recipes": "Browse Recipes",
+    "pro_subscriptions": "Pro Subscriptions",
+    "cooking_classes": "Cooking Classes",
+    "chef_partnerships": "Chef Partnerships",
+    "support": "Support",
+    "help_center": "Help Center",
+    "kitchen_gear": "Kitchen Gear",
+    "privacy_policy": "Privacy Policy",
+    "terms_of_service": "Terms of Service",
+    "mobile_app": "Mobile App",
+    "mobile_description": "Get the best of Kitchen48 on the go. Available on iOS & Android.",
+    "get_it_on": "Get it on",
+    "google_play": "Google Play",
+    "download_on": "Download on the",
+    "app_store": "App Store",
+    "copyright": "Kitchen48 Inc. All rights reserved. Crafted for food lovers everywhere."
+  },
+  "newsletter": {
+    "heading": "Never miss a delicious beat.",
+    "delicious": "delicious",
+    "description": "Join 50,000+ food lovers and get weekly recipes, chef tips, and exclusive kitchen hacks delivered to your inbox.",
+    "placeholder": "Enter your email",
+    "subscribe": "Subscribe",
+    "success": "Thanks for subscribing! We'll be in touch soon.",
+    "privacy": "We respect your privacy. Unsubscribe at any time."
+  },
+  "whats_hot": {
+    "title": "What's Hot Right Now"
+  },
+  "your_recipes": {
+    "title": "Your Recipes",
+    "subtitle": "Personalized collection based on your taste",
+    "view_all": "View all"
+  },
+  "meet_our_masters": {
+    "title": "Meet Our Masters",
+    "subtitle": "The culinary visionaries trending this week"
+  },
+  "recipe_tags": {
+    "healthy": "Healthy",
+    "breakfast": "Breakfast",
+    "dinner": "Dinner",
+    "vegan": "Vegan",
+    "italian": "Italian",
+    "trending": "TRENDING",
+    "spicy": "SPICY",
+    "premium": "PREMIUM"
+  },
+  "buttons": {
+    "get_recipe": "Get Recipe"
+  }
+}

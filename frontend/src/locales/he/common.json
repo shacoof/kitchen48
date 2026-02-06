@@ -1,0 +1,46 @@
+{
+  "buttons": {
+    "save": "שמור",
+    "cancel": "ביטול",
+    "delete": "מחק",
+    "signIn": "כניסה",
+    "signUp": "הרשמה",
+    "signOut": "התנתק",
+    "loading": "טוען...",
+    "submit": "שלח",
+    "refresh": "רענן",
+    "add": "הוסף",
+    "edit": "ערוך",
+    "update": "עדכן",
+    "close": "סגור",
+    "retry": "נסה שוב",
+    "save_changes": "שמור שינויים"
+  },
+  "validation": {
+    "required": "שדה זה הוא חובה",
+    "email_invalid": "אנא הזן כתובת דוא\"ל תקנית",
+    "password_required": "נדרשת סיסמה",
+    "password_min_8": "הסיסמה חייבת להיות באורך של לפחות 8 תווים",
+    "firstname_required": "שם פרטי הוא חובה",
+    "lastname_required": "שם משפחה הוא חובה",
+    "nickname_min_3": "שם משתמש חייב להיות באורך של לפחות 3 תווים",
+    "nickname_max_30": "שם משתמש חייב להיות באורך של לא יותר מ-30 תווים",
+    "nickname_invalid": "שם משתמש חייב להתחיל באות ולהכיל רק אותיות קטנות, מספרים וקווים תחתונים",
+    "country_code_invalid": "השתמש בקוד מדינה בן 2 אותיות (לדוגמה US)",
+    "passwords_mismatch": "הסיסמאות אינן תואמות"
+  },
+  "messages": {
+    "loading": "טוען...",
+    "error": "שגיאה",
+    "success": "הצלחה",
+    "failed": "נכשל",
+    "please_try_again": "אנא נסה שוב"
+  },
+  "navigation": {
+    "explore": "חקור",
+    "recipes": "מתכונים",
+    "chefs": "שפים",
+    "community": "קהילה",
+    "my_profile": "הפרופיל שלי"
+  }
+}
