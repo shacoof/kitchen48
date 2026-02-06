@@ -4,10 +4,12 @@
  */
 
 import { Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { RegisterForm } from '../components/RegisterForm';
 import { SocialLoginButtons } from '../components/SocialLoginButtons';
 
 export function RegisterPage() {
+  const { t } = useTranslation('auth');
   const handleSuccess = () => {
     // Form shows success message, no navigation needed
     // User needs to verify email before logging in
@@ -18,12 +20,12 @@ export function RegisterPage() {
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
         <h1 className="text-center text-3xl font-bold text-gray-900">Kitchen48</h1>
         <h2 className="mt-6 text-center text-2xl font-semibold text-gray-900">
-          Create your account
+          {t('register.title')}
         </h2>
         <p className="mt-2 text-center text-sm text-gray-600">
-          Already have an account?{' '}
+          {t('register.have_account')}{' '}
           <Link to="/login" className="text-orange-600 hover:text-orange-500 font-medium">
-            Sign in
+            {t('register.sign_in')}
           </Link>
         </p>
       </div>
@@ -38,7 +40,7 @@ export function RegisterPage() {
                 <div className="w-full border-t border-gray-300" />
               </div>
               <div className="relative flex justify-center text-sm">
-                <span className="px-2 bg-white text-gray-500">Or register with email</span>
+                <span className="px-2 bg-white text-gray-500">{t('register.social_divider')}</span>
               </div>
             </div>
           </div>

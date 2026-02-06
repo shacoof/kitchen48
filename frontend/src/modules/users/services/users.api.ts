@@ -26,6 +26,8 @@ export interface FullUserProfile extends PublicUserProfile {
   phoneCountry: string | null;
   emailVerified: boolean;
   userType: 'regular' | 'admin';
+  videoLanguage: string;
+  interfaceLanguage: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -37,6 +39,8 @@ export interface UpdateProfileInput {
   phone?: string | null;
   phoneCountry?: string | null;
   description?: string | null;
+  videoLanguage?: string;
+  interfaceLanguage?: string;
 }
 
 export interface UploadResult {

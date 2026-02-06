@@ -7,6 +7,7 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
+import { useTranslation } from 'react-i18next';
 import { authApi } from '../services/auth.api';
 
 const registerSchema = z
@@ -36,6 +37,7 @@ interface RegisterFormProps {
 }
 
 export function RegisterForm({ onSuccess }: RegisterFormProps) {
+  const { t } = useTranslation('auth');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [submitSuccess, setSubmitSuccess] = useState(false);
@@ -70,7 +72,7 @@ export function RegisterForm({ onSuccess }: RegisterFormProps) {
       setSubmitSuccess(true);
       onSuccess?.();
     } else {
-      setSubmitError(response.error || 'Registration failed. Please try again.');
+      setSubmitError(response.error || t('register.error_general'));
     }
   };
 
@@ -78,10 +80,10 @@ export function RegisterForm({ onSuccess }: RegisterFormProps) {
     return (
       <div className="text-center p-6 bg-green-50 rounded-lg">
         <h3 className="text-lg font-semibold text-green-800 mb-2">
-          Registration Successful!
+          {t('register.success_heading')}
         </h3>
         <p className="text-green-700">
-          Please check your email to verify your account before logging in.
+          {t('register.success_message')}
         </p>
       </div>
     );
@@ -98,7 +100,7 @@ export function RegisterForm({ onSuccess }: RegisterFormProps) {
       <div className="grid grid-cols-2 gap-4">
         <div>
           <label htmlFor="firstName" className="block text-sm font-medium text-gray-700 mb-1">
-            First Name *
+            {t('register.firstname_label')}
           </label>
           <input
             id="firstName"
@@ -113,7 +115,7 @@ export function RegisterForm({ onSuccess }: RegisterFormProps) {
 
         <div>
           <label htmlFor="lastName" className="block text-sm font-medium text-gray-700 mb-1">
-            Last Name *
+            {t('register.lastname_label')}
           </label>
           <input
             id="lastName"
@@ -129,7 +131,7 @@ export function RegisterForm({ onSuccess }: RegisterFormProps) {
 
       <div>
         <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
-          Email *
+          {t('register.email_label')}
         </label>
         <input
           id="email"
@@ -144,7 +146,7 @@ export function RegisterForm({ onSuccess }: RegisterFormProps) {
 
       <div>
         <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
-          Password *
+          {t('register.password_label')}
         </label>
         <div className="relative">
           <input
@@ -170,7 +172,7 @@ export function RegisterForm({ onSuccess }: RegisterFormProps) {
 
       <div>
         <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 mb-1">
-          Confirm Password *
+          {t('register.confirm_password_label')}
         </label>
         <div className="relative">
           <input
@@ -197,26 +199,26 @@ export function RegisterForm({ onSuccess }: RegisterFormProps) {
       <div className="grid grid-cols-3 gap-4">
         <div className="col-span-2">
           <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-1">
-            Phone (optional)
+            {t('register.phone_label')}
           </label>
           <input
             id="phone"
             type="tel"
             {...register('phone')}
-            placeholder="+1234567890"
+            placeholder={t('register.phone_placeholder')}
             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500"
           />
         </div>
 
         <div>
           <label htmlFor="phoneCountry" className="block text-sm font-medium text-gray-700 mb-1">
-            Country
+            {t('register.country_label')}
           </label>
           <input
             id="phoneCountry"
             type="text"
             {...register('phoneCountry')}
-            placeholder="US"
+            placeholder={t('register.country_placeholder')}
             maxLength={2}
             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500 uppercase"
           />
@@ -228,13 +230,13 @@ export function RegisterForm({ onSuccess }: RegisterFormProps) {
 
       <div>
         <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-1">
-          About You (optional)
+          {t('register.description_label')}
         </label>
         <textarea
           id="description"
           {...register('description')}
           rows={3}
-          placeholder="Tell us a bit about yourself..."
+          placeholder={t('register.description_placeholder')}
           className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500"
         />
       </div>
@@ -244,7 +246,7 @@ export function RegisterForm({ onSuccess }: RegisterFormProps) {
         disabled={isSubmitting}
         className="w-full py-3 px-4 bg-orange-500 text-white font-semibold rounded-md hover:bg-orange-600 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
       >
-        {isSubmitting ? 'Creating Account...' : 'Create Account'}
+        {isSubmitting ? t('register.creating') : t('register.create_account_button')}
       </button>
     </form>
   );

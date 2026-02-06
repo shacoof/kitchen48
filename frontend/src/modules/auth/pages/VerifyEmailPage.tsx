@@ -5,11 +5,13 @@
 
 import { useEffect, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { authApi } from '../services/auth.api';
 
 type VerificationStatus = 'loading' | 'success' | 'error';
 
 export function VerifyEmailPage() {
+  const { t } = useTranslation('auth');
   const [searchParams] = useSearchParams();
   const [status, setStatus] = useState<VerificationStatus>('loading');
   const [errorMessage, setErrorMessage] = useState<string>('');
@@ -19,7 +21,7 @@ export function VerifyEmailPage() {
 
     if (!token) {
       setStatus('error');
-      setErrorMessage('Verification token is missing.');
+      setErrorMessage(t('verify_email.error_token_missing'));
       return;
     }
 
@@ -33,7 +35,7 @@ export function VerifyEmailPage() {
       setStatus('success');
     } else {
       setStatus('error');
-      setErrorMessage(response.error || 'Email verification failed.');
+      setErrorMessage(response.error || t('verify_email.error_general'));
     }
   };
 
@@ -42,7 +44,7 @@ export function VerifyEmailPage() {
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
         <h1 className="text-center text-3xl font-bold text-gray-900">Kitchen48</h1>
         <h2 className="mt-6 text-center text-2xl font-semibold text-gray-900">
-          Email Verification
+          {t('verify_email.title')}
         </h2>
       </div>
 
@@ -51,7 +53,7 @@ export function VerifyEmailPage() {
           {status === 'loading' && (
             <div className="text-center">
               <div className="inline-block animate-spin rounded-full h-8 w-8 border-4 border-orange-500 border-t-transparent"></div>
-              <p className="mt-4 text-gray-600">Verifying your email...</p>
+              <p className="mt-4 text-gray-600">{t('verify_email.verifying')}</p>
             </div>
           )}
 
@@ -72,16 +74,16 @@ export function VerifyEmailPage() {
                   />
                 </svg>
               </div>
-              <h3 className="mt-4 text-lg font-medium text-gray-900">Email Verified!</h3>
+              <h3 className="mt-4 text-lg font-medium text-gray-900">{t('verify_email.success_heading')}</h3>
               <p className="mt-2 text-gray-600">
-                Your email has been successfully verified. You can now log in to your account.
+                {t('verify_email.success_message')}
               </p>
               <div className="mt-6">
                 <Link
                   to="/login"
                   className="inline-flex items-center px-4 py-2 bg-orange-500 text-white font-semibold rounded-md hover:bg-orange-600 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2 transition-colors"
                 >
-                  Go to Login
+                  {t('verify_email.go_to_login')}
                 </Link>
               </div>
             </div>
@@ -104,17 +106,17 @@ export function VerifyEmailPage() {
                   />
                 </svg>
               </div>
-              <h3 className="mt-4 text-lg font-medium text-gray-900">Verification Failed</h3>
+              <h3 className="mt-4 text-lg font-medium text-gray-900">{t('verify_email.error_heading')}</h3>
               <p className="mt-2 text-gray-600">{errorMessage}</p>
               <div className="mt-6 space-y-2">
                 <Link
                   to="/login"
                   className="block text-orange-600 hover:text-orange-500 font-medium"
                 >
-                  Go to Login
+                  {t('verify_email.go_to_login')}
                 </Link>
                 <p className="text-sm text-gray-500">
-                  If your verification link expired, you can request a new one from the login page.
+                  {t('verify_email.error_expired')}
                 </p>
               </div>
             </div>

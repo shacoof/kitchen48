@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../context/AuthContext';
 
 export type AdminPage = 'dashboard' | 'parameters' | 'users' | 'ingredients' | 'statistics' | 'list-values';
@@ -8,15 +9,16 @@ interface HeaderProps {
 }
 
 export default function Header({ currentPage = 'dashboard', onNavigate }: HeaderProps) {
+  const { t } = useTranslation('admin');
   const { user, isAuthenticated, isAdmin, logout } = useAuth();
 
   const navItems: { id: AdminPage; label: string }[] = [
-    { id: 'dashboard', label: 'Dashboard' },
-    { id: 'users', label: 'Users' },
-    { id: 'ingredients', label: 'Ingredients' },
-    { id: 'statistics', label: 'Statistics' },
-    { id: 'list-values', label: 'List of Values' },
-    { id: 'parameters', label: 'Parameters' },
+    { id: 'dashboard', label: t('header.dashboard') },
+    { id: 'users', label: t('header.users') },
+    { id: 'ingredients', label: t('header.ingredients') },
+    { id: 'statistics', label: t('header.statistics') },
+    { id: 'list-values', label: t('header.list_values') },
+    { id: 'parameters', label: t('header.parameters') },
   ];
 
   return (
@@ -30,7 +32,7 @@ export default function Header({ currentPage = 'dashboard', onNavigate }: Header
               src="/kitchen48-logo-tight.jpg"
             />
             <span className="text-white/80 text-sm font-medium bg-accent-orange/20 px-3 py-1 rounded-full border border-accent-orange/30">
-              Admin Portal
+              {t('header.admin_portal')}
             </span>
           </div>
 
@@ -63,7 +65,7 @@ export default function Header({ currentPage = 'dashboard', onNavigate }: Header
                 onClick={logout}
                 className="bg-slate-600 hover:bg-slate-500 text-white px-4 py-2 rounded-full font-medium transition-all text-sm"
               >
-                Sign Out
+                {t('header.sign_out')}
               </button>
             </>
           )}

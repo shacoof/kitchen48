@@ -1,10 +1,13 @@
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { useAuth } from '../../context/AuthContext'
 import { UserAvatar } from '../common/UserAvatar'
 
 export default function Header() {
   const { user, isAuthenticated, logout } = useAuth()
+  const { t } = useTranslation('landing')
+  const { t: tc } = useTranslation('common')
   const [menuOpen, setMenuOpen] = useState(false)
 
   // Close menu when clicking outside
@@ -30,16 +33,16 @@ export default function Header() {
 
         <nav className="hidden md:flex items-center gap-8">
           <a className="text-white/90 hover:text-white transition-colors font-medium" href="#">
-            Explore
+            {tc('navigation.explore')}
           </a>
           <a className="text-white/90 hover:text-white transition-colors font-medium" href="#">
-            Recipes
+            {tc('navigation.recipes')}
           </a>
           <a className="text-white/90 hover:text-white transition-colors font-medium" href="#">
-            Chefs
+            {tc('navigation.chefs')}
           </a>
           <a className="text-white/90 hover:text-white transition-colors font-medium" href="#">
-            Community
+            {tc('navigation.community')}
           </a>
         </nav>
 
@@ -50,7 +53,7 @@ export default function Header() {
             </span>
             <input
               className="bg-primary/50 border border-slate-500/50 rounded-full py-2 pl-10 pr-4 w-64 text-sm text-white focus:outline-none focus:ring-2 focus:ring-accent-orange transition-all placeholder:text-slate-400"
-              placeholder="Search recipes..."
+              placeholder={t('header.search_placeholder')}
               type="text"
             />
           </div>
@@ -85,7 +88,7 @@ export default function Header() {
                     className="w-full text-left px-4 py-3 text-white hover:bg-slate-700 transition-colors flex items-center gap-2"
                   >
                     <span className="material-symbols-outlined text-[18px]">person</span>
-                    My Profile
+                    {tc('navigation.my_profile')}
                   </Link>
                   <button
                     onClick={() => {
@@ -95,7 +98,7 @@ export default function Header() {
                     className="w-full text-left px-4 py-3 text-white hover:bg-slate-700 transition-colors flex items-center gap-2 border-t border-slate-600"
                   >
                     <span className="material-symbols-outlined text-[18px]">logout</span>
-                    Sign Out
+                    {tc('buttons.signOut')}
                   </button>
                 </div>
               )}
@@ -105,7 +108,7 @@ export default function Header() {
               to="/login"
               className="bg-accent-orange hover:bg-[#E64A19] text-white px-6 py-2.5 rounded-full font-semibold transition-all shadow-lg active:scale-95"
             >
-              Sign In
+              {t('header.sign_in')}
             </Link>
           )}
         </div>

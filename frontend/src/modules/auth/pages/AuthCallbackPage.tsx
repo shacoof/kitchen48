@@ -5,10 +5,12 @@
 
 import { useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { authApi } from '../services/auth.api';
 import { useAuth } from '../hooks/useAuth';
 
 export function AuthCallbackPage() {
+  const { t } = useTranslation('auth');
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { refreshUser } = useAuth();
@@ -34,7 +36,7 @@ export function AuthCallbackPage() {
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
         <div className="text-center">
           <div className="inline-block animate-spin rounded-full h-8 w-8 border-4 border-orange-500 border-t-transparent"></div>
-          <p className="mt-4 text-gray-600">Completing sign in...</p>
+          <p className="mt-4 text-gray-600">{t('callback.completing')}</p>
         </div>
       </div>
     </div>

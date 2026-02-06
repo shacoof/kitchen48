@@ -7,6 +7,7 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '../hooks/useAuth';
 
 const loginSchema = z.object({
@@ -22,6 +23,7 @@ interface LoginFormProps {
 }
 
 export function LoginForm({ onSuccess, onResendVerification }: LoginFormProps) {
+  const { t } = useTranslation('auth');
   const { login } = useAuth();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
@@ -50,7 +52,7 @@ export function LoginForm({ onSuccess, onResendVerification }: LoginFormProps) {
     if (result.success) {
       onSuccess?.();
     } else {
-      setSubmitError(result.error || 'Login failed. Please try again.');
+      setSubmitError(result.error || t('login.error_general'));
       // Show resend option if email not verified
       if (result.error?.includes('verify your email')) {
         setShowResend(true);
@@ -69,7 +71,7 @@ export function LoginForm({ onSuccess, onResendVerification }: LoginFormProps) {
               onClick={() => onResendVerification(lastEmail)}
               className="block mt-2 text-orange-600 hover:text-orange-700 underline"
             >
-              Resend verification email
+              {t('login.resend_verification')}
             </button>
           )}
         </div>
@@ -77,7 +79,7 @@ export function LoginForm({ onSuccess, onResendVerification }: LoginFormProps) {
 
       <div>
         <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
-          Email
+          {t('login.email_label')}
         </label>
         <input
           id="email"
@@ -92,7 +94,7 @@ export function LoginForm({ onSuccess, onResendVerification }: LoginFormProps) {
 
       <div>
         <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
-          Password
+          {t('login.password_label')}
         </label>
         <div className="relative">
           <input
@@ -121,7 +123,7 @@ export function LoginForm({ onSuccess, onResendVerification }: LoginFormProps) {
         disabled={isSubmitting}
         className="w-full py-3 px-4 bg-orange-500 text-white font-semibold rounded-md hover:bg-orange-600 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
       >
-        {isSubmitting ? 'Signing in...' : 'Sign In'}
+        {isSubmitting ? t('login.signing_in') : t('login.sign_in_button')}
       </button>
     </form>
   );

@@ -1,3 +1,5 @@
+import { useTranslation } from 'react-i18next'
+
 interface TrendingCardProps {
   image: string
   title: string
@@ -7,6 +9,14 @@ interface TrendingCardProps {
 }
 
 export default function TrendingCard({ image, title, tags, likes, comments }: TrendingCardProps) {
+  const { t } = useTranslation('landing')
+
+  const tagKeyMap: Record<string, string> = {
+    'TRENDING': 'trending',
+    'SPICY': 'spicy',
+    'PREMIUM': 'premium',
+  }
+
   return (
     <div className="relative group h-[400px] rounded-3xl overflow-hidden shadow-2xl">
       <img
@@ -24,7 +34,7 @@ export default function TrendingCard({ image, title, tags, likes, comments }: Tr
                 index === 0 ? 'bg-accent-orange' : 'bg-white/20 backdrop-blur-sm'
               }`}
             >
-              {tag}
+              {t(`recipe_tags.${tagKeyMap[tag] || tag.toLowerCase()}`)}
             </span>
           ))}
         </div>
@@ -39,7 +49,7 @@ export default function TrendingCard({ image, title, tags, likes, comments }: Tr
             </span>
           </div>
           <button className="bg-white text-primary px-4 py-2 rounded-lg font-bold text-sm hover:bg-accent-orange hover:text-white transition-colors">
-            Get Recipe
+            {t('buttons.get_recipe')}
           </button>
         </div>
       </div>

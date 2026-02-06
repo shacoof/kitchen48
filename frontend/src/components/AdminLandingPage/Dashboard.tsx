@@ -1,6 +1,8 @@
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../context/AuthContext';
 
 export default function Dashboard() {
+  const { t } = useTranslation('admin');
   const { user } = useAuth();
 
   return (
@@ -8,9 +10,9 @@ export default function Dashboard() {
       <div className="max-w-7xl mx-auto">
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-white mb-2">
-            Welcome, {user?.firstName || 'Admin'}
+            {t('dashboard.welcome', { name: user?.firstName || 'Admin' })}
           </h1>
-          <p className="text-slate-400">Kitchen48 Admin Dashboard</p>
+          <p className="text-slate-400">{t('dashboard.subtitle')}</p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -21,8 +23,8 @@ export default function Dashboard() {
                 <span className="material-symbols-outlined text-accent-green">restaurant</span>
               </div>
               <div>
-                <p className="text-slate-400 text-sm">Total Recipes</p>
-                <p className="text-2xl font-bold text-white">--</p>
+                <p className="text-slate-400 text-sm">{t('dashboard.total_recipes')}</p>
+                <p className="text-2xl font-bold text-white">{t('dashboard.placeholder_value')}</p>
               </div>
             </div>
           </div>
@@ -33,8 +35,8 @@ export default function Dashboard() {
                 <span className="material-symbols-outlined text-accent-orange">group</span>
               </div>
               <div>
-                <p className="text-slate-400 text-sm">Total Users</p>
-                <p className="text-2xl font-bold text-white">--</p>
+                <p className="text-slate-400 text-sm">{t('dashboard.total_users')}</p>
+                <p className="text-2xl font-bold text-white">{t('dashboard.placeholder_value')}</p>
               </div>
             </div>
           </div>
@@ -45,8 +47,8 @@ export default function Dashboard() {
                 <span className="material-symbols-outlined text-blue-400">chef_hat</span>
               </div>
               <div>
-                <p className="text-slate-400 text-sm">Active Chefs</p>
-                <p className="text-2xl font-bold text-white">--</p>
+                <p className="text-slate-400 text-sm">{t('dashboard.active_chefs')}</p>
+                <p className="text-2xl font-bold text-white">{t('dashboard.placeholder_value')}</p>
               </div>
             </div>
           </div>
@@ -54,30 +56,30 @@ export default function Dashboard() {
 
         {/* Quick Actions */}
         <div className="mt-8">
-          <h2 className="text-xl font-semibold text-white mb-4">Quick Actions</h2>
+          <h2 className="text-xl font-semibold text-white mb-4">{t('dashboard.quick_actions')}</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             <button className="bg-slate-800/50 hover:bg-slate-700/50 border border-slate-700/50 rounded-xl p-4 text-left transition-all group">
               <span className="material-symbols-outlined text-accent-orange group-hover:scale-110 transition-transform inline-block mb-2">add_circle</span>
-              <p className="text-white font-medium">Add Recipe</p>
-              <p className="text-slate-400 text-sm">Create a new recipe</p>
+              <p className="text-white font-medium">{t('dashboard.add_recipe')}</p>
+              <p className="text-slate-400 text-sm">{t('dashboard.add_recipe_desc')}</p>
             </button>
 
             <button className="bg-slate-800/50 hover:bg-slate-700/50 border border-slate-700/50 rounded-xl p-4 text-left transition-all group">
               <span className="material-symbols-outlined text-accent-green group-hover:scale-110 transition-transform inline-block mb-2">manage_accounts</span>
-              <p className="text-white font-medium">Manage Users</p>
-              <p className="text-slate-400 text-sm">View and edit users</p>
+              <p className="text-white font-medium">{t('dashboard.manage_users')}</p>
+              <p className="text-slate-400 text-sm">{t('dashboard.manage_users_desc')}</p>
             </button>
 
             <button className="bg-slate-800/50 hover:bg-slate-700/50 border border-slate-700/50 rounded-xl p-4 text-left transition-all group">
               <span className="material-symbols-outlined text-blue-400 group-hover:scale-110 transition-transform inline-block mb-2">analytics</span>
-              <p className="text-white font-medium">Analytics</p>
-              <p className="text-slate-400 text-sm">View site statistics</p>
+              <p className="text-white font-medium">{t('dashboard.analytics')}</p>
+              <p className="text-slate-400 text-sm">{t('dashboard.analytics_desc')}</p>
             </button>
 
             <button className="bg-slate-800/50 hover:bg-slate-700/50 border border-slate-700/50 rounded-xl p-4 text-left transition-all group">
               <span className="material-symbols-outlined text-purple-400 group-hover:scale-110 transition-transform inline-block mb-2">settings</span>
-              <p className="text-white font-medium">Settings</p>
-              <p className="text-slate-400 text-sm">Configure site settings</p>
+              <p className="text-white font-medium">{t('dashboard.settings')}</p>
+              <p className="text-slate-400 text-sm">{t('dashboard.settings_desc')}</p>
             </button>
           </div>
         </div>
