@@ -30,6 +30,17 @@ frontend/
 │   │       └── Footer.tsx        # Admin footer
 │   ├── context/
 │   │   └── AuthContext.tsx       # Global auth state (user, isAdmin, login, logout)
+│   ├── hooks/
+│   │   └── useListValues.ts     # Hook for fetching LOV with language support
+│   ├── locales/                  # i18n translation files
+│   │   ├── en/                   # English translations
+│   │   │   ├── common.json      # Shared strings (nav, buttons)
+│   │   │   ├── auth.json        # Auth module strings
+│   │   │   ├── profile.json     # Profile module strings
+│   │   │   ├── landing.json     # Landing page strings
+│   │   │   └── admin.json       # Admin portal strings
+│   │   └── he/                   # Hebrew translations (same structure)
+│   ├── i18n.ts                   # i18next configuration
 │   ├── utils/
 │   │   └── subdomain.ts          # Subdomain detection utility
 │   ├── index.css                 # Global styles & Tailwind
@@ -241,5 +252,46 @@ const [showPassword, setShowPassword] = useState(false);
 - `src/modules/auth/components/LoginForm.tsx`
 - `src/modules/auth/components/RegisterForm.tsx` (2 fields)
 - `src/components/AdminLandingPage/LoginForm.tsx`
+
+### Multi-Language Support (i18n) - 2026-02-06
+
+All user-facing text uses react-i18next for internationalization.
+
+#### i18n Setup
+- Config: `src/i18n.ts` (imported in `main.tsx`)
+- Namespaces: `common`, `auth`, `profile`, `landing`, `admin`
+- Languages: English (en, default) + Hebrew (he)
+- Fallback: English for missing translations
+
+#### Usage Pattern
+```tsx
+import { useTranslation } from 'react-i18next';
+
+function MyComponent() {
+  const { t } = useTranslation('namespace'); // 'common', 'auth', etc.
+  return <h1>{t('section.key')}</h1>;
+}
+
+// For interpolation:
+t('welcome', { name: 'John' })  // "Welcome, John"
+// In JSON: "welcome": "Welcome, {{name}}"
+```
+
+#### Language Sync
+- `AuthContext.tsx` syncs i18n language with user's `interfaceLanguage` preference
+- Sets `document.documentElement.dir` to `rtl` for Hebrew/Arabic
+- Sets `document.documentElement.lang` to the user's language
+
+#### LOV Hook for Dynamic Content
+```tsx
+import { useListValues } from '../hooks/useListValues';
+
+const { values, isLoading } = useListValues({ typeName: 'Languages', lang: 'he' });
+```
+
+#### Adding a New Language
+1. Create `frontend/src/locales/{lang}/` directory
+2. Copy all JSON files from `en/` and translate
+3. Add the language to `i18n.ts` resources
 
 ---
