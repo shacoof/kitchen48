@@ -1,3 +1,5 @@
+import { useTranslation } from 'react-i18next'
+
 interface RecipeCardProps {
   image: string
   tag: string
@@ -7,6 +9,8 @@ interface RecipeCardProps {
 }
 
 export default function RecipeCard({ image, tag, time, title, description }: RecipeCardProps) {
+  const { t } = useTranslation('landing')
+
   return (
     <div className="group cursor-pointer flex-shrink-0 w-72">
       <div className="relative rounded-2xl overflow-hidden mb-4 aspect-[4/5]">
@@ -16,7 +20,7 @@ export default function RecipeCard({ image, tag, time, title, description }: Rec
           src={image}
         />
         <span className="absolute top-4 left-4 bg-accent-green text-white text-[10px] font-bold px-2 py-1 rounded uppercase">
-          {tag}
+          {t(`recipe_tags.${tag}`)}
         </span>
         <div className="absolute bottom-4 right-4 bg-primary/90 backdrop-blur-md p-2 rounded-lg text-white text-xs flex items-center gap-1">
           <span className="material-symbols-outlined text-[16px]">schedule</span> {time}

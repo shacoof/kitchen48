@@ -18,7 +18,8 @@ frontend/src/modules/list-types/
 └── components/
     ├── ListTypeManagement.tsx          # Master-detail coordinator
     ├── ListTypesGrid.tsx               # Tabulator grid for list types
-    └── ListValuesGrid.tsx              # Tabulator grid for list values
+    ├── ListValuesGrid.tsx              # Tabulator grid for list values
+    └── TranslationsEditor.tsx          # Modal for managing value translations
 ```
 
 ---
@@ -64,6 +65,9 @@ Tabulator grid for list values:
 | POST /api/list-types/:id/values | ListValuesGrid (add) |
 | PUT /api/list-types/:id/values/:valueId | ListValuesGrid (edit) |
 | DELETE /api/list-types/:id/values/:valueId | ListValuesGrid (delete) |
+| GET /api/list-types/:id/values/:valueId/translations | TranslationsEditor (load) |
+| PUT /api/list-types/:id/values/:valueId/translations | TranslationsEditor (save) |
+| DELETE /api/list-types/:id/values/:valueId/translations/:lang | TranslationsEditor (delete) |
 
 ---
 
@@ -84,5 +88,13 @@ Tabulator grid for list values:
 - Simplified for Kitchen48 (no i18n, simpler auth)
 - Uses Tabulator 6.x with inline editing
 - Admin-only access (requires admin login)
+
+### 2026-02-06 - Translations Support
+
+- Added TranslationsEditor modal component
+- Each list value row has a "translate" button opening the editor
+- Fetches available languages from "Languages" LOV
+- Supports add/edit/delete translations per language
+- Backend stores translations in `list_value_translations` table
 
 ---

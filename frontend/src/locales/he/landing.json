@@ -1,0 +1,60 @@
+{
+  "header": {
+    "search_placeholder": "חפש מתכונים...",
+    "sign_in": "כניסה"
+  },
+  "footer": {
+    "tagline": "מהפכה בדרך שבה טבחים ביתיים מתחברים לחוכמה קולינרית מקצועית. מתכונים איכותיים לכולם.",
+    "platform": "פלטפורמה",
+    "browse_recipes": "עיין במתכונים",
+    "pro_subscriptions": "מנויי Pro",
+    "cooking_classes": "שיעורי בישול",
+    "chef_partnerships": "שותפויות שפים",
+    "support": "תמיכה",
+    "help_center": "מרכז עזרה",
+    "kitchen_gear": "ציוד מטבח",
+    "privacy_policy": "מדיניות פרטיות",
+    "terms_of_service": "תנאי השירות",
+    "mobile_app": "אפליקציה לנייד",
+    "mobile_description": "קבל את הטוב ביותר של Kitchen48 בדרכך. זמין ב-iOS וגם ב-Android.",
+    "get_it_on": "קבל אותו ב",
+    "google_play": "Google Play",
+    "download_on": "הורד ב",
+    "app_store": "App Store",
+    "copyright": "Kitchen48 Inc. כל הזכויות שמורות. עוצב לאוהבי אוכל בכל מקום."
+  },
+  "newsletter": {
+    "heading": "לעולם אל תחמיצו טעימה.",
+    "delicious": "טעימה",
+    "description": "הצטרפו ל-50,000+ חובבי אוכל וקבלו מתכונים שבועיים, טיפים מהשפים, וטריקים בלעדיים למטבח ישירות לתיבת הדוא\"ל.",
+    "placeholder": "הזן את כתובת הדוא\"ל שלך",
+    "subscribe": "הירשם",
+    "success": "תודה על ההרשמה! נצור איתך קשר בקרוב.",
+    "privacy": "אנו מכבדים את הפרטיות שלך. ביטול הרשמה בכל עת."
+  },
+  "whats_hot": {
+    "title": "מה חם עכשיו"
+  },
+  "your_recipes": {
+    "title": "המתכונים שלך",
+    "subtitle": "אוסף מותאם אישית בהתאם לטעמך",
+    "view_all": "צפה בהכל"
+  },
+  "meet_our_masters": {
+    "title": "הכירו את השפים שלנו",
+    "subtitle": "בעלי החזון הקולינריים המובילים השבוע"
+  },
+  "recipe_tags": {
+    "healthy": "בריא",
+    "breakfast": "ארוחת בוקר",
+    "dinner": "ארוחת ערב",
+    "vegan": "טבעוני",
+    "italian": "איטלקי",
+    "trending": "בטרנד",
+    "spicy": "חריף",
+    "premium": "פרימיום"
+  },
+  "buttons": {
+    "get_recipe": "קבל מתכון"
+  }
+}

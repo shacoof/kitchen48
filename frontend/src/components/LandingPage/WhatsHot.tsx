@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next'
 import TrendingCard from './TrendingCard'
 
 const trendingRecipes = [
@@ -18,11 +19,13 @@ const trendingRecipes = [
 ]
 
 export default function WhatsHot() {
+  const { t } = useTranslation('landing')
+
   return (
     <section>
       <div className="flex items-center gap-4 mb-8">
         <span className="material-symbols-outlined text-accent-orange">trending_up</span>
-        <h2 className="font-display text-3xl font-bold text-white">What's Hot Right Now</h2>
+        <h2 className="font-display text-3xl font-bold text-white">{t('whats_hot.title')}</h2>
       </div>
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         {trendingRecipes.map((recipe, index) => (

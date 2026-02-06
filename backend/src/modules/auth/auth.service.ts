@@ -235,6 +235,8 @@ class AuthService {
     profilePicture: string | null;
     emailVerified: boolean;
     userType: UserType;
+    videoLanguage: string;
+    interfaceLanguage: string;
   }): AuthUser {
     return {
       id: user.id,
@@ -245,6 +247,8 @@ class AuthService {
       profilePicture: user.profilePicture,
       emailVerified: user.emailVerified,
       userType: user.userType,
+      videoLanguage: user.videoLanguage,
+      interfaceLanguage: user.interfaceLanguage,
     };
   }
 }

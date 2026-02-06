@@ -16,6 +16,8 @@ export interface AuthUser {
   profilePicture: string | null;
   emailVerified: boolean;
   userType: UserType;
+  videoLanguage: string;
+  interfaceLanguage: string;
 }
 
 export interface RegisterInput {

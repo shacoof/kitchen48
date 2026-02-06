@@ -5,11 +5,13 @@
 
 import { useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { LoginForm } from '../components/LoginForm';
 import { SocialLoginButtons } from '../components/SocialLoginButtons';
 import { authApi } from '../services/auth.api';
 
 export function LoginPage() {
+  const { t } = useTranslation('auth');
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const [resendStatus, setResendStatus] = useState<{
@@ -31,12 +33,12 @@ export function LoginPage() {
     if (response.success) {
       setResendStatus({
         type: 'success',
-        message: 'Verification email sent! Please check your inbox.',
+        message: t('login.verification_sent'),
       });
     } else {
       setResendStatus({
         type: 'error',
-        message: response.error || 'Failed to resend verification email.',
+        message: response.error || t('login.verification_failed'),
       });
     }
   };
@@ -46,12 +48,12 @@ export function LoginPage() {
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
         <h1 className="text-center text-3xl font-bold text-gray-900">Kitchen48</h1>
         <h2 className="mt-6 text-center text-2xl font-semibold text-gray-900">
-          Sign in to your account
+          {t('login.title')}
         </h2>
         <p className="mt-2 text-center text-sm text-gray-600">
-          Don't have an account?{' '}
+          {t('login.no_account')}{' '}
           <Link to="/register" className="text-orange-600 hover:text-orange-500 font-medium">
-            Create one
+            {t('login.create_one')}
           </Link>
         </p>
       </div>
@@ -61,7 +63,7 @@ export function LoginPage() {
           {oauthError && (
             <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded text-red-700 text-sm">
               {oauthError === 'oauth_failed'
-                ? 'Social login failed. Please try again or use email login.'
+                ? t('login.oauth_failed')
                 : oauthError}
             </div>
           )}
@@ -86,7 +88,7 @@ export function LoginPage() {
                 <div className="w-full border-t border-gray-300" />
               </div>
               <div className="relative flex justify-center text-sm">
-                <span className="px-2 bg-white text-gray-500">Or sign in with email</span>
+                <span className="px-2 bg-white text-gray-500">{t('login.social_divider')}</span>
               </div>
             </div>
           </div>

@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next'
 import ChefCard from './ChefCard'
 
 const chefs = [
@@ -32,11 +33,13 @@ const chefs = [
 ]
 
 export default function MeetOurMasters() {
+  const { t } = useTranslation('landing')
+
   return (
     <section className="bg-primary/40 rounded-[2rem] p-12">
       <div className="text-center mb-12">
-        <h2 className="font-display text-4xl font-bold text-white mb-2">Meet Our Masters</h2>
-        <p className="text-slate-400">The culinary visionaries trending this week</p>
+        <h2 className="font-display text-4xl font-bold text-white mb-2">{t('meet_our_masters.title')}</h2>
+        <p className="text-slate-400">{t('meet_our_masters.subtitle')}</p>
       </div>
       <div className="flex flex-wrap justify-center gap-12">
         {chefs.map((chef, index) => (

@@ -1,0 +1,45 @@
+{
+  "edit": {
+    "page_title": "Edit Profile",
+    "profile_picture_label": "Profile Picture",
+    "nickname_label": "Nickname",
+    "nickname_helper": "3-30 characters. Lowercase letters, numbers, and underscores only.",
+    "nickname_prefix": "kitchen48.com/",
+    "nickname_placeholder": "jsmith",
+    "firstname_label": "First Name",
+    "lastname_label": "Last Name",
+    "about_label": "About Me",
+    "about_placeholder": "Tell us about yourself...",
+    "video_language_label": "Video/Audio Language",
+    "interface_language_label": "Interface Language",
+    "save_button": "Save Changes",
+    "saving": "Saving...",
+    "cancel_button": "Cancel",
+    "success_message": "Profile updated successfully!",
+    "picture_updated": "Profile picture updated!",
+    "error_message": "Failed to load profile",
+    "loading": "Loading...",
+    "view_profile": "View Profile"
+  },
+  "view": {
+    "not_found": "User Not Found",
+    "not_found_message": "We couldn't find a user with the nickname \"{{nickname}}\"",
+    "error_heading": "Error",
+    "error_message": "Something went wrong loading this profile",
+    "go_home": "Go Home",
+    "about": "About",
+    "recipes": "Recipes",
+    "coming_soon": "Coming soon...",
+    "default_name": "Kitchen48 User"
+  },
+  "picture_upload": {
+    "change_photo": "Change Photo",
+    "save": "Save",
+    "cancel": "Cancel",
+    "uploading": "Uploading...",
+    "error_format": "Please select a JPEG, PNG, or WebP image",
+    "error_size": "Image must be less than 5MB",
+    "error_upload": "Failed to upload image",
+    "helper_text": "JPEG, PNG, or WebP. Max 5MB."
+  }
+}

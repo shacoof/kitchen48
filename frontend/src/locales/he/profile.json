@@ -1,0 +1,45 @@
+{
+  "edit": {
+    "page_title": "עריכת פרופיל",
+    "profile_picture_label": "תמונת פרופיל",
+    "nickname_label": "שם משתמש",
+    "nickname_helper": "3-30 תווים. רק אותיות קטנות, מספרים וקווים תחתונים.",
+    "nickname_prefix": "kitchen48.com/",
+    "nickname_placeholder": "jsmith",
+    "firstname_label": "שם פרטי",
+    "lastname_label": "שם משפחה",
+    "about_label": "עליי",
+    "about_placeholder": "ספר לנו על עצמך...",
+    "video_language_label": "שפת וידאו/אודיו",
+    "interface_language_label": "שפת ממשק",
+    "save_button": "שמור שינויים",
+    "saving": "שומר...",
+    "cancel_button": "ביטול",
+    "success_message": "הפרופיל עודכן בהצלחה!",
+    "picture_updated": "תמונת הפרופיל עודכנה!",
+    "error_message": "טעינת הפרופיל נכשלה",
+    "loading": "טוען...",
+    "view_profile": "צפה בפרופיל"
+  },
+  "view": {
+    "not_found": "משתמש לא נמצא",
+    "not_found_message": "לא הצלחנו למצוא משתמש עם שם המשתמש \"{{nickname}}\"",
+    "error_heading": "שגיאה",
+    "error_message": "משהו השתבש בטעינת הפרופיל הזה",
+    "go_home": "חזור לדף הבית",
+    "about": "אודות",
+    "recipes": "מתכונים",
+    "coming_soon": "בקרוב...",
+    "default_name": "משתמש Kitchen48"
+  },
+  "picture_upload": {
+    "change_photo": "שנה תמונה",
+    "save": "שמור",
+    "cancel": "ביטול",
+    "uploading": "מעלה...",
+    "error_format": "אנא בחר תמונת JPEG, PNG או WebP",
+    "error_size": "התמונה חייבת להיות קטנה מ-5MB",
+    "error_upload": "העלאת התמונה נכשלה",
+    "helper_text": "JPEG, PNG או WebP. מקסימום 5MB."
+  }
+}

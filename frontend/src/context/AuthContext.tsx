@@ -4,6 +4,7 @@
  */
 
 import { createContext, useContext, useState, useEffect, type ReactNode } from 'react';
+import { useTranslation } from 'react-i18next';
 import { authApi, type AuthUser } from '../modules/auth/services/auth.api';
 
 interface AuthContextType {
@@ -21,6 +22,16 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<AuthUser | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const { i18n } = useTranslation();
+
+  // Sync i18n language with user's interface language preference
+  useEffect(() => {
+    if (user?.interfaceLanguage && user.interfaceLanguage !== i18n.language) {
+      i18n.changeLanguage(user.interfaceLanguage);
+      document.documentElement.dir = user.interfaceLanguage === 'he' || user.interfaceLanguage === 'ar' ? 'rtl' : 'ltr';
+      document.documentElement.lang = user.interfaceLanguage;
+    }
+  }, [user?.interfaceLanguage, i18n]);
 
   // Check for existing session on mount
   useEffect(() => {

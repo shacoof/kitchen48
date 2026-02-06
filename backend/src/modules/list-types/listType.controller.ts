@@ -11,6 +11,7 @@ import {
   updateListTypeSchema,
   createListValueSchema,
   updateListValueSchema,
+  upsertTranslationsSchema,
 } from './listType.types.js';
 
 const logger = createLogger('ListTypeController');
@@ -301,18 +302,102 @@ async function deleteValue(req: Request, res: Response) {
  */
 async function getActiveValues(req: Request, res: Response) {
   try {
-    const { type } = req.query;
+    const { type, lang } = req.query;
 
     if (!type || typeof type !== 'string') {
       res.status(400).json({ error: 'Query parameter "type" is required' });
       return;
     }
 
-    const values = await listTypeService.getActiveValuesByTypeName(type);
+    const langStr = typeof lang === 'string' ? lang : undefined;
+    const values = await listTypeService.getActiveValuesByTypeName(type, langStr);
     res.json({ success: true, data: values });
   } catch (error) {
     logger.error(`Failed to get active list values: ${error}`);
     res.status(500).json({ error: 'Failed to get list values' });
+  }
+}
+
+// ============================================================================
+// Translation Controllers
+// ============================================================================
+
+/**
+ * GET /api/list-types/:listTypeId/values/:valueId/translations
+ * Get all translations for a list value
+ */
+async function getTranslations(req: Request, res: Response) {
+  try {
+    const listTypeId = req.params.listTypeId as string;
+    const valueId = req.params.valueId as string;
+
+    const belongsToType = await listTypeService.valuesBelongsToListType(valueId, listTypeId);
+    if (!belongsToType) {
+      res.status(404).json({ error: 'List value not found' });
+      return;
+    }
+
+    const translations = await listTypeService.getTranslationsByValueId(valueId);
+    res.json({ success: true, data: translations });
+  } catch (error) {
+    logger.error(`Failed to get translations: ${error}`);
+    res.status(500).json({ error: 'Failed to get translations' });
+  }
+}
+
+/**
+ * PUT /api/list-types/:listTypeId/values/:valueId/translations
+ * Upsert translations for a list value (bulk)
+ */
+async function upsertTranslations(req: Request, res: Response) {
+  try {
+    const listTypeId = req.params.listTypeId as string;
+    const valueId = req.params.valueId as string;
+    const validation = upsertTranslationsSchema.safeParse(req.body);
+
+    if (!validation.success) {
+      res.status(400).json({
+        error: 'Validation failed',
+        details: validation.error.issues,
+      });
+      return;
+    }
+
+    const belongsToType = await listTypeService.valuesBelongsToListType(valueId, listTypeId);
+    if (!belongsToType) {
+      res.status(404).json({ error: 'List value not found' });
+      return;
+    }
+
+    const translations = await listTypeService.upsertTranslations(valueId, validation.data);
+    res.json({ success: true, data: translations });
+  } catch (error) {
+    logger.error(`Failed to upsert translations: ${error}`);
+    res.status(500).json({ error: 'Failed to upsert translations' });
+  }
+}
+
+/**
+ * DELETE /api/list-types/:listTypeId/values/:valueId/translations/:language
+ * Delete a specific translation
+ */
+async function deleteTranslation(req: Request, res: Response) {
+  try {
+    const listTypeId = req.params.listTypeId as string;
+    const valueId = req.params.valueId as string;
+    const language = req.params.language as string;
+
+    const belongsToType = await listTypeService.valuesBelongsToListType(valueId, listTypeId);
+    if (!belongsToType) {
+      res.status(404).json({ error: 'List value not found' });
+      return;
+    }
+
+    await listTypeService.deleteTranslation(valueId, language);
+    res.json({ success: true, message: 'Translation deleted' });
+  } catch (error) {
+    logger.error(`Failed to delete translation: ${error}`);
+    res.status(500).json({ error: 'Failed to delete translation' });
   }
 }
 
@@ -328,6 +413,10 @@ export const listTypeController = {
   createValue,
   updateValue,
   deleteValue,
+  // Translations
+  getTranslations,
+  upsertTranslations,
+  deleteTranslation,
   // Public API
   getActiveValues,
 };

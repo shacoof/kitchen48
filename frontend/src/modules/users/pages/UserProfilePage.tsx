@@ -5,6 +5,7 @@
 
 import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { UserAvatar } from '../../../components/common/UserAvatar';
 import { usersApi, PublicUserProfile } from '../services/users.api';
 import { createLogger } from '../../../lib/logger';
@@ -13,6 +14,7 @@ const logger = createLogger('UserProfilePage');
 
 export function UserProfilePage() {
   const { nickname } = useParams<{ nickname: string }>();
+  const { t } = useTranslation('profile');
   const [profile, setProfile] = useState<PublicUserProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -46,7 +48,7 @@ export function UserProfilePage() {
   if (loading) {
     return (
       <div className="min-h-screen bg-background-light flex items-center justify-center">
-        <div className="text-gray-500">Loading...</div>
+        <div className="text-gray-500">{t('edit.loading')}</div>
       </div>
     );
   }
@@ -56,24 +58,24 @@ export function UserProfilePage() {
       <div className="min-h-screen bg-background-light flex flex-col items-center justify-center gap-4">
         <div className="text-6xl">😕</div>
         <h1 className="text-2xl font-bold text-gray-800">
-          {error === 'User not found' ? 'User Not Found' : 'Error'}
+          {error === 'User not found' ? t('view.not_found') : t('view.error_heading')}
         </h1>
         <p className="text-gray-600">
           {error === 'User not found'
-            ? `We couldn't find a user with the nickname "${nickname}"`
-            : 'Something went wrong loading this profile'}
+            ? t('view.not_found_message', { nickname })
+            : t('view.error_message')}
         </p>
         <Link
           to="/"
           className="mt-4 px-6 py-2 bg-accent-orange text-white rounded-lg hover:bg-opacity-90"
         >
-          Go Home
+          {t('view.go_home')}
         </Link>
       </div>
     );
   }
 
-  const displayName = [profile.firstName, profile.lastName].filter(Boolean).join(' ') || 'Kitchen48 User';
+  const displayName = [profile.firstName, profile.lastName].filter(Boolean).join(' ') || t('view.default_name');
 
   return (
     <div className="min-h-screen bg-background-light">
@@ -108,15 +110,15 @@ export function UserProfilePage() {
           {/* Description */}
           {profile.description && (
             <div className="border-t border-gray-100 pt-6">
-              <h2 className="text-lg font-semibold text-gray-700 mb-2">About</h2>
+              <h2 className="text-lg font-semibold text-gray-700 mb-2">{t('view.about')}</h2>
               <p className="text-gray-600 whitespace-pre-wrap">{profile.description}</p>
             </div>
           )}
 
           {/* Placeholder for future content (recipes, etc.) */}
           <div className="border-t border-gray-100 pt-6 mt-6">
-            <h2 className="text-lg font-semibold text-gray-700 mb-4">Recipes</h2>
-            <p className="text-gray-500 italic">Coming soon...</p>
+            <h2 className="text-lg font-semibold text-gray-700 mb-4">{t('view.recipes')}</h2>
+            <p className="text-gray-500 italic">{t('view.coming_soon')}</p>
           </div>
         </div>
       </main>

@@ -13,6 +13,9 @@ import type {
   ListTypeWithCount,
   ListValueResponse,
   ListValueOption,
+  ListValueOptionTranslated,
+  UpsertTranslationsInput,
+  TranslationResponse,
 } from './listType.types.js';
 
 const logger = createLogger('ListTypeService');
@@ -158,9 +161,10 @@ class ListTypeService {
 
   /**
    * Get active values for a list type by name (for public dropdown API)
+   * When lang is provided, includes translations map for each value
    */
-  async getActiveValuesByTypeName(typeName: string): Promise<ListValueOption[]> {
-    logger.debug(`Fetching active values for type: ${typeName}`);
+  async getActiveValuesByTypeName(typeName: string, lang?: string): Promise<ListValueOption[] | ListValueOptionTranslated[]> {
+    logger.debug(`Fetching active values for type: ${typeName}${lang ? ` (lang: ${lang})` : ''}`);
 
     const listType = await prisma.listType.findUnique({
       where: { name: typeName, isActive: true },
@@ -172,6 +176,12 @@ class ListTypeService {
             value: true,
             label: true,
             sortOrder: true,
+            translations: {
+              select: {
+                language: true,
+                label: true,
+              },
+            },
           },
         },
       },
@@ -183,7 +193,28 @@ class ListTypeService {
     }
 
     logger.debug(`Found ${listType.values.length} active values for type: ${typeName}`);
-    return listType.values;
+
+    // If lang requested, resolve translated labels and include translations map
+    if (lang) {
+      return listType.values.map(v => {
+        const translationsMap: Record<string, string> = {};
+        for (const t of v.translations) {
+          translationsMap[t.language] = t.label;
+        }
+        return {
+          value: v.value,
+          label: translationsMap[lang] || v.label,
+          sortOrder: v.sortOrder,
+          translations: translationsMap,
+        };
+      });
+    }
+
+    return listType.values.map(v => ({
+      value: v.value,
+      label: v.label,
+      sortOrder: v.sortOrder,
+    }));
   }
 
   /**
@@ -252,6 +283,75 @@ class ListTypeService {
     });
 
     logger.debug(`Deleted list value: ${valueId}`);
+  }
+
+  // ============================================================================
+  // Translation Operations
+  // ============================================================================
+
+  /**
+   * Get all translations for a list value
+   */
+  async getTranslationsByValueId(valueId: string): Promise<TranslationResponse[]> {
+    logger.debug(`Fetching translations for value: ${valueId}`);
+
+    const translations = await prisma.listValueTranslation.findMany({
+      where: { listValueId: valueId },
+      orderBy: { language: 'asc' },
+    });
+
+    return translations;
+  }
+
+  /**
+   * Upsert translations for a list value (bulk create/update)
+   */
+  async upsertTranslations(valueId: string, translations: UpsertTranslationsInput): Promise<TranslationResponse[]> {
+    logger.debug(`Upserting ${translations.length} translations for value: ${valueId}`);
+
+    const results: TranslationResponse[] = [];
+    for (const t of translations) {
+      const result = await prisma.listValueTranslation.upsert({
+        where: {
+          listValueId_language: {
+            listValueId: valueId,
+            language: t.language,
+          },
+        },
+        update: {
+          label: t.label,
+          description: t.description ?? undefined,
+        },
+        create: {
+          listValueId: valueId,
+          language: t.language,
+          label: t.label,
+          description: t.description ?? null,
+        },
+      });
+      results.push(result);
+    }
+
+    logger.debug(`Upserted ${results.length} translations for value: ${valueId}`);
+    return results;
+  }
+
+  /**
+   * Delete a translation
+   */
+  async deleteTranslation(valueId: string, language: string): Promise<void> {
+    logger.debug(`Deleting translation (${language}) for value: ${valueId}`);
+
+    await prisma.listValueTranslation.delete({
+      where: {
+        listValueId_language: {
+          listValueId: valueId,
+          language,
+        },
+      },
+    });
+
+    logger.debug(`Deleted translation (${language}) for value: ${valueId}`);
   }
 
   /**

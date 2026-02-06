@@ -331,6 +331,92 @@ Include in your implementation plan:
 
 ---
 
+## Multi-Language Support (i18n) - MANDATORY
+
+Kitchen48 supports multiple languages. **Every new feature MUST address multilingual support.**
+
+### Architecture
+
+| Content Type | Technology | Location |
+|-------------|------------|----------|
+| **Static UI text** (labels, buttons, headers, messages) | react-i18next | `frontend/src/locales/{lang}/{namespace}.json` |
+| **Dynamic DB content** (LOV values, categories, product names) | `list_value_translations` table | DB with language-specific queries |
+
+### Supported Languages
+
+Managed via LOV type "Languages" in admin. Default: English (en). Currently seeded with 16 languages including Hebrew (he).
+
+### Static Text: Frontend Translation Files
+
+**Namespaces:** `common`, `auth`, `profile`, `landing`, `admin`
+
+```
+frontend/src/locales/
+├── en/
+│   ├── common.json     # Shared strings (navigation, buttons)
+│   ├── auth.json       # Login, register, verification
+│   ├── profile.json    # User profile pages
+│   ├── landing.json    # Public landing page
+│   └── admin.json      # Admin portal
+└── he/
+    ├── common.json
+    ├── auth.json
+    ├── profile.json
+    ├── landing.json
+    └── admin.json
+```
+
+**Usage in components:**
+```typescript
+import { useTranslation } from 'react-i18next';
+
+function MyComponent() {
+  const { t } = useTranslation('namespace');
+  return <h1>{t('key.subkey')}</h1>;
+}
+```
+
+**Adding new translation keys:**
+1. Add the key to the English JSON file first
+2. Add the corresponding Hebrew translation
+3. Use the `t()` function in the component
+
+### Dynamic Content: Database Translations
+
+For LOV values and other dynamic content, use the `list_value_translations` table:
+
+```typescript
+// Fetch LOV with language support
+import { useListValues, getLocalizedLabel } from '../hooks/useListValues';
+
+const { values } = useListValues({ typeName: 'MyList', lang: 'he' });
+```
+
+**Admin UI:** Translations for list values can be managed in Admin > List of Values > Translations button on each value row.
+
+### RTL Support
+
+Hebrew (he) and Arabic (ar) automatically set `dir="rtl"` on `<html>` element via AuthContext when user's interface language is set.
+
+### User Language Preferences
+
+Each user has two language settings:
+- `videoLanguage` - Preferred language for video/audio content (default: `en`)
+- `interfaceLanguage` - UI language (default: `en`), synced with i18n on login
+
+### Multilingual Checklist for New Features
+
+**MANDATORY - Include in every implementation plan:**
+
+- [ ] **Static text identified**: All user-facing strings use `t()` calls, not hardcoded text
+- [ ] **Translation keys added**: Keys added to EN JSON file in the correct namespace
+- [ ] **Hebrew translations added**: Corresponding translations in HE JSON file
+- [ ] **Dynamic content addressed**: If feature uses LOV or DB-driven content, translations added to `list_value_translations`
+- [ ] **RTL considered**: Layout works correctly in RTL mode (Hebrew/Arabic)
+- [ ] **New namespace needed?**: If adding a major feature, consider if a new i18n namespace is appropriate
+
+---
+
 ## Application URLs
 
 ### Development (Local)
