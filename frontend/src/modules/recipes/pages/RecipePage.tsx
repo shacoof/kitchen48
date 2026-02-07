@@ -505,7 +505,7 @@ export function RecipePage() {
         {/* Desktop Action Bar */}
         <div className="hidden md:flex mt-8 bg-white rounded-xl shadow-sm p-4 items-center justify-between">
           <button
-            onClick={() => navigate(`/${nickname}/${recipeSlug}/step1`)}
+            onClick={() => navigate(`/${nickname}/${recipeSlug}/play`)}
             className="flex items-center gap-2 px-6 py-2.5 bg-accent-green text-white font-semibold rounded-lg hover:bg-green-600 transition-colors shadow-sm"
           >
             <span className="material-symbols-outlined">play_arrow</span>
@@ -562,7 +562,7 @@ export function RecipePage() {
       <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t shadow-lg z-40">
         <div className="flex items-center justify-between px-4 py-3">
           <button
-            onClick={() => navigate(`/${nickname}/${recipeSlug}/step1`)}
+            onClick={() => navigate(`/${nickname}/${recipeSlug}/play`)}
             className="flex items-center gap-2 px-5 py-2.5 bg-accent-green text-white font-semibold rounded-lg text-sm shadow-sm"
           >
             <span className="material-symbols-outlined text-lg">play_arrow</span>

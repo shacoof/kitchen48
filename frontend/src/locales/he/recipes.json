@@ -119,5 +119,24 @@
     "go_home": "חזרה לדף הבית",
     "view_recipe": "צפייה במתכון",
     "none": "ללא"
+  },
+  "play": {
+    "voice_active": "שליטה קולית פעילה",
+    "voice_off": "שליטה קולית כבויה",
+    "listening": "מאזין לפקודות...",
+    "tap_to_enable": "לחץ על המיקרופון להפעלת שליטה קולית",
+    "command_recognized": "פקודה: {{command}}",
+    "manual_override": "שליטה ידנית",
+    "enable_voice": "הפעל קול",
+    "say_restart": "אמור \"התחל מחדש\"",
+    "say_previous": "אמור \"הקודם\"",
+    "say_stop": "אמור \"עצור\"",
+    "say_next": "אמור \"הבא\"",
+    "step_label": "שלב {{n}}",
+    "timer": "טיימר",
+    "needed_for_step": "נדרש לשלב זה",
+    "no_ingredients": "אין מרכיבים לשלב זה",
+    "overall_progress": "התקדמות כללית",
+    "active_timers": "פעילים"
   }
 }

@@ -119,5 +119,24 @@
     "go_home": "Go Home",
     "view_recipe": "View Recipe",
     "none": "None"
+  },
+  "play": {
+    "voice_active": "Voice Control Active",
+    "voice_off": "Voice Control Off",
+    "listening": "Listening for commands...",
+    "tap_to_enable": "Tap mic to enable voice control",
+    "command_recognized": "Command: {{command}}",
+    "manual_override": "Manual Override",
+    "enable_voice": "Enable Voice",
+    "say_restart": "Say \"Restart\"",
+    "say_previous": "Say \"Previous\"",
+    "say_stop": "Say \"Stop\"",
+    "say_next": "Say \"Next\"",
+    "step_label": "Step {{n}}",
+    "timer": "Timer",
+    "needed_for_step": "Needed for this step",
+    "no_ingredients": "No ingredients for this step",
+    "overall_progress": "Overall Progress",
+    "active_timers": "active"
   }
 }

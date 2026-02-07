@@ -6,6 +6,7 @@
 // Pages
 export { RecipePage } from './pages/RecipePage';
 export { RecipeStepPage } from './pages/RecipeStepPage';
+export { RecipePlayPage } from './pages/RecipePlayPage';
 export { CreateRecipePage } from './pages/CreateRecipePage';
 export { MyRecipesPage } from './pages/MyRecipesPage';
 
