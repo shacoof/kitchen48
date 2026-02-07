@@ -417,6 +417,50 @@ Each user has two language settings:
 
 ---
 
+## Responsive Design (Desktop / Tablet / Mobile) - MANDATORY
+
+Kitchen48 must work well on **all three form factors**. Every feature, screen, and component must be designed and implemented with responsive behavior from the start — not as an afterthought.
+
+### Target Viewports
+
+| Viewport | Breakpoint | Typical Devices |
+|----------|-----------|-----------------|
+| **Desktop** | ≥ 1024px | Laptops, monitors |
+| **Tablet** | 768px – 1023px | iPads, Android tablets |
+| **Mobile** | < 768px | iPhones, Android phones |
+
+### Design Principles
+
+1. **Mobile-first CSS** — Write styles for mobile first, then use `min-width` media queries to enhance for larger screens
+2. **Touch-friendly targets** — All interactive elements must be minimum 44px × 44px on mobile/tablet
+3. **No horizontal scrolling** — Content must fit within the viewport width at every breakpoint
+4. **Flexible layouts** — Use CSS Grid or Flexbox with responsive breakpoints; avoid fixed-width layouts
+5. **Content priority** — On smaller screens, prioritize primary content; secondary elements can collapse, stack, or move behind toggles/menus
+
+### Common Responsive Patterns
+
+| Pattern | Desktop | Tablet | Mobile |
+|---------|---------|--------|--------|
+| Multi-column grids | 3–4 columns | 2 columns | 1 column (stacked) |
+| Side-by-side panes | Both visible | Collapsible sidebar (hamburger) | Single pane with navigation strip/tabs |
+| Action bars | Inline with content | Inline or sticky bottom | Sticky bottom bar |
+| Data tables | Full table | Scrollable or condensed | Card-based list or accordion |
+| Modals/dialogs | Centered overlay | Centered overlay | Full-screen sheet (bottom-up) |
+| Navigation menus | Horizontal nav bar | Hamburger menu or condensed | Hamburger menu |
+
+### Responsive Checklist for New Features
+
+**MANDATORY — Include in every implementation plan:**
+
+- [ ] **Desktop layout defined**: Component/page has a clear layout for ≥ 1024px
+- [ ] **Tablet layout defined**: Component/page adapts for 768px – 1023px (collapsible panels, 2-column grids, etc.)
+- [ ] **Mobile layout defined**: Component/page works on < 768px (stacked, single-column, swipeable where appropriate)
+- [ ] **Touch targets verified**: All buttons, links, and interactive elements are ≥ 44px on touch devices
+- [ ] **No fixed widths**: Layouts use relative units (%, fr, vw) or responsive breakpoints, not hardcoded pixel widths
+- [ ] **Tested on all viewports**: Verified with browser dev tools at 375px (mobile), 768px (tablet), 1280px (desktop) at minimum
+
+---
+
 ## Application URLs
 
 ### Development (Local)
@@ -645,6 +689,10 @@ Deploy the entire application with a single command:
   - If build fails, fix ALL errors before committing
   - For frontend-only changes: `npm run build:frontend` is sufficient
   - For backend-only changes: `npm run build:backend` is sufficient
+- [ ] **Responsive design verified** (for any frontend changes)
+  - Test at 375px (mobile), 768px (tablet), 1280px (desktop) using browser dev tools
+  - Confirm no horizontal scrolling, no overlapping elements, no broken layouts
+  - Verify touch targets are ≥ 44px on mobile/tablet views
 
 ---
 
@@ -656,6 +704,7 @@ Deploy the entire application with a single command:
 - ❌ Guideline violations from skipping reviews
 - ❌ Broken builds from missing dependencies
 - ❌ Shipping code that fails to compile
+- ❌ Broken mobile/tablet experience from desktop-only development
 
 **NO SHORTCUTS. NO EXCEPTIONS. EVERY TIME.**
 
