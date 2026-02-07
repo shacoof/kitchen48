@@ -48,17 +48,14 @@ export default function Header() {
         </div>
 
         <nav className="hidden md:flex items-center gap-8">
-          <a className="text-white/90 hover:text-white transition-colors font-medium" href="#">
+          <Link to="/explore" className="text-white/90 hover:text-white transition-colors font-medium">
             {tc('navigation.explore')}
-          </a>
+          </Link>
           <Link to={isAuthenticated ? '/recipes' : '#'} className="text-white/90 hover:text-white transition-colors font-medium">
             {tc('navigation.recipes')}
           </Link>
           <a className="text-white/90 hover:text-white transition-colors font-medium" href="#">
             {tc('navigation.chefs')}
-          </a>
-          <a className="text-white/90 hover:text-white transition-colors font-medium" href="#">
-            {tc('navigation.community')}
           </a>
         </nav>
 
@@ -141,14 +138,14 @@ export default function Header() {
       {/* Mobile navigation dropdown */}
       {mobileNavOpen && (
         <nav className="md:hidden bg-primary border-t border-slate-700/50 px-4 py-3 space-y-1">
-          <a
-            href="#"
+          <Link
+            to="/explore"
             onClick={() => setMobileNavOpen(false)}
             className="block px-3 py-3 text-white/90 hover:bg-slate-700/50 rounded-lg transition-colors font-medium flex items-center gap-3"
           >
             <span className="material-symbols-outlined text-[20px] text-white/60">explore</span>
             {tc('navigation.explore')}
-          </a>
+          </Link>
           <Link
             to={isAuthenticated ? '/recipes' : '#'}
             onClick={() => setMobileNavOpen(false)}
@@ -164,14 +161,6 @@ export default function Header() {
           >
             <span className="material-symbols-outlined text-[20px] text-white/60">person</span>
             {tc('navigation.chefs')}
-          </a>
-          <a
-            href="#"
-            onClick={() => setMobileNavOpen(false)}
-            className="block px-3 py-3 text-white/90 hover:bg-slate-700/50 rounded-lg transition-colors font-medium flex items-center gap-3"
-          >
-            <span className="material-symbols-outlined text-[20px] text-white/60">groups</span>
-            {tc('navigation.community')}
           </a>
         </nav>
       )}

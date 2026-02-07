@@ -1,4 +1,17 @@
 {
+  "explore": {
+    "title": "Explore Recipes",
+    "subtitle": "Discover delicious recipes from our community",
+    "search_placeholder": "Search recipes...",
+    "sort": {
+      "recent": "Most recent",
+      "alphabetical": "Alphabetical",
+      "oldest": "Oldest first"
+    },
+    "empty_title": "No recipes published yet",
+    "empty_subtitle": "Be the first to share a recipe with the community!",
+    "no_results": "No recipes match your search"
+  },
   "my_recipes": {
     "title": "My Recipes",
     "search_placeholder": "Search recipes...",

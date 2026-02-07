@@ -1,4 +1,17 @@
 {
+  "explore": {
+    "title": "גלה מתכונים",
+    "subtitle": "גלה מתכונים טעימים מהקהילה שלנו",
+    "search_placeholder": "חיפוש מתכונים...",
+    "sort": {
+      "recent": "החדשים ביותר",
+      "alphabetical": "אלפביתי",
+      "oldest": "הישנים ביותר"
+    },
+    "empty_title": "עדיין לא פורסמו מתכונים",
+    "empty_subtitle": "היה הראשון לשתף מתכון עם הקהילה!",
+    "no_results": "לא נמצאו מתכונים התואמים לחיפוש"
+  },
   "my_recipes": {
     "title": "המתכונים שלי",
     "search_placeholder": "חיפוש מתכונים...",
