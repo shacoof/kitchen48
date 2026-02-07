@@ -3,6 +3,7 @@
  * Business logic for recipes, steps, and step ingredients
  */
 
+import { Prisma } from '@prisma/client';
 import { prisma } from '../../core/database/prisma.js';
 import { createLogger } from '../../lib/logger.js';
 import type {
@@ -778,22 +779,44 @@ class RecipeService {
   }
 
   /**
-   * Search master ingredients for autocomplete
+   * Search master ingredients for autocomplete.
+   * Uses pg_trgm similarity for fuzzy matching — handles typos and word-order swaps.
+   * Also does per-word substring match so "extract vanilla" finds "vanilla extract".
    */
   async searchIngredients(query: string, limit = 10): Promise<Array<{ id: string; name: string }>> {
     if (!query || query.length < 2) {
       return [];
     }
 
-    return prisma.masterIngredient.findMany({
-      where: {
-        name: { contains: query.toLowerCase(), mode: 'insensitive' },
-        isActive: true,
-      },
-      select: { id: true, name: true },
-      take: limit,
-      orderBy: { name: 'asc' },
-    });
+    const trimmed = query.trim().toLowerCase();
+    const words = trimmed.split(/\s+/).filter(w => w.length > 0);
+
+    // Build a single pattern that checks all words appear in any order
+    // Each word becomes a '%word%' LIKE pattern joined with AND via array_agg trick:
+    // We use the approach: name ILIKE ALL(array['%word1%', '%word2%'])
+    const wordPatterns = words.map(w => `%${w}%`);
+
+    const results = await prisma.$queryRaw<Array<{ id: string; name: string; score: number }>>(
+      Prisma.sql`
+        SELECT id, name, score FROM (
+          SELECT id, name, similarity(name, ${trimmed}) AS score
+          FROM master_ingredients
+          WHERE is_active = true
+            AND similarity(name, ${trimmed}) > 0.15
+
+          UNION
+
+          SELECT id, name, 1.0::real AS score
+          FROM master_ingredients
+          WHERE is_active = true
+            AND name ILIKE ALL(${wordPatterns}::text[])
+        ) AS combined
+        ORDER BY score DESC, name ASC
+        LIMIT ${limit}
+      `
+    );
+
+    return results.map(r => ({ id: r.id, name: r.name }));
   }
 }
 
