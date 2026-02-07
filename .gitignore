@@ -25,6 +25,7 @@ client_secret*.json
 # OS
 .DS_Store
 Thumbs.db
+*:Zone.Identifier
 
 # Logs
 logs/
