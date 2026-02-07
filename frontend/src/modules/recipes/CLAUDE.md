@@ -162,6 +162,16 @@ recipesApi.generateSlug(title)
 - **Root Cause C**: Backend `recipe.service.ts` `update()` method ignored `steps` array entirely
 - **Fix C**: Added delete-and-recreate logic for steps/ingredients in `update()` (safe due to Prisma cascade deletes)
 
+### 2026-02-07: iPad/iOS voice commands not working
+- **Bug**: Voice commands appeared active (green mic, "listening") but never responded to speech on iPad
+- **Root Cause**: All iPad browsers use WebKit. Safari's `webkitSpeechRecognition` with `continuous: true` is unreliable — stops after one utterance, and auto-restart in `onend` fails silently because iOS blocks non-user-gesture `.start()` calls
+- **Fix**: Detect iOS via user agent; use `continuous: false` (single-shot mode) on iOS; restart recognition with 300ms delay in `onend`; track retry count to avoid infinite silent restarts (stops after 5 retries); handle `not-allowed` error to detect permission denial
+
+### 2026-02-07: Main navigation menu not visible on mobile
+- **Bug**: Main nav bar (Explore, Recipes, Chefs, Community) hidden on screens < 768px with no alternative
+- **Root Cause**: `Header.tsx` nav used `hidden md:flex` with no hamburger menu or mobile drawer
+- **Fix**: Added hamburger button (visible below `md` breakpoint) that toggles a mobile nav dropdown with icons for all navigation items. Reuses existing i18n translation keys.
+
 ---
 
 ## Implementation Date

@@ -132,7 +132,13 @@ Currently uses external URLs from Google's image hosting as placeholders.
 - [ ] Fetch real chefs from API
 - [ ] Add recipe search functionality
 - [ ] Add category filtering
-- [ ] Improve mobile responsiveness
+- [x] ~~Improve mobile responsiveness~~ (Header mobile nav added 2026-02-07)
+
+## Fixes Applied
+
+### 2026-02-07: Mobile hamburger menu for Header navigation
+- **Bug**: Main nav (Explore, Recipes, Chefs, Community) hidden on mobile (<768px) with no alternative
+- **Fix**: Added hamburger button + mobile nav dropdown in `Header.tsx`. Uses `mobileNavOpen` state, material icons, existing i18n keys.
 
 ---
 
