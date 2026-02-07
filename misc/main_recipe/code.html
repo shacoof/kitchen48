@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Recipe Details - Garlic Herb Pasta</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#13ec5b",
+                        "accent-orange": "#FF5722",
+                        "background-light": "#f6f8f6",
+                        "background-dark": "#102216",
+                        "surface-dark": "#2C3E50",
+                    },
+                    fontFamily: {
+                        "display": ["Plus Jakarta Sans", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "1rem",
+                        "lg": "2rem",
+                        "xl": "3rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-white min-h-screen">
+<div class="relative flex min-h-screen w-full flex-col overflow-x-hidden">
+<!-- Top Navigation -->
+<header class="flex items-center justify-between whitespace-nowrap border-b border-solid border-slate-200 dark:border-[#23482f] px-6 py-4 lg:px-40">
+<div class="flex items-center gap-8">
+<div class="flex items-center gap-4 text-primary">
+<div class="size-8">
+<svg fill="none" viewbox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+<path d="M24 4C25.7818 14.2173 33.7827 22.2182 44 24C33.7827 25.7818 25.7818 33.7827 24 44C22.2182 33.7827 14.2173 25.7818 4 24C14.2173 22.2182 22.2182 14.2173 24 4Z" fill="currentColor"></path>
+</svg>
+</div>
+<h2 class="text-slate-900 dark:text-white text-xl font-bold leading-tight tracking-tight">Kitchen48</h2>
+</div>
+<nav class="hidden md:flex items-center gap-9">
+<a class="text-slate-600 dark:text-white text-sm font-medium hover:text-primary transition-colors" href="#">Recipes</a>
+<a class="text-slate-600 dark:text-white text-sm font-medium hover:text-primary transition-colors" href="#">Community</a>
+<a class="text-slate-600 dark:text-white text-sm font-medium hover:text-primary transition-colors" href="#">Shop</a>
+<a class="text-slate-600 dark:text-white text-sm font-medium hover:text-primary transition-colors" href="#">About</a>
+</nav>
+</div>
+<div class="flex flex-1 justify-end gap-4">
+<label class="hidden sm:flex flex-col min-w-40 h-10 max-w-64">
+<div class="flex w-full flex-1 items-stretch rounded-xl h-full">
+<div class="text-slate-400 dark:text-[#92c9a4] flex bg-slate-100 dark:bg-[#23482f] items-center justify-center pl-4 rounded-l-xl">
+<span class="material-symbols-outlined text-xl">search</span>
+</div>
+<input class="form-input flex w-full min-w-0 flex-1 border-none bg-slate-100 dark:bg-[#23482f] text-slate-900 dark:text-white focus:ring-0 h-full placeholder:text-slate-400 dark:placeholder:text-[#92c9a4] px-4 rounded-r-xl pl-2 text-sm font-normal" placeholder="Search recipes..." value=""/>
+</div>
+</label>
+<div class="flex gap-2">
+<button class="flex items-center justify-center rounded-full h-10 w-10 bg-slate-100 dark:bg-[#23482f] text-slate-900 dark:text-white">
+<span class="material-symbols-outlined">favorite</span>
+</button>
+<button class="flex items-center justify-center rounded-full h-10 w-10 bg-slate-100 dark:bg-[#23482f] text-slate-900 dark:text-white">
+<span class="material-symbols-outlined">share</span>
+</button>
+</div>
+<div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-10 border-2 border-primary" data-alt="User profile avatar portrait photo" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuABOFyt8qjGllcPiCrxCIrjiBOnQEGvtee33geiXsm5-AtiMfnHg0C0kOc5of_h61OdJsV3WdJu9Yv7S-NTcp-IB_k7wtl4IIMKguSvvZpNvhwdqjbViXWfT9ceo4qUpCqSxGiQmg5FDttrF8QLYtYFsMGlga6cx19LbrFC-iRpDgHf_Uyva7QfqlAcDTKkjSUJDfFXyUcMsdl0-1pkdkfKySRzAgKVtLYEK3wMcl-jmb8yODAn59Bq-vmvbz42w80V19uXbQaE-_I");'></div>
+</div>
+</header>
+<main class="flex flex-1 justify-center py-10 px-6 lg:px-40">
+<div class="flex flex-col max-w-[1000px] flex-1 gap-8">
+<!-- Hero Section -->
+<div class="flex flex-col gap-6">
+<div class="flex flex-col gap-3">
+<h1 class="text-slate-900 dark:text-white text-5xl font-extrabold leading-tight tracking-tight">Garlic Herb Pasta</h1>
+<p class="text-slate-600 dark:text-[#92c9a4] text-lg font-normal max-w-2xl leading-relaxed">
+                            A quick, aromatic Mediterranean-inspired dish that brings gourmet flavors to your table in minutes. Perfectly balanced with fresh herbs and toasted garlic.
+                        </p>
+</div>
+<div class="flex flex-wrap gap-4">
+<div class="flex min-w-[180px] flex-1 flex-col gap-2 rounded-xl p-6 bg-white dark:bg-surface-dark border border-slate-200 dark:border-slate-700 shadow-sm">
+<div class="flex items-center gap-2 text-primary">
+<span class="material-symbols-outlined text-2xl">timer</span>
+<p class="text-slate-500 dark:text-slate-300 text-sm font-medium uppercase tracking-wider">Work Time</p>
+</div>
+<p class="text-slate-900 dark:text-white text-3xl font-bold leading-tight">15m</p>
+</div>
+<div class="flex min-w-[180px] flex-1 flex-col gap-2 rounded-xl p-6 bg-white dark:bg-surface-dark border border-slate-200 dark:border-slate-700 shadow-sm">
+<div class="flex items-center gap-2 text-primary">
+<span class="material-symbols-outlined text-2xl">schedule</span>
+<p class="text-slate-500 dark:text-slate-300 text-sm font-medium uppercase tracking-wider">Total Time</p>
+</div>
+<p class="text-slate-900 dark:text-white text-3xl font-bold leading-tight">30m</p>
+</div>
+<div class="flex min-w-[180px] flex-1 flex-col gap-2 rounded-xl p-6 bg-white dark:bg-surface-dark border border-slate-200 dark:border-slate-700 shadow-sm">
+<div class="flex items-center gap-2 text-primary">
+<span class="material-symbols-outlined text-2xl">restaurant</span>
+<p class="text-slate-500 dark:text-slate-300 text-sm font-medium uppercase tracking-wider">Servings</p>
+</div>
+<p class="text-slate-900 dark:text-white text-3xl font-bold leading-tight">2-4</p>
+</div>
+</div>
+</div>
+<!-- Video Player Section -->
+<div class="relative group cursor-pointer overflow-hidden rounded-xl shadow-2xl">
+<div class="aspect-video bg-cover bg-center transition-transform duration-700 group-hover:scale-105" data-alt="Beautifully plated garlic herb pasta with fresh basil" style='background-image: linear-gradient(rgba(0,0,0,0.2), rgba(0,0,0,0.4)), url("https://lh3.googleusercontent.com/aida-public/AB6AXuA0_7b7T9pFLqMDCs6q42EUxs5SNOi9G3U0BHTpkuxa4xJ-abnZsFrU3C13HhcHF2Xg9EjpfuG3hbcS5bMs-rtXpaEWFOzS8dyz4YDZkcUJztoJ6-5LiDNWiROaUgNKvdeG1Rq_HpsSobXP1kL_sLRkWKwLWeTmFgV7zYcxnxJUqTAaQbYxrDP4-XTJBgToakaer_x2r3EY0ElVvcPpi4inFjU2DTusFQ5iiCME4s1X8dXjMZ4HN_zVW_7GmmXGeW47FAbHHx1IDbM");'>
+</div>
+<div class="absolute inset-0 flex items-center justify-center">
+<button class="flex shrink-0 items-center justify-center rounded-full size-24 bg-accent-orange text-white shadow-xl hover:scale-110 transition-transform duration-300">
+<span class="material-symbols-outlined !text-5xl fill-current" style="font-variation-settings: 'FILL' 1;">play_arrow</span>
+</button>
+</div>
+<div class="absolute inset-x-0 bottom-0 p-6 bg-gradient-to-t from-black/80 to-transparent">
+<div class="flex flex-col gap-2">
+<div class="flex h-1.5 items-center justify-center w-full bg-white/30 rounded-full overflow-hidden">
+<div class="h-full bg-primary w-[35%] rounded-full relative">
+<div class="absolute right-0 top-1/2 -translate-y-1/2 size-4 bg-white rounded-full shadow-lg"></div>
+</div>
+</div>
+<div class="flex items-center justify-between text-white text-xs font-bold">
+<span>0:37</span>
+<span>2:23</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Content Grid -->
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+<!-- Table of Ingredients -->
+<div class="lg:col-span-1 flex flex-col gap-6">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-primary">shopping_basket</span>
+<h2 class="text-slate-900 dark:text-white text-2xl font-bold leading-tight">Ingredients</h2>
+</div>
+<div class="flex flex-col gap-3">
+<div class="flex items-center justify-between p-4 rounded-xl bg-white dark:bg-surface-dark border border-slate-200 dark:border-slate-700 hover:border-primary/50 transition-colors">
+<span class="text-slate-800 dark:text-slate-200 font-medium">Linguine Pasta</span>
+<span class="text-primary font-bold">250g</span>
+</div>
+<div class="flex items-center justify-between p-4 rounded-xl bg-white dark:bg-surface-dark border border-slate-200 dark:border-slate-700 hover:border-primary/50 transition-colors">
+<span class="text-slate-800 dark:text-slate-200 font-medium">Garlic Cloves</span>
+<span class="text-primary font-bold">6 large</span>
+</div>
+<div class="flex items-center justify-between p-4 rounded-xl bg-white dark:bg-surface-dark border border-slate-200 dark:border-slate-700 hover:border-primary/50 transition-colors">
+<span class="text-slate-800 dark:text-slate-200 font-medium">Extra Virgin Olive Oil</span>
+<span class="text-primary font-bold">1/4 cup</span>
+</div>
+<div class="flex items-center justify-between p-4 rounded-xl bg-white dark:bg-surface-dark border border-slate-200 dark:border-slate-700 hover:border-primary/50 transition-colors">
+<span class="text-slate-800 dark:text-slate-200 font-medium">Fresh Parsley</span>
+<span class="text-primary font-bold">1 bunch</span>
+</div>
+<div class="flex items-center justify-between p-4 rounded-xl bg-white dark:bg-surface-dark border border-slate-200 dark:border-slate-700 hover:border-primary/50 transition-colors">
+<span class="text-slate-800 dark:text-slate-200 font-medium">Red Chili Flakes</span>
+<span class="text-primary font-bold">1 tsp</span>
+</div>
+<div class="flex items-center justify-between p-4 rounded-xl bg-white dark:bg-surface-dark border border-slate-200 dark:border-slate-700 hover:border-primary/50 transition-colors">
+<span class="text-slate-800 dark:text-slate-200 font-medium">Parmesan Cheese</span>
+<span class="text-primary font-bold">1/2 cup</span>
+</div>
+</div>
+</div>
+<!-- Table of Steps -->
+<div class="lg:col-span-2 flex flex-col gap-6">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-primary">format_list_numbered</span>
+<h2 class="text-slate-900 dark:text-white text-2xl font-bold leading-tight">Cooking Steps</h2>
+</div>
+<div class="flex flex-col gap-6">
+<div class="flex gap-6 p-6 rounded-xl bg-white dark:bg-surface-dark border border-slate-200 dark:border-slate-700 relative overflow-hidden">
+<div class="absolute top-0 left-0 w-1 h-full bg-primary"></div>
+<span class="flex-shrink-0 flex items-center justify-center size-10 rounded-full bg-primary/20 text-primary font-extrabold text-lg">1</span>
+<div class="flex flex-col gap-1">
+<h3 class="text-slate-900 dark:text-white font-bold text-lg">Boil the Pasta</h3>
+<p class="text-slate-600 dark:text-slate-300 leading-relaxed">Bring a large pot of salted water to a rolling boil. Cook the linguine until al dente, about 8-10 minutes. Reserve 1/2 cup of pasta water before draining.</p>
+</div>
+</div>
+<div class="flex gap-6 p-6 rounded-xl bg-white dark:bg-surface-dark border border-slate-200 dark:border-slate-700 relative overflow-hidden">
+<div class="absolute top-0 left-0 w-1 h-full bg-primary"></div>
+<span class="flex-shrink-0 flex items-center justify-center size-10 rounded-full bg-primary/20 text-primary font-extrabold text-lg">2</span>
+<div class="flex flex-col gap-1">
+<h3 class="text-slate-900 dark:text-white font-bold text-lg">Infuse the Oil</h3>
+<p class="text-slate-600 dark:text-slate-300 leading-relaxed">While pasta cooks, heat olive oil in a large skillet over medium-low heat. Add thinly sliced garlic and red pepper flakes. Sauté until garlic is golden and fragrant, but not burnt.</p>
+</div>
+</div>
+<div class="flex gap-6 p-6 rounded-xl bg-white dark:bg-surface-dark border border-slate-200 dark:border-slate-700 relative overflow-hidden">
+<div class="absolute top-0 left-0 w-1 h-full bg-primary"></div>
+<span class="flex-shrink-0 flex items-center justify-center size-10 rounded-full bg-primary/20 text-primary font-extrabold text-lg">3</span>
+<div class="flex flex-col gap-1">
+<h3 class="text-slate-900 dark:text-white font-bold text-lg">Emulsify the Sauce</h3>
+<p class="text-slate-600 dark:text-slate-300 leading-relaxed">Add the cooked pasta and reserved pasta water to the skillet. Toss vigorously over medium heat until the water and oil create a glossy sauce that coats every strand.</p>
+</div>
+</div>
+<div class="flex gap-6 p-6 rounded-xl bg-white dark:bg-surface-dark border border-slate-200 dark:border-slate-700 relative overflow-hidden">
+<div class="absolute top-0 left-0 w-1 h-full bg-primary"></div>
+<span class="flex-shrink-0 flex items-center justify-center size-10 rounded-full bg-primary/20 text-primary font-extrabold text-lg">4</span>
+<div class="flex flex-col gap-1">
+<h3 class="text-slate-900 dark:text-white font-bold text-lg">Finish &amp; Garnish</h3>
+<p class="text-slate-600 dark:text-slate-300 leading-relaxed">Remove from heat. Stir in fresh parsley and grated parmesan. Season with black pepper and serve immediately while steaming hot.</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Footer CTA -->
+<div class="flex flex-col sm:flex-row items-center justify-between p-8 rounded-xl bg-primary text-background-dark mt-8 mb-12">
+<div class="flex flex-col gap-1 mb-4 sm:mb-0">
+<h2 class="text-2xl font-bold">Ready to start cooking?</h2>
+<p class="font-medium opacity-80">Download the printable PDF or save to your collection.</p>
+</div>
+<div class="flex gap-3">
+<button class="px-6 py-3 bg-background-dark text-white rounded-full font-bold hover:scale-105 transition-transform flex items-center gap-2">
+<span class="material-symbols-outlined">download</span>
+                            Print Recipe
+                        </button>
+<button class="px-6 py-3 bg-white text-background-dark rounded-full font-bold hover:scale-105 transition-transform flex items-center gap-2">
+<span class="material-symbols-outlined">playlist_add</span>
+                            Save for Later
+                        </button>
+</div>
+</div>
+</div>
+</main>
+</div>
+</body></html>

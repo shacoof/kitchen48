@@ -523,63 +523,117 @@ deploy_app() {
 # Run Database Migrations
 # ============================================================================
 
+# Port for Cloud SQL Proxy (use 5434 to avoid conflict with local dev on 5433)
+PROXY_PORT=5434
+
 run_migrations() {
     print_step "Running Database Migrations"
 
     # Check if cloud_sql_proxy is available
     if ! command -v cloud_sql_proxy &> /dev/null && ! command -v cloud-sql-proxy &> /dev/null; then
-        print_warning "cloud_sql_proxy not installed. Skipping migrations."
-        print_info "To run migrations manually:"
-        print_info "  1. Install Cloud SQL Auth Proxy"
-        print_info "  2. Run: cloud_sql_proxy -instances=${CONNECTION_NAME}=tcp:5432 &"
-        print_info "  3. Run: cd backend && npm run migrate:all"
-        return
+        print_error "═══════════════════════════════════════════════════════════════"
+        print_error "  MIGRATIONS NOT RUN - cloud_sql_proxy not installed"
+        print_error "═══════════════════════════════════════════════════════════════"
+        print_info "Install Cloud SQL Auth Proxy to enable automatic migrations:"
+        print_info "  curl -o cloud_sql_proxy https://dl.google.com/cloudsql/cloud_sql_proxy.linux.amd64"
+        print_info "  chmod +x cloud_sql_proxy && sudo mv cloud_sql_proxy /usr/local/bin/"
+        print_info ""
+        print_info "Then re-run: ./scripts/deploy.sh --skip-db"
+        return 1
     fi
 
     # Get connection name
     CONNECTION_NAME=$(gcloud sql instances describe "$CLOUD_SQL_INSTANCE" --project="$GCP_PROJECT_ID" --format="value(connectionName)" 2>/dev/null || echo "")
 
     if [[ -z "$CONNECTION_NAME" ]]; then
-        print_warning "Could not get Cloud SQL connection name. Skipping migrations."
-        return
+        print_error "Could not get Cloud SQL connection name. Cannot run migrations."
+        return 1
     fi
 
-    print_info "Starting Cloud SQL Auth Proxy..."
+    # Kill any existing proxy on our port
+    pkill -f "cloud_sql_proxy.*${PROXY_PORT}" 2>/dev/null || true
+    pkill -f "cloud-sql-proxy.*${PROXY_PORT}" 2>/dev/null || true
+    sleep 1
 
-    # Start proxy in background
+    print_info "Starting Cloud SQL Auth Proxy on port ${PROXY_PORT}..."
+
+    # Start proxy in background (suppress output)
     if command -v cloud_sql_proxy &> /dev/null; then
-        cloud_sql_proxy -instances="${CONNECTION_NAME}=tcp:5433" &
+        cloud_sql_proxy -instances="${CONNECTION_NAME}=tcp:${PROXY_PORT}" > /tmp/cloud_sql_proxy.log 2>&1 &
     else
-        cloud-sql-proxy "${CONNECTION_NAME}" --port=5433 &
+        cloud-sql-proxy "${CONNECTION_NAME}" --port=${PROXY_PORT} > /tmp/cloud_sql_proxy.log 2>&1 &
     fi
     PROXY_PID=$!
 
     # Wait for proxy to start
-    sleep 5
+    sleep 3
 
     # Check if proxy is running
     if ! kill -0 $PROXY_PID 2>/dev/null; then
-        print_warning "Cloud SQL Proxy failed to start. Skipping migrations."
-        return
+        print_error "Cloud SQL Proxy failed to start."
+        print_info "Log output:"
+        cat /tmp/cloud_sql_proxy.log 2>/dev/null || true
+        return 1
     fi
+    print_success "Cloud SQL Proxy started (PID: $PROXY_PID)"
 
-    print_info "Running Prisma schema migrations..."
     cd "$PROJECT_ROOT/backend"
 
-    # Build DATABASE_URL for local proxy
-    local proxy_db_url="postgresql://${DB_USER}:${DB_PASSWORD}@localhost:5433/${DB_NAME}"
+    # Build DATABASE_URL for local proxy (both required by Prisma schema)
+    local proxy_db_url="postgresql://${DB_USER}:${DB_PASSWORD}@localhost:${PROXY_PORT}/${DB_NAME}"
+    export DATABASE_URL="$proxy_db_url"
+    export DIRECT_DATABASE_URL="$proxy_db_url"
 
-    if DATABASE_URL="$proxy_db_url" npx prisma migrate deploy 2>&1; then
-        print_success "Schema migrations complete"
-    else
-        print_warning "Schema migrations may have failed (check logs)"
+    # Temporarily move local .env to avoid conflicts
+    local env_backup=""
+    if [[ -f .env ]]; then
+        mv .env .env.deploy-backup
+        env_backup="yes"
     fi
 
+    # Check pending schema migrations
+    print_info "Checking schema migration status..."
+    local pending_migrations
+    pending_migrations=$(npx prisma migrate status 2>&1 | grep -c "have not yet been applied" || echo "0")
+
+    if [[ "$pending_migrations" != "0" ]]; then
+        print_info "Found pending schema migrations. Applying..."
+        if npx prisma migrate deploy 2>&1; then
+            print_success "Schema migrations applied successfully"
+        else
+            print_error "Schema migrations failed!"
+            # Restore .env
+            [[ -n "$env_backup" ]] && mv .env.deploy-backup .env
+            kill $PROXY_PID 2>/dev/null || true
+            return 1
+        fi
+    else
+        print_success "Schema is up to date"
+    fi
+
+    # Run data migrations (handles its own idempotency)
     print_info "Running data migrations..."
-    if DATABASE_URL="$proxy_db_url" npm run migrate:data 2>&1; then
+
+    # First, clean up any failed data migration records to allow retry
+    npx tsx -e "
+const { PrismaClient } = require('@prisma/client');
+const prisma = new PrismaClient();
+async function main() {
+  const failed = await prisma.dataMigration.deleteMany({ where: { success: false } });
+  if (failed.count > 0) console.log('Cleaned up ' + failed.count + ' failed migration record(s)');
+}
+main().then(() => prisma.\$disconnect()).catch(() => {});
+" 2>/dev/null || true
+
+    if npm run migrate:data 2>&1; then
         print_success "Data migrations complete"
     else
-        print_warning "Data migrations may have failed (check logs)"
+        print_warning "Data migrations had issues (may be ok if already applied)"
+    fi
+
+    # Restore .env
+    if [[ -n "$env_backup" ]]; then
+        mv .env.deploy-backup .env
     fi
 
     cd "$PROJECT_ROOT"
@@ -587,6 +641,75 @@ run_migrations() {
     # Stop proxy
     kill $PROXY_PID 2>/dev/null || true
     print_success "Database migrations finished"
+}
+
+# ============================================================================
+# Check Migration Status (without running)
+# ============================================================================
+
+check_migration_status() {
+    print_step "Checking Database Migration Status"
+
+    # Check if cloud_sql_proxy is available
+    if ! command -v cloud_sql_proxy &> /dev/null && ! command -v cloud-sql-proxy &> /dev/null; then
+        print_warning "cloud_sql_proxy not installed - cannot check migration status"
+        return
+    fi
+
+    CONNECTION_NAME=$(gcloud sql instances describe "$CLOUD_SQL_INSTANCE" --project="$GCP_PROJECT_ID" --format="value(connectionName)" 2>/dev/null || echo "")
+
+    if [[ -z "$CONNECTION_NAME" ]]; then
+        print_warning "Could not get Cloud SQL connection. Skipping migration check."
+        return
+    fi
+
+    # Kill any existing proxy on our port
+    pkill -f "cloud_sql_proxy.*${PROXY_PORT}" 2>/dev/null || true
+    pkill -f "cloud-sql-proxy.*${PROXY_PORT}" 2>/dev/null || true
+    sleep 1
+
+    # Start proxy briefly
+    if command -v cloud_sql_proxy &> /dev/null; then
+        cloud_sql_proxy -instances="${CONNECTION_NAME}=tcp:${PROXY_PORT}" > /tmp/cloud_sql_proxy.log 2>&1 &
+    else
+        cloud-sql-proxy "${CONNECTION_NAME}" --port=${PROXY_PORT} > /tmp/cloud_sql_proxy.log 2>&1 &
+    fi
+    PROXY_PID=$!
+    sleep 3
+
+    if ! kill -0 $PROXY_PID 2>/dev/null; then
+        print_warning "Could not start Cloud SQL Proxy for migration check"
+        return
+    fi
+
+    cd "$PROJECT_ROOT/backend"
+
+    local proxy_db_url="postgresql://${DB_USER}:${DB_PASSWORD}@localhost:${PROXY_PORT}/${DB_NAME}"
+    export DATABASE_URL="$proxy_db_url"
+    export DIRECT_DATABASE_URL="$proxy_db_url"
+
+    # Temporarily move .env
+    [[ -f .env ]] && mv .env .env.deploy-backup
+
+    local status_output
+    status_output=$(npx prisma migrate status 2>&1)
+
+    # Restore .env
+    [[ -f .env.deploy-backup ]] && mv .env.deploy-backup .env
+
+    cd "$PROJECT_ROOT"
+    kill $PROXY_PID 2>/dev/null || true
+
+    if echo "$status_output" | grep -q "have not yet been applied"; then
+        print_error "═══════════════════════════════════════════════════════════════"
+        print_error "  PENDING MIGRATIONS DETECTED"
+        print_error "═══════════════════════════════════════════════════════════════"
+        echo "$status_output" | grep -A 10 "have not yet been applied"
+        echo ""
+        print_info "Run deployment without --skip-db to apply migrations"
+    else
+        print_success "Database schema is up to date"
+    fi
 }
 
 # ============================================================================

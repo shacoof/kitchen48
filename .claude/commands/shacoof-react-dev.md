@@ -334,35 +334,39 @@ Please confirm when testing is complete: (done/issues)
 
 **CRITICAL: Do NOT proceed to merge until user confirms testing is complete.**
 
-- If user says **"done"** → Proceed to Phase 7 (Merge & Cleanup)
+- If user says **"done"** → Push branch to remote, then proceed to Phase 7 (Merge & Cleanup)
 - If user says **"issues"** → Ask for details and fix before retesting
+
+### Step 3: Push to Remote (After Testing Approved)
+
+**After user confirms testing is complete, push the branch:**
+```bash
+git push -u origin feature/<task-name>
+```
 
 ---
 
 ## PHASE 7: MERGE & CLEANUP (MANDATORY)
 
-**After all implementation is complete, ASK THE USER:**
+**After branch is pushed, ASK THE USER:**
 
 ```
 🏁 TASK COMPLETE - READY TO MERGE
 
 Summary of changes:
 - [list of commits made]
-- Branch: feature/<task-name>
+- Branch: feature/<task-name> (already pushed to remote)
 - Worktree: ../worktrees/feature-<task-name>
 
 Actions to perform:
-1. Push branch to remote
-2. Merge to main (or create PR)
-3. Clean up worktree
+1. Merge to main (or create PR)
+2. Clean up worktree
 
 Proceed with merge and cleanup? (yes/no/pr-only)
 ```
 
 **If "yes" (direct merge):**
 ```bash
-git push -u origin feature/<task-name>
-
 cd <original-repo-path>
 git fetch origin
 git checkout main
@@ -377,7 +381,6 @@ git push origin --delete feature/<task-name>
 
 **If "pr-only" (create PR):**
 ```bash
-git push -u origin feature/<task-name>
 gh pr create --title "<task-name>" --body "<description>"
 ```
 

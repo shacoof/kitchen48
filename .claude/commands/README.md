@@ -4,55 +4,23 @@ This directory contains custom slash commands for Claude Code that enforce proje
 
 ---
 
-## 📎 @implements Comment Standard
+## 📋 Documentation Strategy
 
-**All slash commands enforce the `@implements` comment standard** for traceability between source files and implementation plans.
+**All modules use CLAUDE.md files for documentation** - located in each module directory.
 
-### Why?
-- **Traceability**: Know which implementation plan each file relates to
-- **Safety**: Prevent undocumented changes to critical code
-- **Documentation**: Automatically generate file-to-plan mappings
-- **Onboarding**: New developers can quickly understand code ownership
+### Why Module CLAUDE.md?
+- **Co-location**: Documentation lives next to the code it describes
+- **Enforced by workflows**: `/shacoof-react-dev` Phase 4 mandates CLAUDE.md updates
+- **Structured**: Each module follows the template in main `CLAUDE.md`
+- **Discoverable**: Claude Code automatically reads CLAUDE.md files
 
-### Format by File Type
-| File Type | Format |
-|-----------|--------|
-| `.ts`, `.tsx`, `.js`, `.jsx` | `/** @implements /docs/features/[name]-implementation-plan.md */` |
-| `.css`, `.scss` | `/* @implements /docs/features/[name]-implementation-plan.md */` |
-| `.md` | `<!-- @implements /docs/features/[name]-implementation-plan.md -->` |
-| `.sql` | `-- @implements /docs/features/[name]-implementation-plan.md` |
-
-### Multiple Plans
-```typescript
-/**
- * @implements /docs/features/user-management-implementation-plan.md
- * @implements /docs/features/permissions-implementation-plan.md
- */
+### Module CLAUDE.md Locations
+```
+backend/src/modules/[module]/CLAUDE.md
+frontend/src/modules/[module]/CLAUDE.md
 ```
 
-### Exempt Files
-- `node_modules/`, `.next/`, `dist/`, `build/` directories
-- Config files: `*.config.js`, `*.config.ts`, `tsconfig.json`, `package.json`
-- Generated files: `prisma/generated/`, `*.d.ts` (generated)
-- Root-level dotfiles: `.env`, `.gitignore`, `.eslintrc`
-- Test fixtures and mocks
-- `CLAUDE.md`, `README.md`, `CHANGELOG.md`
-- Next.js app router files: `page.tsx`, `layout.tsx`, `loading.tsx`, `error.tsx`
-
-### Validation Script
-```bash
-# Check all files for @implements compliance
-npx tsx scripts/verify-implements.ts
-
-# Show verbose output (all files)
-npx tsx scripts/verify-implements.ts --verbose
-
-# Filter by specific plan
-npx tsx scripts/verify-implements.ts --plan /docs/features/user-management-implementation-plan.md
-
-# Output as JSON
-npx tsx scripts/verify-implements.ts --json
-```
+See main `CLAUDE.md` → "Module Structure & Documentation" for the full template.
 
 ---
 
@@ -85,16 +53,15 @@ Rigorous bug investigation workflow with mandatory compliance verification befor
 #### What It Does
 
 1. **Phase 1: Investigation (MANDATORY)**
-   - Searches for feature implementation plan (**STOPS if missing**)
-   - Reviews relevant DEVELOPMENT_GUIDELINES.md sections
+   - Locates module CLAUDE.md documentation
+   - Reviews relevant CLAUDE.md sections
    - Examines logs in `/logs/` directory
    - Reproduces and identifies root cause
    - Creates detailed investigation report
 
 2. **Phase 2: Solution Planning (MANDATORY)**
    - Proposes detailed fix with justification
-   - Creates compliance matrix against DEVELOPMENT_GUIDELINES.md
-   - Verifies no breaking changes to implementation plan
+   - Verifies no breaking changes to module architecture
    - Defines testing strategy
    - Plans rollback procedure
    - **STOPS for user approval before proceeding**
@@ -102,19 +69,17 @@ Rigorous bug investigation workflow with mandatory compliance verification befor
 3. **Phase 3: Implementation (Only After Approval)**
    - Creates pre-fix commit (MANDATORY)
    - Implements approved fix
-   - Updates implementation plan's "Known Issues" section
-   - Updates DEVELOPMENT_GUIDELINES.md (if warranted)
+   - Updates module CLAUDE.md "Known Issues" section
    - Creates detailed commit with full context
    - Verifies build and tests pass
 
 #### Investigation Checklist
 
 **Before any fix is attempted**:
-- ✅ Implementation plan located and reviewed
+- ✅ Module CLAUDE.md located and reviewed
 - ✅ Root cause identified (not guessed)
 - ✅ Evidence documented (logs, code location)
 - ✅ Impact assessed (user, data, security)
-- ✅ Development guidelines reviewed
 
 #### Compliance Matrix
 
@@ -131,20 +96,17 @@ Rigorous bug investigation workflow with mandatory compliance verification befor
 #### Stop Points
 
 **The agent STOPS at these critical points**:
-1. **No implementation plan found** → Requests user create one first
+1. **Module CLAUDE.md missing** → Creates one using the template
 2. **Investigation incomplete** → Cannot fix without understanding cause
-3. **Solution not compliant** → Must revise to meet guidelines
-4. **Breaking changes detected** → Requires explicit approval
-5. **Before implementing fix** → Presents full plan and waits for approval
+3. **Breaking changes detected** → Requires explicit approval
+4. **Before implementing fix** → Presents full plan and waits for approval
 
 #### Benefits
 
 - ✅ Prevents "quick fixes" that break other features
 - ✅ Ensures root cause is understood before fixing
-- ✅ Documents lessons learned for future reference
-- ✅ Maintains compliance with all guidelines
+- ✅ Documents lessons learned in module CLAUDE.md
 - ✅ Creates detailed investigation trail
-- ✅ Updates implementation plans with bug history
 - ✅ Prevents regressions through compliance checks
 
 #### Output Documents
@@ -155,14 +117,8 @@ Rigorous bug investigation workflow with mandatory compliance verification befor
 - Log evidence
 - Impact assessment
 
-**Compliance Matrix**:
-- All guideline checks verified
-- Implementation plan compatibility confirmed
-- Breaking changes identified and justified
-
 **Updated Documentation**:
-- Implementation plan "Known Issues" section
-- DEVELOPMENT_GUIDELINES.md "LESSONS LEARNED" (if warranted)
+- Module CLAUDE.md "Known Issues & Fixes" section
 - Detailed commit message with full context
 
 ---
@@ -170,81 +126,6 @@ Rigorous bug investigation workflow with mandatory compliance verification befor
 ### `/shacoof-react-dev` - React Development Workflow with Compliance Enforcement
 
 Enforces the mandatory workflow checklist from `CLAUDE.md` before any code changes.
-
-### `/shacoof-document-feature` - Feature Documentation Generator
-
-Creates comprehensive implementation plan documents following the established template structure.
-
-#### Usage
-
-```
-/shacoof-document-feature <feature name>
-```
-
-#### Examples
-
-```
-/shacoof-document-feature user-management
-```
-
-```
-/shacoof-document-feature genai-prompts
-```
-
-```
-/shacoof-document-feature project-dashboard
-```
-
-#### What It Does
-
-1. **Information Gathering**
-   - Asks clarifying questions about the feature
-   - Searches codebase for relevant files
-   - Analyzes API routes, components, and services
-   - Identifies permissions, translations, and theme tokens
-
-2. **Architecture Analysis**
-   - Documents file structure
-   - Describes component responsibilities
-   - Maps API endpoints
-   - Explains data flow
-
-3. **Comprehensive Documentation**
-   - Creates markdown file in `/docs/features/`
-   - Follows established template structure
-   - Includes all required sections
-   - Adds code examples and commit references
-
-4. **Compliance Verification**
-   - Checks multi-tenancy implementation
-   - Verifies permission system integration
-   - Documents i18n usage
-   - Confirms theme token compliance
-
-#### Document Sections Created
-
-- Overview & Requirements
-- Architecture (file structure, components, APIs)
-- Data Model
-- Permissions (role capabilities matrix)
-- Translations (all keys with EN/HE)
-- Theme Tokens
-- Compliance Checklist
-- Implementation Steps
-- Known Issues & Fixes
-- Testing Plan
-- Reference Implementation
-
-#### Benefits
-
-- ✅ Ensures complete documentation for all features
-- ✅ Provides reference for future modifications
-- ✅ Documents lessons learned from bugs
-- ✅ Creates consistent documentation structure
-- ✅ Facilitates knowledge transfer
-- ✅ Supports compliance audits
-
----
 
 ### `/shacoof-feature-update` - Intentional Feature Modification
 
@@ -273,26 +154,21 @@ Workflow for making intentional changes to existing, working functionality. Use 
 #### What It Does
 
 1. **Phase 1: Current State Analysis (MANDATORY)**
-   - Searches for feature implementation plan (**STOPS if missing**)
-   - Documents current behavior thoroughly (becomes "old behavior" in changelog)
-   - Reviews relevant DEVELOPMENT_GUIDELINES.md sections
-   - Verifies @implements comments
+   - Locates module CLAUDE.md documentation
+   - Documents current behavior thoroughly
+   - Reviews relevant CLAUDE.md sections
 
 2. **Phase 2: Update Planning (MANDATORY)**
    - Creates change specification (current vs. desired behavior)
    - Assesses impact (breaking changes, migrations, API changes)
    - Plans backward compatibility strategy
-   - Creates compliance matrix
    - Defines testing and rollback strategy
    - **STOPS for user approval before proceeding**
 
 3. **Phase 3: Implementation (Only After Approval)**
    - Creates pre-update commit (MANDATORY)
    - Implements approved changes
-   - Updates implementation plan documentation:
-     - **Main sections**: Updated to reflect NEW behavior
-     - **Change indicators**: Added where behavior changed (links to changelog)
-     - **Changelog entry**: Documents OLD behavior for historical reference
+   - Updates module CLAUDE.md with new behavior details
    - Creates detailed commit with full context
 
 #### Documentation Pattern
@@ -329,7 +205,7 @@ Workflow for making intentional changes to existing, working functionality. Use 
 #### Stop Points
 
 **The agent STOPS at these critical points**:
-1. **No implementation plan found** → Requests user document feature first
+1. **Module CLAUDE.md missing** → Creates one using the template
 2. **Current behavior not documented** → Cannot proceed without baseline
 3. **Breaking changes detected** → Requires explicit approval
 4. **Before implementing update** → Presents full plan and waits for approval
@@ -455,5 +331,4 @@ What the user should expect...
 ## Related Documentation
 
 - [CLAUDE.md](../../CLAUDE.md) - Main project instructions
-- [DEVELOPMENT_GUIDELINES.md](../../docs/DEVELOPMENT_GUIDELINES.md) - Comprehensive development standards
 - [Claude Code Documentation](https://docs.claude.com/claude-code)

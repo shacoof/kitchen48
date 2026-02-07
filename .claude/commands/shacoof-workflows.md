@@ -8,10 +8,10 @@ Here are the workflows currently available. You can trigger them by typing the c
 
 | Command | Description | When to use |
 |---------|-------------|-------------|
-| **/shacoof-react-dev** | **Development with Compliance** | **ALWAYS** when writing code. Enforces guidelines, pre-edit commits, worktree isolation, and @implements checking. |
+| **/shacoof-react-dev** | **Development with Compliance** | **ALWAYS** when writing code. Enforces guidelines, pre-edit commits, worktree isolation, and module CLAUDE.md updates. |
 | **/shacoof-bug-fix** | **Bug Investigation** | When fixing a bug. Enforces systematic investigation, root cause analysis, worktree isolation, and regression testing. |
 | **/shacoof-feature-update** | **Feature Update** | When updating an existing feature. Includes worktree isolation and merge workflow. |
-| **/shacoof-document-feature** | **Documentation Generator** | When creating or updating `docs/features/*-implementation-plan.md`. |
+| **/shacoof-deploy-to-production** | **Production Deployment** | When deploying to Google Cloud. One-click deployment with database migrations. |
 
 ## Utility
 
@@ -30,12 +30,14 @@ Here are the workflows currently available. You can trigger them by typing the c
 2. Ask user: use existing worktree OR create new one
 3. Create/enter isolated worktree before any code changes
 
+### After Testing Approved
+1. Push branch to remote
+
 ### At Task Completion
 1. Ask user: merge to main, create PR, or keep branch
-2. Push branch to remote
-3. Merge or create PR as requested
-4. Clean up worktree
-5. Delete branch (local and remote)
+2. Merge or create PR as requested
+3. Clean up worktree
+4. Delete branch (local and remote)
 
 ### Visual Indicators
 ```

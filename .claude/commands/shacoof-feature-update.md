@@ -109,53 +109,24 @@ This ensures you can **always rollback** to the exact state before the update wa
 
 ---
 
-## 📎 @IMPLEMENTS COMMENT STANDARD
-
-All source files must include an `@implements` comment at the top referencing their implementation plan(s).
-
-### Comment Format by File Type
-| File Type | Format |
-|-----------|--------|
-| `.ts`, `.tsx`, `.js`, `.jsx` | `/** @implements /docs/features/[name]-implementation-plan.md */` |
-| `.css`, `.scss` | `/* @implements /docs/features/[name]-implementation-plan.md */` |
-| `.md` | `<!-- @implements /docs/features/[name]-implementation-plan.md -->` |
-| `.sql` | `-- @implements /docs/features/[name]-implementation-plan.md` |
-
-### Multiple Plans
-```typescript
-/**
- * @implements /docs/features/user-management-implementation-plan.md
- * @implements /docs/features/permissions-implementation-plan.md
- */
-```
-
-### Exempt Files (do NOT add @implements)
-- `node_modules/`, `.next/`, `dist/`, `build/` directories
-- Config files: `*.config.js`, `*.config.ts`, `tsconfig.json`, `package.json`, etc.
-- Generated files: `prisma/generated/`, `*.d.ts` (generated)
-- Root-level dotfiles: `.env`, `.gitignore`, `.eslintrc`, etc.
-- Test fixtures and mocks
-- `CLAUDE.md`, `README.md`, `CHANGELOG.md`
-
----
-
 ## 🔍 PHASE 1: CURRENT STATE ANALYSIS (MANDATORY)
 
 Before making ANY changes, complete this analysis:
 
-### Step 1: Locate Implementation Plan (CRITICAL - BLOCKING)
+### Step 1: Locate Module CLAUDE.md (CRITICAL - BLOCKING)
 
 **Action Required**:
-- Search `/docs/features/` for `[feature-name]-implementation-plan.md`
-- The feature MUST have an implementation plan document
+- Search for `CLAUDE.md` in the relevant module directory:
+  - `backend/src/modules/[module]/CLAUDE.md`
+  - `frontend/src/modules/[module]/CLAUDE.md`
+- The module MUST have documentation
 
 **Questions to Answer**:
-1. Does an implementation plan exist for this feature?
-2. If NO → **STOP and ask user to create implementation plan first** (use `/shacoof-document-feature`)
+1. Does a module CLAUDE.md exist for this feature?
+2. If NO → Create one using the template from main `CLAUDE.md`
 3. If YES → Read and understand:
    - Current architecture
    - Existing behavior documentation
-   - Previous updates in changelog (if any)
    - Known issues section
 
 **Status**: ⏳ PENDING
@@ -183,10 +154,10 @@ Before making ANY changes, complete this analysis:
 
 ---
 
-### Step 3: Review Development Guidelines
+### Step 3: Review Project Guidelines
 
 **Action Required**:
-- Read `docs/DEVELOPMENT_GUIDELINES.md`
+- Read main `CLAUDE.md` for project conventions
 - Identify ALL relevant sections for this update:
   - [ ] Grids & Tabulator (if data tables involved)
   - [ ] API Routes (if backend involved)
@@ -198,21 +169,6 @@ Before making ANY changes, complete this analysis:
   - [ ] React Components (if UI components)
   - [ ] Custom Editors (if Tabulator custom editors)
   - [ ] Caching (if data persistence)
-
-**Status**: ⏳ PENDING
-
----
-
-### Step 4: Verify @implements References
-
-**Action Required**:
-- Check each affected file for `@implements` comment
-- Cross-reference with the implementation plan
-
-**Compliance Table**:
-| File | Has @implements? | References Correct Plan? | Action Needed |
-|------|------------------|--------------------------|---------------|
-| [file1] | ☐ Yes ☐ No | ☐ Yes ☐ No ☐ N/A | [action] |
 
 **Status**: ⏳ PENDING
 
@@ -278,7 +234,7 @@ Select one:
 
 ### Compliance Matrix
 
-**Verify compliance with DEVELOPMENT_GUIDELINES.md**:
+**Verify compliance with project CLAUDE.md**:
 
 | Guideline Section | Relevant? | Compliance Status | Notes |
 |-------------------|-----------|-------------------|-------|
@@ -299,7 +255,7 @@ Select one:
 - [ ] Update does NOT use direct Prisma (must use getFilteredPrisma for tenant data)
 - [ ] Update does NOT add custom CSS values (must use theme tokens)
 - [ ] Update does NOT create destructive database operations
-- [ ] All modified files have correct `@implements` comment (or are exempt)
+- [ ] Module CLAUDE.md will be updated with implementation details
 
 ### Testing Strategy
 
@@ -330,9 +286,8 @@ Select one:
 2. ✅ **Change Specification** (current vs. desired, with rationale)
 3. ✅ **Impact Assessment** (breaking changes, migrations needed)
 4. ✅ **Backward Compatibility Strategy** (how existing users are affected)
-5. ✅ **Compliance Matrix** (all guidelines followed)
-6. ✅ **Testing Strategy** (how you'll verify)
-7. ✅ **Rollback Plan** (if things go wrong)
+5. ✅ **Testing Strategy** (how you'll verify)
+6. ✅ **Rollback Plan** (if things go wrong)
 
 **Ask the user**: "May I proceed with the feature update as planned?"
 
@@ -363,127 +318,45 @@ git commit -m "Before updating [feature]: [change description]"
 
 **Follow this sequence**:
 
-1. **Verify/Add @implements comments** (MANDATORY for each file)
-   - For NEW files: Add `@implements` comment as first line
-   - For EXISTING files: Check for `@implements`, add if missing
-   - Reference the relevant implementation plan(s)
-   - Skip exempt files (config, generated, node_modules, etc.)
-
-2. **Make code changes** according to approved plan
-   - Follow all DEVELOPMENT_GUIDELINES.md patterns
+1. **Make code changes** according to approved plan
+   - Follow all CLAUDE.md patterns
    - Use createLogger() for any new logging
    - Use theme tokens for any styling
-   - Use i18n for any text
    - Use permission checks for any protected operations
 
-3. **Add comments** explaining the update
+2. **Add comments** explaining the update
    - Reference the change rationale in comments
    - Note any non-obvious logic
    - Mark intentional behavior changes
 
-4. **Run tests**
+3. **Run tests**
    - Run build: `npm run build`
-   - Run @implements validation: `npx tsx scripts/verify-implements.ts`
    - Manually test updated behavior
    - Run regression tests
 
 ---
 
-### Step 3: Update Implementation Plan Documentation (MANDATORY)
+### Step 3: Update Module CLAUDE.md (MANDATORY)
 
-**This is the key documentation step. Follow this pattern:**
+**Update the module's CLAUDE.md with:**
+- New/changed behavior in relevant sections
+- Any new API endpoints or components
+- Known issues discovered during implementation
+- Implementation date
 
-#### A. Update Main Sections (Source of Truth)
-
-Update the main documentation sections to reflect the NEW behavior. Add change indicators where behavior changed:
-
-**Example - Before:**
+**Example update to Known Issues section:**
 ```markdown
-### User Actions
-| Action | Behavior |
-|--------|----------|
-| Click Save | Saves data |
-```
+### Feature Update: [Title] - [YYYY-MM-DD]
 
-**Example - After:**
-```markdown
-### User Actions
-| Action | Behavior | Notes |
-|--------|----------|-------|
-| Click Save | Saves data and closes modal | *Changed in [Update #3](#update-3-modal-auto-close)* |
-```
+**Changed:**
+- [aspect]: [old behavior] → [new behavior]
 
-The asterisk with anchor link signals to readers: "This behavior was updated - see changelog for previous behavior"
-
-#### B. Add Changelog Entry (Historical Reference)
-
-Add a new entry to the **Feature Updates Changelog** section at the bottom of the implementation plan:
-
-```markdown
----
-
-## Feature Updates Changelog
-
-### Update #[N]: [Short Title] {#update-[n]-[slug]}
-**Date**: [YYYY-MM-DD]
-**Commit**: `[commit hash]`
-**Type**: Behavior Change / Enhancement / Performance / UX Improvement
-
-#### Changes Made
-| Aspect | Previous Behavior | New Behavior | Rationale |
-|--------|-------------------|--------------|-----------|
-| [aspect] | [old behavior - from Phase 1 documentation] | [new behavior] | [why] |
-
-#### Migration Notes
-[Steps users/admins need to take, or "None required"]
-
-#### Breaking Changes
-[List any breaking changes, or "None"]
-
-#### Files Modified
-- `[file1]`: [what changed]
-- `[file2]`: [what changed]
-
----
-```
-
-**If this is the first update**, create the changelog section:
-```markdown
----
-
-## Feature Updates Changelog
-
-### Update #1: [Title] {#update-1-[slug]}
-...
-
-### Initial Implementation
-**Date**: [original implementation date]
-**Commit**: `[original commit]`
-
-Original implementation as documented above.
+**Reason:** [why the change was made]
 ```
 
 ---
 
-### Step 4: Update DEVELOPMENT_GUIDELINES.md (if needed)
-
-**Evaluate**: Should DEVELOPMENT_GUIDELINES.md be updated?
-
-**Update guidelines if**:
-- [ ] Update revealed a missing pattern
-- [ ] Update introduced a new best practice
-- [ ] Update revealed unclear documentation
-- [ ] Update created a reusable pattern others should follow
-
-**If updating guidelines**:
-1. Add relevant section or update existing
-2. Document the pattern
-3. Provide code examples
-4. Reference the update commit
-
----
-
-### Step 5: Final Commit
+### Step 4: Final Commit
 
 **Create detailed commit message**:
 
@@ -509,20 +382,15 @@ update: [One-line summary of feature update]
 - [File:line]: [What changed and why]
 
 ## Documentation Updated
-- [x] Implementation plan main sections updated
-- [x] Changelog entry added (Update #[N])
-- [x] Change indicators added to affected sections
+- [x] Module CLAUDE.md updated with changes
 
 ## Testing
 - [x] Regression tests passed
 - [x] New behavior verified
 - [x] Build successful
-- [x] @implements validation passed
 
 ## Compliance
-- [x] Follows DEVELOPMENT_GUIDELINES.md
-- [x] Follows implementation plan architecture
-- [x] All files have @implements comments
+- [x] Follows project CLAUDE.md conventions
 
 Related Files:
 - [List of modified files]
@@ -569,35 +437,39 @@ Please confirm when testing is complete: (done/issues)
 
 **CRITICAL: Do NOT proceed to merge until user confirms testing is complete.**
 
-- If user says **"done"** → Proceed to Phase 5 (Merge & Cleanup)
+- If user says **"done"** → Push branch to remote, then proceed to Phase 5 (Merge & Cleanup)
 - If user says **"issues"** → Ask for details and fix before retesting
+
+### Step 3: Push to Remote (After Testing Approved)
+
+**After user confirms testing is complete, push the branch:**
+```bash
+git push -u origin feature/<task-name>
+```
 
 ---
 
 ## 🏁 PHASE 5: MERGE & CLEANUP (MANDATORY)
 
-**After all commits are complete, ASK THE USER:**
+**After branch is pushed, ASK THE USER:**
 
 ```
 🏁 FEATURE UPDATE COMPLETE - READY TO MERGE
 
 Summary of changes:
 - [list of commits made]
-- Branch: feature/<task-name>
+- Branch: feature/<task-name> (already pushed to remote)
 - Worktree: ../worktrees/feature-<task-name>
 
 Actions to perform:
-1. Push branch to remote
-2. Merge to main (or create PR)
-3. Clean up worktree
+1. Merge to main (or create PR)
+2. Clean up worktree
 
 Proceed with merge and cleanup? (yes/no/pr-only)
 ```
 
 **If "yes" (direct merge):**
 ```bash
-git push -u origin feature/<task-name>
-
 cd <original-repo-path>
 git fetch origin
 git checkout main
@@ -612,7 +484,6 @@ git push origin --delete feature/<task-name>
 
 **If "pr-only" (create PR):**
 ```bash
-git push -u origin feature/<task-name>
 gh pr create --title "<task-name>" --body "<description>"
 ```
 
@@ -650,7 +521,7 @@ After committing, verify:
 **The feature update agent will STOP and request approval at these points:**
 
 1. **Session start** → Check for existing worktrees, ask user which to use or create new
-2. **Missing implementation plan** → Ask user to document feature first
+2. **Missing module CLAUDE.md** → Create one using the template
 3. **Current state not documented** → Cannot proceed without understanding existing behavior
 4. **Change specification incomplete** → Must define before/after clearly
 5. **Breaking changes detected** → Must get explicit user approval

@@ -24,13 +24,12 @@ FROM node:20-alpine AS backend-builder
 
 WORKDIR /app/backend
 
-# Install dependencies
+# Copy Prisma schema first (needed for postinstall prisma generate)
+COPY backend/prisma ./prisma
+
+# Install dependencies (runs prisma generate in postinstall)
 COPY backend/package*.json ./
 RUN npm install
-
-# Copy Prisma schema and generate client
-COPY backend/prisma ./prisma
-RUN npx prisma generate
 
 # Build backend
 COPY backend/tsconfig.json ./

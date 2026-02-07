@@ -103,53 +103,30 @@ This ensures you can **always rollback** to the exact state before the fix was a
 
 ---
 
-## 📎 @IMPLEMENTS COMMENT STANDARD
-
-All source files must include an `@implements` comment at the top referencing their implementation plan(s).
-
-### Comment Format by File Type
-| File Type | Format |
-|-----------|--------|
-| `.ts`, `.tsx`, `.js`, `.jsx` | `/** @implements /docs/features/[name]-implementation-plan.md */` |
-| `.css`, `.scss` | `/* @implements /docs/features/[name]-implementation-plan.md */` |
-| `.md` | `<!-- @implements /docs/features/[name]-implementation-plan.md -->` |
-| `.sql` | `-- @implements /docs/features/[name]-implementation-plan.md` |
-
-
-### Exempt Files (do NOT add @implements)
-- `node_modules/`, `.next/`, `dist/`, `build/` directories
-- Config files: `*.config.js`, `*.config.ts`, `tsconfig.json`, `package.json`, etc.
-- Generated files: `prisma/generated/`, `*.d.ts` (generated)
-- Root-level dotfiles: `.env`, `.gitignore`, `.eslintrc`, etc.
-- Test fixtures and mocks
-- `CLAUDE.md`, `README.md`, `CHANGELOG.md`
-
----
-
 ## 🔍 PHASE 1: PRE-FIX INVESTIGATION (MANDATORY)
 
 Before making ANY changes, complete this investigation checklist:
 
-### Step 1: Locate Implementation Plan (CRITICAL - BLOCKING)
+### Step 1: Locate Module CLAUDE.md (CRITICAL - BLOCKING)
 
 **Action Required**:
-- Search CLAUDE.md in all relevant subfolders
-- The feature must have an implementation plan document
+- Search for `CLAUDE.md` in the relevant module directory:
+  - `backend/src/modules/[module]/CLAUDE.md`
+  - `frontend/src/modules/[module]/CLAUDE.md`
 
 **Questions to Answer**:
-1. Does an implementation plan exist for this feature?
-2. If NO → **STOP and ask user to create implementation plan first**
+1. Does a module CLAUDE.md exist for this feature?
+2. If NO → Create one using the template from main `CLAUDE.md`
 3. If YES → Read and understand:
    - Original architecture
    - Design decisions
    - Known issues section
-   - Test cases
 
 **Status**: ⏳ PENDING
 
 ---
 
-### Step 2: Review Development Guidelines
+### Step 2: Review Project Guidelines
 
 **Action Required**:
 - Read `CLAUDE.md`
@@ -193,7 +170,7 @@ Before making ANY changes, complete this investigation checklist:
 ### Step 4: Reproduce & Understand the Bug
 
 **Action Required**:
-- Read relevant code files identified from implementation plan
+- Read relevant code files identified from module CLAUDE.md
 - Trace the code path that exhibits the bug
 - Identify the root cause
 
@@ -202,35 +179,6 @@ Before making ANY changes, complete this investigation checklist:
 2. What is the root cause? (Be specific - no guessing)
 3. Why did this happen? (Design flaw, missing check, race condition, etc.)
 4. Are there related bugs that might occur from same root cause?
-
-**Status**: ⏳ PENDING
-
----
-
-### Step 5: Verify @implements References
-
-**Action Required**:
-- Check each affected file for `@implements` comment
-- Cross-reference with the implementation plan being investigated
-- Run validation: `npx tsx scripts/verify-implements.ts`
-
-**Questions to Answer**:
-1. Do all affected files have `@implements` comments?
-2. Do the comments correctly reference the relevant implementation plan(s)?
-3. Are there discrepancies suggesting undocumented changes?
-
-**If `@implements` comment is MISSING**:
-- Flag this as a compliance issue
-- Add to fix scope: "Add missing @implements comment"
-
-**If `@implements` comment EXISTS but WRONG/INCOMPLETE**:
-- Investigate if file was modified outside of documented plan
-- Document discrepancy in investigation report
-
-**Compliance Table**:
-| File | Has @implements? | References Correct Plan? | Action Needed |
-|------|------------------|--------------------------|---------------|
-| [file1] | ☐ Yes ☐ No | ☐ Yes ☐ No ☐ N/A | [action] |
 
 **Status**: ⏳ PENDING
 
@@ -249,7 +197,7 @@ Before making ANY changes, complete this investigation checklist:
 ### Evidence
 - **Code Location**: [File:line where bug occurs]
 - **Log Evidence**: [Any relevant log entries]
-- **Related Issues**: [Similar bugs in implementation plan's Known Issues section]
+- **Related Issues**: [Similar bugs in module CLAUDE.md's Known Issues section]
 
 ### Impact Assessment
 - **User Impact**: [How does this affect users?]
@@ -272,7 +220,7 @@ Once investigation is complete, plan the solution:
 
 ### Compliance Matrix
 
-**Verify compliance with DEVELOPMENT_GUIDELINES.md**:
+**Verify compliance with project CLAUDE.md**:
 
 | Guideline Section | Relevant? | Compliance Status | Notes |
 |-------------------|-----------|-------------------|-------|
@@ -293,11 +241,11 @@ Once investigation is complete, plan the solution:
 - [ ] Fix does NOT use direct Prisma (must use getFilteredPrisma for tenant data)
 - [ ] Fix does NOT add custom CSS values (must use theme tokens)
 - [ ] Fix does NOT create destructive database operations
-- [ ] All modified files have correct `@implements` comment (or are exempt)
+- [ ] Module CLAUDE.md will be updated with fix details
 
 ### Implementation Plan Compliance
 
-**Verify compliance with feature implementation plan**:
+**Verify compliance with module CLAUDE.md**:
 
 | Aspect | Original Design | Proposed Change | Breaking? | Justification |
 |--------|----------------|-----------------|-----------|---------------|
@@ -337,8 +285,7 @@ Once investigation is complete, plan the solution:
 |------|-------------|---------|
 | 1. Pre-fix commit | `git commit -m "Before fixing [X]"` | [Exact commit message] |
 | 2. Code changes | Files to modify | [List files and changes] |
-| 3. Update implementation plan | Add to "Known Issues & Fixes" | [Which plan file] |
-| 4. Evaluate DEVELOPMENT_GUIDELINES.md | Will update? ☐ Yes ☐ No | [If yes, what section] |
+| 3. Update module CLAUDE.md | Add to "Known Issues & Fixes" | [Which module CLAUDE.md] |
 | 5. Testing | How you'll verify | [List test steps] |
 | 6. Final commit | Detailed commit message | [Summary of commit] |
 
@@ -387,59 +334,32 @@ git commit -m "Before fixing [bug description]"
 
 **Follow this sequence**:
 
-1. **Verify/Add @implements comments** (MANDATORY for each file)
-   - For NEW files: Add `@implements` comment as first line (after shebang if present)
-   - For EXISTING files: Check for `@implements`, add if missing
-   - Reference the relevant implementation plan(s)
-   - Skip exempt files (config, generated, node_modules, etc.)
-
-2. **Make code changes** according to approved plan
-   - Follow all DEVELOPMENT_GUIDELINES.md patterns
+1. **Make code changes** according to approved plan
+   - Follow all CLAUDE.md patterns
    - Use createLogger() for any new logging
    - Use theme tokens for any styling
-   - Use i18n for any text
    - Use permission checks for any protected operations
 
-4. **Add comments** explaining the fix
+2. **Add comments** explaining the fix
    - Reference the bug in comments
    - Explain why this fixes the root cause
    - Note any non-obvious logic
 
-5. **Update implementation plan's "Known Issues" section**
+3. **Update module CLAUDE.md "Known Issues & Fixes" section**
    - Document the bug that was fixed
    - Document the root cause
    - Document the fix applied
    - Add date and commit reference
 
-6. **Test the fix**
+4. **Test the fix**
    - Run build: `npm run build`
-   - Run @implements validation: `npx tsx scripts/verify-implements.ts`
    - Verify TypeScript compilation succeeds
    - Manually test the bug scenario
    - Test regression cases
 
 ---
 
-### Step 3: Update DEVELOPMENT_GUIDELINES.md (if needed)
-
-**Evaluate**: Should DEVELOPMENT_GUIDELINES.md be updated?
-
-**Update guidelines if**:
-- [ ] Bug revealed a missing pattern
-- [ ] Bug revealed unclear documentation
-- [ ] Bug is likely to recur without guidance
-- [ ] Fix introduces a new best practice
-
-**If updating guidelines**:
-1. Add a new "LESSONS LEARNED" section
-2. Document the bug pattern
-3. Document the correct pattern
-4. Provide before/after code examples
-5. Reference the bug fix commit
-
----
-
-### Step 4: Final Commit
+### Step 3: Final Commit
 
 **Create detailed commit message**:
 
@@ -468,10 +388,8 @@ fix: [One-line summary of bug fix]
 - [x] No regression issues
 
 ## Compliance
-- [x] Follows DEVELOPMENT_GUIDELINES.md
-- [x] Follows implementation plan architecture
-- [x] Updated implementation plan Known Issues
-- [x] Updated guidelines (if needed)
+- [x] Follows project CLAUDE.md conventions
+- [x] Updated module CLAUDE.md Known Issues
 
 Related Files:
 - [List of modified files]
@@ -518,35 +436,39 @@ Please confirm when testing is complete: (done/issues)
 
 **CRITICAL: Do NOT proceed to merge until user confirms testing is complete.**
 
-- If user says **"done"** → Proceed to Phase 5 (Merge & Cleanup)
+- If user says **"done"** → Push branch to remote, then proceed to Phase 5 (Merge & Cleanup)
 - If user says **"issues"** → Ask for details and fix before retesting
+
+### Step 3: Push to Remote (After Testing Approved)
+
+**After user confirms testing is complete, push the branch:**
+```bash
+git push -u origin fix/<bug-name>
+```
 
 ---
 
 ## 🏁 PHASE 5: MERGE & CLEANUP (MANDATORY)
 
-**After all commits are complete, ASK THE USER:**
+**After branch is pushed, ASK THE USER:**
 
 ```
 🏁 BUG FIX COMPLETE - READY TO MERGE
 
 Summary of changes:
 - [list of commits made]
-- Branch: fix/<bug-name>
+- Branch: fix/<bug-name> (already pushed to remote)
 - Worktree: ../worktrees/fix-<bug-name>
 
 Actions to perform:
-1. Push branch to remote
-2. Merge to main (or create PR)
-3. Clean up worktree
+1. Merge to main (or create PR)
+2. Clean up worktree
 
 Proceed with merge and cleanup? (yes/no/pr-only)
 ```
 
 **If "yes" (direct merge):**
 ```bash
-git push -u origin fix/<bug-name>
-
 cd <original-repo-path>
 git fetch origin
 git checkout main
@@ -561,7 +483,6 @@ git push origin --delete fix/<bug-name>
 
 **If "pr-only" (create PR):**
 ```bash
-git push -u origin fix/<bug-name>
 gh pr create --title "Fix: <bug-name>" --body "<description>"
 ```
 
@@ -596,7 +517,7 @@ After committing, verify:
 **The bug fix agent will STOP and request approval at these points:**
 
 1. **Session start** → Check for existing worktrees, ask user which to use or create new
-2. **Missing implementation plan** → Ask user to create one first
+2. **Missing module CLAUDE.md** → Create one using the template
 3. **Investigation incomplete** → Cannot proceed without understanding root cause
 4. **Solution not compliant** → Must revise plan to meet guidelines
 5. **Breaking changes detected** → Must get explicit user approval
