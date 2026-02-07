@@ -116,10 +116,18 @@ recipesApi.generateSlug(title)
 
 - [ ] Add image upload integration (currently URL only)
 - [ ] Add video upload/embed support
-- [ ] Add ingredient autocomplete from master list
+- [x] ~~Add ingredient autocomplete from master list~~ (fixed 2026-02-07)
+- [x] ~~Use LOV-backed dropdown for measurement units~~ (fixed 2026-02-07)
 - [ ] Add drag-and-drop step reordering
 - [ ] Add recipe duplication feature
 - [ ] Add recipe delete confirmation modal
+
+## Fixes Applied
+
+### 2026-02-07: Ingredient unit dropdown + autocomplete in CreateRecipePage
+- **Bug**: Ingredient unit was a free-text input; ingredient name had no autocomplete
+- **Root Cause**: CreateRecipePage was not wired to useListValues hook or searchIngredients API
+- **Fix**: Unit field now uses `<select>` populated from "Measurement Units" LOV. Ingredient name has debounced autocomplete from master_ingredients table with dropdown UI. masterIngredientId is tracked and submitted.
 
 ---
 

@@ -4,13 +4,21 @@
  * Accessible via /recipes/new or /recipes/:id/edit
  */
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../../auth/hooks/useAuth';
-import { recipesApi, CreateRecipeInput, CreateStepInput } from '../services/recipes.api';
+import { recipesApi, CreateRecipeInput, CreateStepInput, MasterIngredient } from '../services/recipes.api';
+import { useListValues } from '../../../hooks/useListValues';
 import { createLogger } from '../../../lib/logger';
 
 const logger = createLogger('CreateRecipePage');
+
+interface IngredientFormData {
+  name: string;
+  quantity: string;
+  unit: string;
+  masterIngredientId: string | null;
+}
 
 interface StepFormData {
   id?: string;
@@ -20,7 +28,7 @@ interface StepFormData {
   waitTime: string;
   waitTimeUnit: string;
   videoUrl: string;
-  ingredients: Array<{ name: string; quantity: string; unit: string }>;
+  ingredients: IngredientFormData[];
 }
 
 const emptyStep: StepFormData = {
@@ -54,6 +62,57 @@ export function CreateRecipePage() {
   const [videoUrl, setVideoUrl] = useState('');
   const [isPublished, setIsPublished] = useState(false);
   const [steps, setSteps] = useState<StepFormData[]>([{ ...emptyStep }]);
+
+  // LOV: Measurement Units
+  const { values: unitOptions } = useListValues({ typeName: 'Measurement Units' });
+
+  // Ingredient autocomplete state
+  const [acResults, setAcResults] = useState<MasterIngredient[]>([]);
+  const [acActiveIdx, setAcActiveIdx] = useState<{ step: number; ing: number } | null>(null);
+  const acTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const searchIngredients = useCallback(async (query: string) => {
+    if (query.length < 2) {
+      setAcResults([]);
+      return;
+    }
+    const result = await recipesApi.searchIngredients(query);
+    if (result.ingredients) {
+      setAcResults(result.ingredients);
+    }
+  }, []);
+
+  const handleIngredientNameChange = useCallback(
+    (stepIndex: number, ingIndex: number, value: string) => {
+      const newSteps = [...steps];
+      newSteps[stepIndex].ingredients[ingIndex] = {
+        ...newSteps[stepIndex].ingredients[ingIndex],
+        name: value,
+        masterIngredientId: null,
+      };
+      setSteps([...newSteps]);
+      setAcActiveIdx({ step: stepIndex, ing: ingIndex });
+
+      if (acTimerRef.current) clearTimeout(acTimerRef.current);
+      acTimerRef.current = setTimeout(() => searchIngredients(value), 300);
+    },
+    [steps, searchIngredients],
+  );
+
+  const selectAutocomplete = useCallback(
+    (stepIndex: number, ingIndex: number, mi: MasterIngredient) => {
+      const newSteps = [...steps];
+      newSteps[stepIndex].ingredients[ingIndex] = {
+        ...newSteps[stepIndex].ingredients[ingIndex],
+        name: mi.name,
+        masterIngredientId: mi.id,
+      };
+      setSteps([...newSteps]);
+      setAcResults([]);
+      setAcActiveIdx(null);
+    },
+    [steps],
+  );
 
   // Load existing recipe for edit mode
   useEffect(() => {
@@ -90,6 +149,7 @@ export function CreateRecipePage() {
                     name: i.name,
                     quantity: i.quantity != null ? String(i.quantity) : '',
                     unit: i.unit || '',
+                    masterIngredientId: i.masterIngredientId || null,
                   })),
                 }))
               : [{ ...emptyStep }]
@@ -135,19 +195,22 @@ export function CreateRecipePage() {
 
   const addIngredient = (stepIndex: number) => {
     const newSteps = [...steps];
-    newSteps[stepIndex].ingredients.push({ name: '', quantity: '', unit: '' });
+    newSteps[stepIndex].ingredients.push({ name: '', quantity: '', unit: '', masterIngredientId: null });
     setSteps(newSteps);
   };
 
   const updateIngredient = (
     stepIndex: number,
     ingIndex: number,
-    field: 'name' | 'quantity' | 'unit',
-    value: string
+    field: keyof IngredientFormData,
+    value: string | null
   ) => {
     const newSteps = [...steps];
-    newSteps[stepIndex].ingredients[ingIndex][field] = value;
-    setSteps(newSteps);
+    newSteps[stepIndex].ingredients[ingIndex] = {
+      ...newSteps[stepIndex].ingredients[ingIndex],
+      [field]: value,
+    };
+    setSteps([...newSteps]);
   };
 
   const removeIngredient = (stepIndex: number, ingIndex: number) => {
@@ -179,6 +242,7 @@ export function CreateRecipePage() {
           quantity: i.quantity ? parseFloat(i.quantity) : null,
           unit: i.unit.trim() || null,
           order: ingIndex,
+          masterIngredientId: i.masterIngredientId || null,
         })),
     }));
 
@@ -522,38 +586,79 @@ export function CreateRecipePage() {
                       ) : (
                         <div className="space-y-2">
                           {step.ingredients.map((ing, ingIndex) => (
-                            <div key={ingIndex} className="flex gap-2">
+                            <div key={ingIndex} className="flex gap-2 items-start">
                               <input
                                 type="text"
+                                inputMode="decimal"
                                 value={ing.quantity}
                                 onChange={(e) =>
                                   updateIngredient(stepIndex, ingIndex, 'quantity', e.target.value)
                                 }
-                                className="w-20 px-3 py-1 border border-gray-300 rounded focus:ring-2 focus:ring-accent-orange focus:border-transparent text-sm"
+                                className="w-20 px-3 py-1.5 border border-gray-300 rounded focus:ring-2 focus:ring-accent-orange focus:border-transparent text-sm"
                                 placeholder="Qty"
                               />
-                              <input
-                                type="text"
+                              <select
                                 value={ing.unit}
                                 onChange={(e) =>
                                   updateIngredient(stepIndex, ingIndex, 'unit', e.target.value)
                                 }
-                                className="w-20 px-3 py-1 border border-gray-300 rounded focus:ring-2 focus:ring-accent-orange focus:border-transparent text-sm"
-                                placeholder="Unit"
-                              />
-                              <input
-                                type="text"
-                                value={ing.name}
-                                onChange={(e) =>
-                                  updateIngredient(stepIndex, ingIndex, 'name', e.target.value)
-                                }
-                                className="flex-1 px-3 py-1 border border-gray-300 rounded focus:ring-2 focus:ring-accent-orange focus:border-transparent text-sm"
-                                placeholder="Ingredient name"
-                              />
+                                className="w-24 px-2 py-1.5 border border-gray-300 rounded focus:ring-2 focus:ring-accent-orange focus:border-transparent text-sm"
+                              >
+                                <option value="">—</option>
+                                {unitOptions.map((u) => (
+                                  <option key={u.value} value={u.value}>
+                                    {u.label}
+                                  </option>
+                                ))}
+                              </select>
+                              <div className="flex-1 relative">
+                                <input
+                                  type="text"
+                                  value={ing.name}
+                                  onChange={(e) =>
+                                    handleIngredientNameChange(stepIndex, ingIndex, e.target.value)
+                                  }
+                                  onBlur={() => setTimeout(() => setAcActiveIdx(null), 200)}
+                                  onFocus={() => {
+                                    if (ing.name.length >= 2) {
+                                      setAcActiveIdx({ step: stepIndex, ing: ingIndex });
+                                      searchIngredients(ing.name);
+                                    }
+                                  }}
+                                  className="w-full px-3 py-1.5 border border-gray-300 rounded focus:ring-2 focus:ring-accent-orange focus:border-transparent text-sm"
+                                  placeholder="Ingredient name"
+                                />
+                                {/* Autocomplete dropdown */}
+                                {acActiveIdx?.step === stepIndex &&
+                                  acActiveIdx?.ing === ingIndex &&
+                                  acResults.length > 0 && (
+                                    <div className="absolute z-10 top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-40 overflow-y-auto">
+                                      {acResults.map((mi) => (
+                                        <button
+                                          key={mi.id}
+                                          type="button"
+                                          onMouseDown={() =>
+                                            selectAutocomplete(stepIndex, ingIndex, mi)
+                                          }
+                                          className="w-full text-left px-3 py-2 text-sm hover:bg-accent-orange/10 transition-colors"
+                                        >
+                                          {mi.name}
+                                        </button>
+                                      ))}
+                                    </div>
+                                  )}
+                                {ing.masterIngredientId && (
+                                  <span className="absolute right-2 top-1.5 text-xs text-green-500">
+                                    <span className="material-symbols-outlined text-xs">
+                                      check_circle
+                                    </span>
+                                  </span>
+                                )}
+                              </div>
                               <button
                                 type="button"
                                 onClick={() => removeIngredient(stepIndex, ingIndex)}
-                                className="text-red-400 hover:text-red-600"
+                                className="text-red-400 hover:text-red-600 mt-1"
                               >
                                 <span className="material-symbols-outlined text-sm">close</span>
                               </button>
