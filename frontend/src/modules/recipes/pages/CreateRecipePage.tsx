@@ -15,18 +15,18 @@ const logger = createLogger('CreateRecipePage');
 interface StepFormData {
   id?: string;
   instruction: string;
-  workTime: string;
-  workTimeUnit: string;
+  prepTime: string;
+  prepTimeUnit: string;
   waitTime: string;
   waitTimeUnit: string;
   videoUrl: string;
-  ingredients: Array<{ name: string; amount: string }>;
+  ingredients: Array<{ name: string; quantity: string; unit: string }>;
 }
 
 const emptyStep: StepFormData = {
   instruction: '',
-  workTime: '',
-  workTimeUnit: 'MINUTES',
+  prepTime: '',
+  prepTimeUnit: 'MINUTES',
   waitTime: '',
   waitTimeUnit: 'MINUTES',
   videoUrl: '',
@@ -81,14 +81,15 @@ export function CreateRecipePage() {
               ? r.steps.map((s) => ({
                   id: s.id,
                   instruction: s.instruction,
-                  workTime: s.workTime?.toString() || '',
-                  workTimeUnit: s.workTimeUnit || 'MINUTES',
+                  prepTime: s.prepTime?.toString() || '',
+                  prepTimeUnit: s.prepTimeUnit || 'MINUTES',
                   waitTime: s.waitTime?.toString() || '',
                   waitTimeUnit: s.waitTimeUnit || 'MINUTES',
                   videoUrl: s.videoUrl || '',
                   ingredients: s.ingredients.map((i) => ({
                     name: i.name,
-                    amount: i.amount || '',
+                    quantity: i.quantity != null ? String(i.quantity) : '',
+                    unit: i.unit || '',
                   })),
                 }))
               : [{ ...emptyStep }]
@@ -134,14 +135,14 @@ export function CreateRecipePage() {
 
   const addIngredient = (stepIndex: number) => {
     const newSteps = [...steps];
-    newSteps[stepIndex].ingredients.push({ name: '', amount: '' });
+    newSteps[stepIndex].ingredients.push({ name: '', quantity: '', unit: '' });
     setSteps(newSteps);
   };
 
   const updateIngredient = (
     stepIndex: number,
     ingIndex: number,
-    field: 'name' | 'amount',
+    field: 'name' | 'quantity' | 'unit',
     value: string
   ) => {
     const newSteps = [...steps];
@@ -166,8 +167,8 @@ export function CreateRecipePage() {
     const stepsData: CreateStepInput[] = steps.map((s, index) => ({
       instruction: s.instruction,
       order: index,
-      workTime: s.workTime ? parseInt(s.workTime) : null,
-      workTimeUnit: s.workTime ? (s.workTimeUnit as 'SECONDS' | 'MINUTES' | 'HOURS' | 'DAYS') : null,
+      prepTime: s.prepTime ? parseInt(s.prepTime) : null,
+      prepTimeUnit: s.prepTime ? (s.prepTimeUnit as 'SECONDS' | 'MINUTES' | 'HOURS' | 'DAYS') : null,
       waitTime: s.waitTime ? parseInt(s.waitTime) : null,
       waitTimeUnit: s.waitTime ? (s.waitTimeUnit as 'SECONDS' | 'MINUTES' | 'HOURS' | 'DAYS') : null,
       videoUrl: s.videoUrl || null,
@@ -175,7 +176,8 @@ export function CreateRecipePage() {
         .filter((i) => i.name.trim())
         .map((i, ingIndex) => ({
           name: i.name.trim(),
-          amount: i.amount.trim() || null,
+          quantity: i.quantity ? parseFloat(i.quantity) : null,
+          unit: i.unit.trim() || null,
           order: ingIndex,
         })),
     }));
@@ -435,12 +437,12 @@ export function CreateRecipePage() {
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">
-                          Work Time
+                          Prep Time
                         </label>
                         <input
                           type="number"
-                          value={step.workTime}
-                          onChange={(e) => updateStep(stepIndex, 'workTime', e.target.value)}
+                          value={step.prepTime}
+                          onChange={(e) => updateStep(stepIndex, 'prepTime', e.target.value)}
                           min={0}
                           className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-accent-orange focus:border-transparent"
                         />
@@ -450,8 +452,8 @@ export function CreateRecipePage() {
                           Unit
                         </label>
                         <select
-                          value={step.workTimeUnit}
-                          onChange={(e) => updateStep(stepIndex, 'workTimeUnit', e.target.value)}
+                          value={step.prepTimeUnit}
+                          onChange={(e) => updateStep(stepIndex, 'prepTimeUnit', e.target.value)}
                           className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-accent-orange focus:border-transparent"
                         >
                           <option value="SECONDS">Seconds</option>
@@ -523,12 +525,21 @@ export function CreateRecipePage() {
                             <div key={ingIndex} className="flex gap-2">
                               <input
                                 type="text"
-                                value={ing.amount}
+                                value={ing.quantity}
                                 onChange={(e) =>
-                                  updateIngredient(stepIndex, ingIndex, 'amount', e.target.value)
+                                  updateIngredient(stepIndex, ingIndex, 'quantity', e.target.value)
                                 }
-                                className="w-24 px-3 py-1 border border-gray-300 rounded focus:ring-2 focus:ring-accent-orange focus:border-transparent text-sm"
-                                placeholder="Amount"
+                                className="w-20 px-3 py-1 border border-gray-300 rounded focus:ring-2 focus:ring-accent-orange focus:border-transparent text-sm"
+                                placeholder="Qty"
+                              />
+                              <input
+                                type="text"
+                                value={ing.unit}
+                                onChange={(e) =>
+                                  updateIngredient(stepIndex, ingIndex, 'unit', e.target.value)
+                                }
+                                className="w-20 px-3 py-1 border border-gray-300 rounded focus:ring-2 focus:ring-accent-orange focus:border-transparent text-sm"
+                                placeholder="Unit"
                               />
                               <input
                                 type="text"

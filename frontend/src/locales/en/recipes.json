@@ -1,0 +1,42 @@
+{
+  "my_recipes": {
+    "title": "My Recipes",
+    "search_placeholder": "Search recipes...",
+    "new_recipe": "New Recipe",
+    "create_first": "Create Your First Recipe",
+    "empty_title": "You haven't created any recipes yet",
+    "empty_subtitle": "Start by creating your first recipe and share your culinary creations with the world.",
+    "sort": {
+      "label": "Sort",
+      "recent": "Recently edited",
+      "alphabetical": "Alphabetical",
+      "oldest": "Oldest first"
+    },
+    "filter": {
+      "all": "All",
+      "published": "Published",
+      "drafts": "Drafts"
+    },
+    "card": {
+      "steps": "{{count}} step",
+      "steps_plural": "{{count}} steps",
+      "no_steps": "No steps",
+      "draft": "Draft",
+      "published": "Published",
+      "prep_time": "Prep {{time}} min",
+      "cook_time": "Cook {{time}} min",
+      "servings": "{{count}} servings"
+    },
+    "actions": {
+      "edit": "Edit",
+      "duplicate": "Duplicate",
+      "delete": "Delete",
+      "publish": "Publish",
+      "unpublish": "Unpublish"
+    },
+    "confirm_delete": "Are you sure you want to delete \"{{title}}\"? This action cannot be undone.",
+    "deleted": "Recipe deleted",
+    "duplicated": "Recipe duplicated",
+    "loading": "Loading recipes..."
+  }
+}

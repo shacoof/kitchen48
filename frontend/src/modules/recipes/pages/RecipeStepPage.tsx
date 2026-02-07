@@ -59,18 +59,29 @@ export function RecipeStepPage() {
       setLoading(true);
       setError(null);
 
-      const result = await recipesApi.getStepBySemanticUrl(nickname, recipeSlug, stepSlug);
+      const result = await recipesApi.getRecipeBySemanticUrl(nickname, recipeSlug);
 
       if (result.error) {
         logger.warning(`Failed to load step ${nickname}/${recipeSlug}/${stepSlug}: ${result.error}`);
         setError(
           result.error.includes('not found') ? 'Step not found' : 'Failed to load step'
         );
-      } else if (result.step && result.recipe) {
-        setRecipe(result.recipe);
-        setStep(result.step);
-        setTotalSteps(result.totalSteps);
-        setStepIndex(result.stepIndex);
+      } else if (result.recipe) {
+        const r = result.recipe;
+        setRecipe({ id: r.id, title: r.title, slug: r.slug, author: r.author! });
+        setTotalSteps(r.steps.length);
+
+        // Find step by slug or by index (step1, step2, etc.)
+        const idx = r.steps.findIndex((s) => s.slug === stepSlug);
+        const stepNumMatch = stepSlug?.match(/^step(\d+)$/);
+        const foundIndex = idx >= 0 ? idx : stepNumMatch ? parseInt(stepNumMatch[1]) - 1 : -1;
+
+        if (foundIndex >= 0 && foundIndex < r.steps.length) {
+          setStep(r.steps[foundIndex]);
+          setStepIndex(foundIndex);
+        } else {
+          setError('Step not found');
+        }
       }
 
       setLoading(false);
@@ -192,10 +203,10 @@ export function RecipeStepPage() {
 
             {/* Time Info */}
             <div className="flex flex-col gap-1 text-sm text-gray-500">
-              {step.workTime && step.workTimeUnit && (
+              {step.prepTime && step.prepTimeUnit && (
                 <div className="flex items-center gap-1">
                   <span className="material-symbols-outlined text-base">timer</span>
-                  <span>Work: {formatTime(step.workTime, step.workTimeUnit)}</span>
+                  <span>Prep: {formatTime(step.prepTime, step.prepTimeUnit)}</span>
                 </div>
               )}
               {step.waitTime && step.waitTimeUnit && (
@@ -217,7 +228,8 @@ export function RecipeStepPage() {
               <ul className="space-y-1">
                 {step.ingredients.map((ing) => (
                   <li key={ing.id} className="text-gray-700">
-                    {ing.amount && <span className="font-medium text-amber-700">{ing.amount} </span>}
+                    {ing.quantity != null && <span className="font-medium text-amber-700">{ing.quantity} </span>}
+                    {ing.unit && <span className="font-medium text-amber-700">{ing.unit} </span>}
                     {ing.name}
                   </li>
                 ))}

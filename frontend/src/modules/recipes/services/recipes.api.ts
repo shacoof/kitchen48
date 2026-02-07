@@ -3,7 +3,10 @@
  * Handles all recipe-related API calls
  */
 
+import { createLogger } from '../../../lib/logger';
+
 const API_BASE = '/api';
+const logger = createLogger('RecipesApi');
 
 // Types
 export type TimeUnit = 'SECONDS' | 'MINUTES' | 'HOURS' | 'DAYS';
@@ -11,7 +14,8 @@ export type TimeUnit = 'SECONDS' | 'MINUTES' | 'HOURS' | 'DAYS';
 export interface StepIngredient {
   id: string;
   name: string;
-  amount: string | null;
+  quantity: number | null;
+  unit: string | null;
   order: number;
   stepId: string;
   masterIngredientId: string | null;
@@ -20,12 +24,13 @@ export interface StepIngredient {
 export interface Step {
   id: string;
   slug: string | null;
+  title: string | null;
   instruction: string;
   order: number;
   duration: number | null;
   videoUrl: string | null;
-  workTime: number | null;
-  workTimeUnit: TimeUnit | null;
+  prepTime: number | null;
+  prepTimeUnit: TimeUnit | null;
   waitTime: number | null;
   waitTimeUnit: TimeUnit | null;
   recipeId: string;
@@ -40,6 +45,11 @@ export interface RecipeAuthor {
   profilePicture?: string | null;
 }
 
+export interface DietaryTag {
+  id: string;
+  tag: string;
+}
+
 export interface Recipe {
   id: string;
   title: string;
@@ -51,11 +61,16 @@ export interface Recipe {
   imageUrl: string | null;
   videoUrl: string | null;
   isPublished: boolean;
+  measurementSystem: string | null;
+  difficulty: string | null;
+  cuisine: string | null;
+  mealType: string | null;
   createdAt: string;
   updatedAt: string;
   authorId: string;
   author?: RecipeAuthor;
   steps: Step[];
+  dietaryTags?: DietaryTag[];
 }
 
 export interface RecipeListItem {
@@ -77,22 +92,36 @@ export interface MasterIngredient {
   name: string;
 }
 
+export interface AggregatedIngredient {
+  name: string;
+  totalQuantity: number | null;
+  unit: string | null;
+  masterIngredientId: string | null;
+  stepReferences: Array<{
+    stepId: string;
+    stepOrder: number;
+    stepTitle: string | null;
+  }>;
+}
+
 // Input types
 export interface CreateStepIngredientInput {
   name: string;
-  amount?: string | null;
+  quantity?: number | null;
+  unit?: string | null;
   order?: number;
   masterIngredientId?: string | null;
 }
 
 export interface CreateStepInput {
   slug?: string | null;
+  title?: string | null;
   instruction: string;
   order: number;
   duration?: number | null;
   videoUrl?: string | null;
-  workTime?: number | null;
-  workTimeUnit?: TimeUnit | null;
+  prepTime?: number | null;
+  prepTimeUnit?: TimeUnit | null;
   waitTime?: number | null;
   waitTimeUnit?: TimeUnit | null;
   ingredients?: CreateStepIngredientInput[];
@@ -108,6 +137,11 @@ export interface CreateRecipeInput {
   imageUrl?: string | null;
   videoUrl?: string | null;
   isPublished?: boolean;
+  measurementSystem?: string | null;
+  difficulty?: string | null;
+  cuisine?: string | null;
+  mealType?: string | null;
+  dietaryTags?: string[];
   steps?: CreateStepInput[];
 }
 
@@ -143,20 +177,12 @@ export interface RecipeResponse {
   recipe: Recipe;
 }
 
-export interface StepResponse {
-  recipe: {
-    id: string;
-    title: string;
-    slug: string;
-    author: RecipeAuthor;
-  };
-  step: Step;
-  totalSteps: number;
-  stepIndex: number;
-}
-
 export interface IngredientsSearchResponse {
   ingredients: MasterIngredient[];
+}
+
+export interface IngredientSummaryResponse {
+  ingredients: AggregatedIngredient[];
 }
 
 class RecipesApi {
@@ -187,6 +213,11 @@ class RecipesApi {
         headers,
       });
 
+      // Handle 204 No Content
+      if (response.status === 204) {
+        return { success: true } as T & ApiResponse;
+      }
+
       const data = await response.json();
 
       if (!response.ok) {
@@ -199,7 +230,7 @@ class RecipesApi {
 
       return { ...data, success: true } as T & ApiResponse;
     } catch (error) {
-      console.error('API request failed:', error);
+      logger.error(`API request failed: ${error}`);
       return {
         success: false,
         error: 'Network error. Please try again.',
@@ -223,6 +254,13 @@ class RecipesApi {
   }
 
   /**
+   * Get current user's recipes (includes unpublished)
+   */
+  async getMyRecipes(nickname: string): Promise<{ recipes: RecipeListItem[] } & ApiResponse> {
+    return this.request<{ recipes: RecipeListItem[] }>(`/recipes/by-user/${encodeURIComponent(nickname)}`);
+  }
+
+  /**
    * Get recipe by ID
    */
   async getRecipeById(id: string): Promise<RecipeResponse & ApiResponse> {
@@ -233,25 +271,14 @@ class RecipesApi {
    * Get recipe by semantic URL (nickname/slug)
    */
   async getRecipeBySemanticUrl(nickname: string, recipeSlug: string): Promise<RecipeResponse & ApiResponse> {
-    return this.request<RecipeResponse>(`/users/${nickname}/recipes/${recipeSlug}`);
+    return this.request<RecipeResponse>(`/recipes/by-url/${encodeURIComponent(nickname)}/${encodeURIComponent(recipeSlug)}`);
   }
 
   /**
-   * Get step by semantic URL
+   * Get aggregated ingredient summary for a recipe
    */
-  async getStepBySemanticUrl(
-    nickname: string,
-    recipeSlug: string,
-    stepSlug: string
-  ): Promise<StepResponse & ApiResponse> {
-    return this.request<StepResponse>(`/users/${nickname}/recipes/${recipeSlug}/${stepSlug}`);
-  }
-
-  /**
-   * Get user's recipes by nickname
-   */
-  async getUserRecipes(nickname: string): Promise<{ recipes: RecipeListItem[] } & ApiResponse> {
-    return this.request<{ recipes: RecipeListItem[] }>(`/users/${nickname}/recipes`);
+  async getIngredientSummary(recipeId: string): Promise<IngredientSummaryResponse & ApiResponse> {
+    return this.request<IngredientSummaryResponse>(`/recipes/${recipeId}/ingredient-summary`);
   }
 
   /**
@@ -280,6 +307,52 @@ class RecipesApi {
   async deleteRecipe(id: string): Promise<ApiResponse> {
     return this.request(`/recipes/${id}`, {
       method: 'DELETE',
+    });
+  }
+
+  /**
+   * Bookmark a recipe
+   */
+  async saveRecipe(recipeId: string): Promise<ApiResponse> {
+    return this.request(`/recipes/${recipeId}/save`, {
+      method: 'POST',
+    });
+  }
+
+  /**
+   * Remove bookmark from a recipe
+   */
+  async unsaveRecipe(recipeId: string): Promise<ApiResponse> {
+    return this.request(`/recipes/${recipeId}/save`, {
+      method: 'DELETE',
+    });
+  }
+
+  /**
+   * Duplicate a recipe
+   */
+  async duplicateRecipe(recipeId: string): Promise<RecipeResponse & ApiResponse> {
+    return this.request<RecipeResponse>(`/recipes/${recipeId}/duplicate`, {
+      method: 'POST',
+    });
+  }
+
+  /**
+   * Toggle publish status
+   */
+  async togglePublish(recipeId: string): Promise<RecipeResponse & ApiResponse> {
+    return this.request<RecipeResponse>(`/recipes/${recipeId}/publish`, {
+      method: 'PATCH',
+    });
+  }
+
+  /**
+   * Reorder steps
+   */
+  async reorderSteps(recipeId: string, stepIds: string[]): Promise<RecipeResponse & ApiResponse> {
+    return this.request<RecipeResponse>(`/recipes/${recipeId}/steps/reorder`, {
+      method: 'PATCH',
+      body: JSON.stringify({ stepIds }),
     });
   }
 

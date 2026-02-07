@@ -208,10 +208,10 @@ export function RecipePage() {
 
                   {/* Time Info */}
                   <div className="flex gap-4 text-sm text-gray-500">
-                    {step.workTime && step.workTimeUnit && (
+                    {step.prepTime && step.prepTimeUnit && (
                       <div className="flex items-center gap-1">
                         <span className="material-symbols-outlined text-base">timer</span>
-                        <span>Work: {formatTime(step.workTime, step.workTimeUnit)}</span>
+                        <span>Prep: {formatTime(step.prepTime, step.prepTimeUnit)}</span>
                       </div>
                     )}
                     {step.waitTime && step.waitTimeUnit && (
@@ -230,7 +230,8 @@ export function RecipePage() {
                     <ul className="list-disc list-inside text-gray-700">
                       {step.ingredients.map((ing) => (
                         <li key={ing.id}>
-                          {ing.amount && <span className="font-medium">{ing.amount} </span>}
+                          {ing.quantity != null && <span className="font-medium">{ing.quantity} </span>}
+                          {ing.unit && <span className="font-medium">{ing.unit} </span>}
                           {ing.name}
                         </li>
                       ))}

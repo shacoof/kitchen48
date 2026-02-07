@@ -7,6 +7,10 @@
 export { RecipePage } from './pages/RecipePage';
 export { RecipeStepPage } from './pages/RecipeStepPage';
 export { CreateRecipePage } from './pages/CreateRecipePage';
+export { MyRecipesPage } from './pages/MyRecipesPage';
+
+// Components
+export { RecipeCard } from './components/RecipeCard';
 
 // API
 export { recipesApi } from './services/recipes.api';
@@ -16,6 +20,8 @@ export type {
   Step,
   StepIngredient,
   RecipeAuthor,
+  DietaryTag,
+  AggregatedIngredient,
   CreateRecipeInput,
   UpdateRecipeInput,
   CreateStepInput,

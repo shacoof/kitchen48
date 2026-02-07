@@ -1,0 +1,42 @@
+{
+  "my_recipes": {
+    "title": "המתכונים שלי",
+    "search_placeholder": "חיפוש מתכונים...",
+    "new_recipe": "מתכון חדש",
+    "create_first": "צור את המתכון הראשון שלך",
+    "empty_title": "עדיין לא יצרת מתכונים",
+    "empty_subtitle": "התחל ביצירת המתכון הראשון שלך ושתף את היצירות הקולינריות שלך עם העולם.",
+    "sort": {
+      "label": "מיון",
+      "recent": "נערך לאחרונה",
+      "alphabetical": "אלפביתי",
+      "oldest": "ישן ביותר"
+    },
+    "filter": {
+      "all": "הכל",
+      "published": "פורסם",
+      "drafts": "טיוטות"
+    },
+    "card": {
+      "steps": "שלב {{count}}",
+      "steps_plural": "{{count}} שלבים",
+      "no_steps": "ללא שלבים",
+      "draft": "טיוטה",
+      "published": "פורסם",
+      "prep_time": "הכנה {{time}} דק'",
+      "cook_time": "בישול {{time}} דק'",
+      "servings": "{{count}} מנות"
+    },
+    "actions": {
+      "edit": "עריכה",
+      "duplicate": "שכפול",
+      "delete": "מחיקה",
+      "publish": "פרסום",
+      "unpublish": "ביטול פרסום"
+    },
+    "confirm_delete": "האם אתה בטוח שברצונך למחוק את \"{{title}}\"? פעולה זו לא ניתנת לביטול.",
+    "deleted": "המתכון נמחק",
+    "duplicated": "המתכון שוכפל",
+    "loading": "טוען מתכונים..."
+  }
+}
