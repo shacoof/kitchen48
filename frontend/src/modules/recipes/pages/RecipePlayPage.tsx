@@ -55,6 +55,8 @@ const VOICE_COMMANDS: Record<string, string[]> = {
   timer: ['start timer', 'activate timer', 'התחל טיימר'],
   timerStatus: ['timer status', 'סטטוס טיימר'],
   restart: ['restart', 'התחל מחדש'],
+  bigger: ['bigger', 'larger', 'גדול יותר'],
+  smaller: ['smaller', 'קטן יותר'],
   exit: ['exit', 'יציאה'],
   help: ['help', 'עזרה'],
 };
@@ -101,6 +103,9 @@ export function RecipePlayPage() {
 
   // Volume level
   const [volume, setVolume] = useState(1.0);
+
+  // Font size scale (1.0 = default, range 0.8–1.6)
+  const [fontScale, setFontScale] = useState(1.0);
 
   // Help overlay
   const [showHelp, setShowHelp] = useState(false);
@@ -364,6 +369,12 @@ export function RecipePlayPage() {
         case 'restart':
           goToStep(0);
           break;
+        case 'bigger':
+          setFontScale((s) => Math.min(1.6, +(s + 0.1).toFixed(1)));
+          break;
+        case 'smaller':
+          setFontScale((s) => Math.max(0.8, +(s - 0.1).toFixed(1)));
+          break;
         case 'exit':
           navigate(`/${nickname}/${recipeSlug}`);
           break;
@@ -377,6 +388,8 @@ export function RecipePlayPage() {
             `${t('play.help_cmd_previous')}`,
             `${t('play.help_cmd_louder')}`,
             `${t('play.help_cmd_quieter')}`,
+            `${t('play.help_cmd_bigger')}`,
+            `${t('play.help_cmd_smaller')}`,
             `${t('play.help_cmd_timer')}`,
             `${t('play.help_cmd_restart')}`,
             `${t('play.help_cmd_exit')}`,
@@ -793,6 +806,29 @@ export function RecipePlayPage() {
                     {t('play.say_quieter')}
                   </span>
                 </button>
+                <div className="h-6 w-px bg-white/10" />
+                <button
+                  onClick={() => setFontScale((s) => Math.min(1.6, +(s + 0.1).toFixed(1)))}
+                  className="flex flex-col items-center gap-1 group cursor-pointer"
+                >
+                  <span className="material-symbols-outlined text-[#4CAF50] group-hover:scale-110 transition-transform">
+                    text_increase
+                  </span>
+                  <span className="text-[9px] uppercase font-bold text-white/50">
+                    {t('play.say_bigger')}
+                  </span>
+                </button>
+                <button
+                  onClick={() => setFontScale((s) => Math.max(0.8, +(s - 0.1).toFixed(1)))}
+                  className="flex flex-col items-center gap-1 group cursor-pointer"
+                >
+                  <span className="material-symbols-outlined text-[#4CAF50] group-hover:scale-110 transition-transform">
+                    text_decrease
+                  </span>
+                  <span className="text-[9px] uppercase font-bold text-white/50">
+                    {t('play.say_smaller')}
+                  </span>
+                </button>
               </div>
 
               {/* Help button */}
@@ -839,7 +875,10 @@ export function RecipePlayPage() {
                   )}
                 </h2>
 
-                <p className="text-lg sm:text-xl lg:text-2xl leading-relaxed text-white/80">
+                <p
+                  className="text-lg sm:text-xl lg:text-2xl leading-relaxed text-white/80 transition-all"
+                  style={{ fontSize: `${fontScale * 1.25}rem` }}
+                >
                   {activeStep?.instruction}
                 </p>
 
@@ -918,7 +957,10 @@ export function RecipePlayPage() {
                               style={{ minWidth: '24px', minHeight: '24px' }}
                             />
                             <div className={isChecked ? 'opacity-50 line-through' : ''}>
-                              <p className="font-bold text-lg">
+                              <p
+                                className="font-bold text-lg transition-all"
+                                style={{ fontSize: `${fontScale * 1.125}rem` }}
+                              >
                                 {formatQuantity(ing.quantity, ing.unit)} {ing.name}
                               </p>
                             </div>
@@ -966,6 +1008,8 @@ export function RecipePlayPage() {
                   { icon: 'skip_previous', cmd: t('play.help_kw_previous'), desc: t('play.help_cmd_previous') },
                   { icon: 'volume_up', cmd: t('play.help_kw_louder'), desc: t('play.help_cmd_louder') },
                   { icon: 'volume_down', cmd: t('play.help_kw_quieter'), desc: t('play.help_cmd_quieter') },
+                  { icon: 'text_increase', cmd: t('play.help_kw_bigger'), desc: t('play.help_cmd_bigger') },
+                  { icon: 'text_decrease', cmd: t('play.help_kw_smaller'), desc: t('play.help_cmd_smaller') },
                   { icon: 'timer', cmd: t('play.help_kw_timer'), desc: t('play.help_cmd_timer') },
                   { icon: 'replay', cmd: t('play.help_kw_restart'), desc: t('play.help_cmd_restart') },
                   { icon: 'logout', cmd: t('play.help_kw_exit'), desc: t('play.help_cmd_exit') },

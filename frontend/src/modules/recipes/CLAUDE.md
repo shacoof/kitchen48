@@ -129,6 +129,11 @@ recipesApi.generateSlug(title)
 - **Root Cause**: CreateRecipePage was not wired to useListValues hook or searchIngredients API
 - **Fix**: Unit field now uses `<select>` populated from "Measurement Units" LOV. Ingredient name has debounced autocomplete from master_ingredients table with dropdown UI. masterIngredientId is tracked and submitted.
 
+### 2026-02-07: Play mode font size commands ("bigger"/"smaller")
+- **Feature**: Added "bigger"/"smaller" voice commands and hint buttons to increase/decrease instruction and ingredient text size
+- **Implementation**: `fontScale` state (0.8–1.6, step 0.1) applied via inline `fontSize` style on instruction `<p>` and ingredient names
+- **Wake lock**: Already implemented (lines 160-184) — uses `navigator.wakeLock.request('screen')` with visibility change re-acquisition
+
 ### 2026-02-07: Play mode help button and "help" voice command
 - **Feature**: Added help button (?) in voice control bar that opens an overlay listing all available voice commands with icons and descriptions
 - **Voice command**: Saying "help" (or "עזרה" in Hebrew) opens the help overlay AND reads all commands aloud via TTS
