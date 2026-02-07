@@ -129,6 +129,14 @@ recipesApi.generateSlug(title)
 - **Root Cause**: CreateRecipePage was not wired to useListValues hook or searchIngredients API
 - **Fix**: Unit field now uses `<select>` populated from "Measurement Units" LOV. Ingredient name has debounced autocomplete from master_ingredients table with dropdown UI. masterIngredientId is tracked and submitted.
 
+### 2026-02-07: Play mode voice commands, stale ingredients, exit button
+- **Bug A**: Voice commands "read instructions" / "read ingredients" not recognized
+- **Fix A**: Added keywords to `VOICE_COMMANDS` map; updated hint buttons to show new commands
+- **Bug B**: Moving to a step without ingredients showed previous step's ingredient list
+- **Fix B**: Added `key={activeStep.id}` to ingredient panel; always render panel, show empty state message when no ingredients
+- **Bug C**: No visible way to exit play mode back to recipe details
+- **Fix C**: Added exit button (X) in sidebar header (desktop) and voice bar (mobile); added "exit" voice command; Escape key already worked
+
 ### 2026-02-07: Smart fuzzy ingredient search with pg_trgm
 - **Bug**: Ingredient search only did simple substring matching — couldn't handle typos or word-order swaps
 - **Root Cause**: Backend `searchIngredients()` used Prisma `contains` (ILIKE) which requires exact substring

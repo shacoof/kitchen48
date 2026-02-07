@@ -46,15 +46,16 @@ function formatTimer(seconds: number): string {
 const VOICE_COMMANDS: Record<string, string[]> = {
   next: ['next', 'הבא'],
   previous: ['previous', 'back', 'הקודם', 'אחורה'],
-  describe: ['describe', 'read step', 'read', 'תקריא', 'קרא'],
-  ingredients: ['ingredients', 'מרכיבים'],
+  describe: ['read instructions', 'read step', 'describe', 'read', 'קרא הוראות', 'תקריא', 'קרא'],
+  ingredients: ['read ingredients', 'ingredients', 'קרא מרכיבים', 'מרכיבים'],
   play: ['play video', 'play', 'הפעל'],
   stop: ['stop', 'עצור'],
   louder: ['louder', 'volume up', 'חזק יותר'],
-  quieter: ['quieter', 'volume down', 'חלש יותר'],
+  quieter: ['quieter', 'volume down', 'שקט יותר', 'חלש יותר'],
   timer: ['start timer', 'activate timer', 'התחל טיימר'],
   timerStatus: ['timer status', 'סטטוס טיימר'],
   restart: ['restart', 'התחל מחדש'],
+  exit: ['exit', 'יציאה'],
 };
 
 function matchVoiceCommand(transcript: string): string | null {
@@ -359,9 +360,12 @@ export function RecipePlayPage() {
         case 'restart':
           goToStep(0);
           break;
+        case 'exit':
+          navigate(`/${nickname}/${recipeSlug}`);
+          break;
       }
     };
-  }, [activeStepIdx, activeStep, timers, volume, goToStep, speak, stopSpeaking, startTimer, t]);
+  }, [activeStepIdx, activeStep, timers, volume, goToStep, speak, stopSpeaking, startTimer, t, navigate, nickname, recipeSlug]);
 
   // ──────────────────────────────────────────────────────────────────────
   // Voice Control (Web Speech API)
@@ -548,10 +552,17 @@ export function RecipePlayPage() {
           <div className="bg-[#13ec5b]/20 p-2 rounded-full">
             <span className="material-symbols-outlined text-[#13ec5b]">restaurant</span>
           </div>
-          <div className="min-w-0">
+          <div className="min-w-0 flex-1">
             <h1 className="font-bold text-lg leading-tight truncate">Kitchen48</h1>
             <p className="text-sm text-white/50 truncate">{recipe.title}</p>
           </div>
+          <button
+            onClick={() => navigate(`/${nickname}/${recipeSlug}`)}
+            className="p-2 rounded-full hover:bg-white/10 transition-colors flex-shrink-0"
+            title={t('play.exit')}
+          >
+            <span className="material-symbols-outlined text-white/60">close</span>
+          </button>
         </div>
 
         {/* Step List */}
@@ -650,6 +661,14 @@ export function RecipePlayPage() {
             {/* Voice Control Bar */}
             <div className="bg-black/90 backdrop-blur-md rounded-t-xl border-x border-t border-white/10 px-4 md:px-6 py-3 md:py-4 flex items-center justify-between gap-4">
               <div className="flex items-center gap-3 md:gap-4 min-w-0">
+                {/* Exit button (mobile) */}
+                <button
+                  onClick={() => navigate(`/${nickname}/${recipeSlug}`)}
+                  className="md:hidden p-2 rounded-full hover:bg-white/10 transition-colors flex-shrink-0"
+                  title={t('play.exit')}
+                >
+                  <span className="material-symbols-outlined text-white/60">close</span>
+                </button>
                 <button
                   onClick={toggleVoice}
                   className="relative flex items-center justify-center flex-shrink-0"
@@ -686,27 +705,34 @@ export function RecipePlayPage() {
               </div>
 
               {/* Voice command hint buttons (desktop) */}
-              <div className="hidden lg:flex items-center gap-6 xl:gap-10 flex-shrink-0">
+              <div className="hidden lg:flex items-center gap-4 xl:gap-6 flex-shrink-0">
                 <button
-                  onClick={() => goToStep(0)}
+                  onClick={() => activeStep && speak(activeStep.instruction)}
                   className="flex flex-col items-center gap-1 group cursor-pointer"
                 >
                   <span className="material-symbols-outlined text-[#4CAF50] group-hover:scale-110 transition-transform">
-                    replay
+                    record_voice_over
                   </span>
                   <span className="text-[9px] uppercase font-bold text-white/50">
-                    {t('play.say_restart')}
+                    {t('play.say_read_instructions')}
                   </span>
                 </button>
                 <button
-                  onClick={() => goToStep(activeStepIdx - 1)}
+                  onClick={() => {
+                    if (activeStep) {
+                      const ingText = activeStep.ingredients
+                        .map((i) => `${formatQuantity(i.quantity, i.unit)} ${i.name}`)
+                        .join(', ');
+                      speak(ingText || t('play.no_ingredients'));
+                    }
+                  }}
                   className="flex flex-col items-center gap-1 group cursor-pointer"
                 >
                   <span className="material-symbols-outlined text-[#4CAF50] group-hover:scale-110 transition-transform">
-                    skip_previous
+                    shopping_basket
                   </span>
                   <span className="text-[9px] uppercase font-bold text-white/50">
-                    {t('play.say_previous')}
+                    {t('play.say_read_ingredients')}
                   </span>
                 </button>
                 <button
@@ -717,21 +743,32 @@ export function RecipePlayPage() {
                     className="material-symbols-outlined text-[#4CAF50] group-hover:scale-110 transition-transform"
                     style={{ fontVariationSettings: "'FILL' 1" }}
                   >
-                    pause_circle
+                    stop_circle
                   </span>
                   <span className="text-[9px] uppercase font-bold text-white/50">
                     {t('play.say_stop')}
                   </span>
                 </button>
                 <button
-                  onClick={() => goToStep(activeStepIdx + 1)}
+                  onClick={() => setVolume((v) => Math.min(1.0, v + 0.2))}
                   className="flex flex-col items-center gap-1 group cursor-pointer"
                 >
                   <span className="material-symbols-outlined text-[#4CAF50] group-hover:scale-110 transition-transform">
-                    skip_next
+                    volume_up
                   </span>
                   <span className="text-[9px] uppercase font-bold text-white/50">
-                    {t('play.say_next')}
+                    {t('play.say_louder')}
+                  </span>
+                </button>
+                <button
+                  onClick={() => setVolume((v) => Math.max(0.1, v - 0.2))}
+                  className="flex flex-col items-center gap-1 group cursor-pointer"
+                >
+                  <span className="material-symbols-outlined text-[#4CAF50] group-hover:scale-110 transition-transform">
+                    volume_down
+                  </span>
+                  <span className="text-[9px] uppercase font-bold text-white/50">
+                    {t('play.say_quieter')}
                   </span>
                 </button>
               </div>
@@ -837,34 +874,38 @@ export function RecipePlayPage() {
               </div>
 
               {/* Right Column: Ingredient Checklist */}
-              {activeStep && activeStep.ingredients.length > 0 && (
-                <div className="bg-white/5 rounded-xl p-5 md:p-6 h-fit border border-white/10 lg:sticky lg:top-6">
+              {activeStep && (
+                <div key={activeStep.id} className="bg-white/5 rounded-xl p-5 md:p-6 h-fit border border-white/10 lg:sticky lg:top-6">
                   <h3 className="text-sm font-bold uppercase tracking-widest text-white/40 mb-4 flex items-center gap-2">
                     <span className="material-symbols-outlined text-sm">shopping_basket</span>
                     {t('play.needed_for_step')}
                   </h3>
-                  <ul className="space-y-4">
-                    {activeStep.ingredients.map((ing) => {
-                      const isChecked =
-                        checkedIngredients[activeStep.id]?.has(ing.id) || false;
-                      return (
-                        <li key={ing.id} className="flex items-start gap-3">
-                          <input
-                            type="checkbox"
-                            checked={isChecked}
-                            onChange={() => toggleIngredient(activeStep.id, ing.id)}
-                            className="mt-1 h-6 w-6 rounded border-white/20 bg-transparent text-[#13ec5b] focus:ring-[#13ec5b] cursor-pointer flex-shrink-0"
-                            style={{ minWidth: '24px', minHeight: '24px' }}
-                          />
-                          <div className={isChecked ? 'opacity-50 line-through' : ''}>
-                            <p className="font-bold text-lg">
-                              {formatQuantity(ing.quantity, ing.unit)} {ing.name}
-                            </p>
-                          </div>
-                        </li>
-                      );
-                    })}
-                  </ul>
+                  {activeStep.ingredients.length > 0 ? (
+                    <ul className="space-y-4">
+                      {activeStep.ingredients.map((ing) => {
+                        const isChecked =
+                          checkedIngredients[activeStep.id]?.has(ing.id) || false;
+                        return (
+                          <li key={ing.id} className="flex items-start gap-3">
+                            <input
+                              type="checkbox"
+                              checked={isChecked}
+                              onChange={() => toggleIngredient(activeStep.id, ing.id)}
+                              className="mt-1 h-6 w-6 rounded border-white/20 bg-transparent text-[#13ec5b] focus:ring-[#13ec5b] cursor-pointer flex-shrink-0"
+                              style={{ minWidth: '24px', minHeight: '24px' }}
+                            />
+                            <div className={isChecked ? 'opacity-50 line-through' : ''}>
+                              <p className="font-bold text-lg">
+                                {formatQuantity(ing.quantity, ing.unit)} {ing.name}
+                              </p>
+                            </div>
+                          </li>
+                        );
+                      })}
+                    </ul>
+                  ) : (
+                    <p className="text-white/40 text-sm italic">{t('play.no_ingredients')}</p>
+                  )}
                 </div>
               )}
             </div>
