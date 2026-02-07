@@ -4,6 +4,7 @@
  */
 
 import { z } from 'zod';
+import type { Decimal } from '@prisma/client/runtime/library';
 import type { TimeUnit } from '@prisma/client';
 
 // Helper to convert empty strings to null
@@ -15,7 +16,8 @@ const timeUnitSchema = z.enum(['SECONDS', 'MINUTES', 'HOURS', 'DAYS']);
 // Step ingredient schemas
 export const createStepIngredientSchema = z.object({
   name: z.string().min(1, 'Ingredient name is required').max(100),
-  amount: z.preprocess(emptyStringToNull, z.string().max(50).optional().nullable()),
+  quantity: z.preprocess(emptyStringToNull, z.number().positive().optional().nullable()),
+  unit: z.preprocess(emptyStringToNull, z.string().max(20).optional().nullable()),
   order: z.number().int().min(0).optional().default(0),
   masterIngredientId: z.preprocess(emptyStringToNull, z.string().optional().nullable()),
 });
@@ -33,12 +35,13 @@ export const createStepSchema = z.object({
       .optional()
       .nullable()
   ),
+  title: z.preprocess(emptyStringToNull, z.string().max(100).optional().nullable()),
   instruction: z.string().min(1, 'Step instruction is required'),
   order: z.number().int().min(0),
   duration: z.preprocess(emptyStringToNull, z.number().int().positive().optional().nullable()),
   videoUrl: z.preprocess(emptyStringToNull, z.string().url().optional().nullable()),
-  workTime: z.preprocess(emptyStringToNull, z.number().int().positive().optional().nullable()),
-  workTimeUnit: z.preprocess(emptyStringToNull, timeUnitSchema.optional().nullable()),
+  prepTime: z.preprocess(emptyStringToNull, z.number().int().positive().optional().nullable()),
+  prepTimeUnit: z.preprocess(emptyStringToNull, timeUnitSchema.optional().nullable()),
   waitTime: z.preprocess(emptyStringToNull, z.number().int().positive().optional().nullable()),
   waitTimeUnit: z.preprocess(emptyStringToNull, timeUnitSchema.optional().nullable()),
   ingredients: z.array(createStepIngredientSchema).optional().default([]),
@@ -63,6 +66,12 @@ export const createRecipeSchema = z.object({
   imageUrl: z.preprocess(emptyStringToNull, z.string().url().optional().nullable()),
   videoUrl: z.preprocess(emptyStringToNull, z.string().url().optional().nullable()),
   isPublished: z.boolean().optional().default(false),
+  // New classification fields
+  measurementSystem: z.preprocess(emptyStringToNull, z.string().optional().nullable()),
+  difficulty: z.preprocess(emptyStringToNull, z.string().optional().nullable()),
+  cuisine: z.preprocess(emptyStringToNull, z.string().optional().nullable()),
+  mealType: z.preprocess(emptyStringToNull, z.string().optional().nullable()),
+  dietaryTags: z.array(z.string()).optional().default([]),
   steps: z.array(createStepSchema).optional().default([]),
 });
 
@@ -90,21 +99,23 @@ export type RecipeQueryInput = z.infer<typeof recipeQuerySchema>;
 export interface StepIngredient {
   id: string;
   name: string;
-  amount: string | null;
+  quantity: Decimal | null;
+  unit: string | null;
   order: number;
   stepId: string;
   masterIngredientId: string | null;
 }
 
-export interface Step {
+export interface RecipeStep {
   id: string;
   slug: string | null;
+  title: string | null;
   instruction: string;
   order: number;
   duration: number | null;
   videoUrl: string | null;
-  workTime: number | null;
-  workTimeUnit: TimeUnit | null;
+  prepTime: number | null;
+  prepTimeUnit: TimeUnit | null;
   waitTime: number | null;
   waitTimeUnit: TimeUnit | null;
   recipeId: string;
@@ -122,6 +133,10 @@ export interface Recipe {
   imageUrl: string | null;
   videoUrl: string | null;
   isPublished: boolean;
+  measurementSystem: string | null;
+  difficulty: string | null;
+  cuisine: string | null;
+  mealType: string | null;
   createdAt: Date;
   updatedAt: Date;
   authorId: string;
@@ -132,7 +147,8 @@ export interface Recipe {
     lastName: string | null;
     profilePicture: string | null;
   };
-  steps: Step[];
+  steps: RecipeStep[];
+  dietaryTags?: Array<{ id: string; tag: string }>;
 }
 
 export interface RecipeListItem {

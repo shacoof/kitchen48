@@ -17,6 +17,28 @@ import type {
 
 const logger = createLogger('RecipeService');
 
+/** Include clause for full recipe with steps + ingredients + dietary tags */
+const recipeFullInclude = {
+  author: {
+    select: {
+      id: true,
+      nickname: true,
+      firstName: true,
+      lastName: true,
+      profilePicture: true,
+    },
+  },
+  steps: {
+    orderBy: { order: 'asc' as const },
+    include: {
+      ingredients: {
+        orderBy: { order: 'asc' as const },
+      },
+    },
+  },
+  dietaryTags: true,
+};
+
 class RecipeService {
   /**
    * Generate a URL-friendly slug from a title
@@ -89,26 +111,8 @@ class RecipeService {
     logger.debug(`Fetching recipe by ID: ${id}`);
     return prisma.recipe.findUnique({
       where: { id },
-      include: {
-        author: {
-          select: {
-            id: true,
-            nickname: true,
-            firstName: true,
-            lastName: true,
-            profilePicture: true,
-          },
-        },
-        steps: {
-          orderBy: { order: 'asc' },
-          include: {
-            ingredients: {
-              orderBy: { order: 'asc' },
-            },
-          },
-        },
-      },
-    });
+      include: recipeFullInclude,
+    }) as Promise<Recipe | null>;
   }
 
   /**
@@ -131,26 +135,8 @@ class RecipeService {
         authorId: user.id,
         slug: recipeSlug,
       },
-      include: {
-        author: {
-          select: {
-            id: true,
-            nickname: true,
-            firstName: true,
-            lastName: true,
-            profilePicture: true,
-          },
-        },
-        steps: {
-          orderBy: { order: 'asc' },
-          include: {
-            ingredients: {
-              orderBy: { order: 'asc' },
-            },
-          },
-        },
-      },
-    });
+      include: recipeFullInclude,
+    }) as Promise<Recipe | null>;
   }
 
   /**
@@ -226,51 +212,42 @@ class RecipeService {
         imageUrl: data.imageUrl,
         videoUrl: data.videoUrl,
         isPublished: data.isPublished,
+        measurementSystem: data.measurementSystem,
+        difficulty: data.difficulty,
+        cuisine: data.cuisine,
+        mealType: data.mealType,
         authorId,
         steps: {
           create: data.steps?.map((step, index) => ({
             slug: step.slug || `step${index + 1}`,
+            title: step.title,
             instruction: step.instruction,
             order: step.order ?? index,
             duration: step.duration,
             videoUrl: step.videoUrl,
-            workTime: step.workTime,
-            workTimeUnit: step.workTimeUnit,
+            prepTime: step.prepTime,
+            prepTimeUnit: step.prepTimeUnit,
             waitTime: step.waitTime,
             waitTimeUnit: step.waitTimeUnit,
             ingredients: {
               create: step.ingredients?.map((ing, ingIndex) => ({
                 name: ing.name,
-                amount: ing.amount,
+                quantity: ing.quantity,
+                unit: ing.unit,
                 order: ing.order ?? ingIndex,
                 masterIngredientId: ing.masterIngredientId,
               })),
             },
           })),
         },
-      },
-      include: {
-        author: {
-          select: {
-            id: true,
-            nickname: true,
-            firstName: true,
-            lastName: true,
-            profilePicture: true,
-          },
-        },
-        steps: {
-          orderBy: { order: 'asc' },
-          include: {
-            ingredients: {
-              orderBy: { order: 'asc' },
-            },
-          },
+        dietaryTags: {
+          create: data.dietaryTags?.map((tag) => ({ tag })),
         },
       },
+      include: recipeFullInclude,
     });
 
-    return recipe;
+    return recipe as Recipe;
   }
 
   /**
@@ -304,7 +281,11 @@ class RecipeService {
 
     logger.debug(`Updating recipe: ${id}`);
 
-    // For now, just update basic fields. Steps are handled separately.
+    // Handle dietary tags: delete existing and recreate
+    if (data.dietaryTags) {
+      await prisma.recipeDietaryTag.deleteMany({ where: { recipeId: id } });
+    }
+
     const recipe = await prisma.recipe.update({
       where: { id },
       data: {
@@ -317,29 +298,20 @@ class RecipeService {
         imageUrl: data.imageUrl,
         videoUrl: data.videoUrl,
         isPublished: data.isPublished,
-      },
-      include: {
-        author: {
-          select: {
-            id: true,
-            nickname: true,
-            firstName: true,
-            lastName: true,
-            profilePicture: true,
+        measurementSystem: data.measurementSystem,
+        difficulty: data.difficulty,
+        cuisine: data.cuisine,
+        mealType: data.mealType,
+        ...(data.dietaryTags && {
+          dietaryTags: {
+            create: data.dietaryTags.map((tag) => ({ tag })),
           },
-        },
-        steps: {
-          orderBy: { order: 'asc' },
-          include: {
-            ingredients: {
-              orderBy: { order: 'asc' },
-            },
-          },
-        },
+        }),
       },
+      include: recipeFullInclude,
     });
 
-    return recipe;
+    return recipe as Recipe;
   }
 
   /**
@@ -383,7 +355,7 @@ class RecipeService {
 
     // Check for duplicate step slug
     if (data.slug) {
-      const existing = await prisma.step.findFirst({
+      const existing = await prisma.recipeStep.findFirst({
         where: { recipeId, slug: data.slug },
       });
 
@@ -394,22 +366,24 @@ class RecipeService {
 
     logger.debug(`Adding step to recipe: ${recipeId}`);
 
-    await prisma.step.create({
+    await prisma.recipeStep.create({
       data: {
         recipeId,
         slug: data.slug,
+        title: data.title,
         instruction: data.instruction,
         order: data.order,
         duration: data.duration,
         videoUrl: data.videoUrl,
-        workTime: data.workTime,
-        workTimeUnit: data.workTimeUnit,
+        prepTime: data.prepTime,
+        prepTimeUnit: data.prepTimeUnit,
         waitTime: data.waitTime,
         waitTimeUnit: data.waitTimeUnit,
         ingredients: {
           create: data.ingredients?.map((ing, index) => ({
             name: ing.name,
-            amount: ing.amount,
+            quantity: ing.quantity,
+            unit: ing.unit,
             order: ing.order ?? index,
             masterIngredientId: ing.masterIngredientId,
           })),
@@ -444,7 +418,7 @@ class RecipeService {
       throw new Error('You can only edit your own recipes');
     }
 
-    const step = await prisma.step.findUnique({
+    const step = await prisma.recipeStep.findUnique({
       where: { id: stepId },
       select: { recipeId: true, slug: true },
     });
@@ -455,7 +429,7 @@ class RecipeService {
 
     // Check for duplicate slug
     if (data.slug && data.slug !== step.slug) {
-      const duplicate = await prisma.step.findFirst({
+      const duplicate = await prisma.recipeStep.findFirst({
         where: { recipeId, slug: data.slug, id: { not: stepId } },
       });
 
@@ -466,16 +440,17 @@ class RecipeService {
 
     logger.debug(`Updating step: ${stepId}`);
 
-    await prisma.step.update({
+    await prisma.recipeStep.update({
       where: { id: stepId },
       data: {
         slug: data.slug,
+        title: data.title,
         instruction: data.instruction,
         order: data.order,
         duration: data.duration,
         videoUrl: data.videoUrl,
-        workTime: data.workTime,
-        workTimeUnit: data.workTimeUnit,
+        prepTime: data.prepTime,
+        prepTimeUnit: data.prepTimeUnit,
         waitTime: data.waitTime,
         waitTimeUnit: data.waitTimeUnit,
       },
@@ -499,10 +474,10 @@ class RecipeService {
     }
 
     if (recipe.authorId !== authorId) {
-      throw new Error('You can only edit your own recipes');
+      throw new Error('You can only delete your own recipes');
     }
 
-    const step = await prisma.step.findUnique({
+    const step = await prisma.recipeStep.findUnique({
       where: { id: stepId },
       select: { recipeId: true },
     });
@@ -512,7 +487,7 @@ class RecipeService {
     }
 
     logger.debug(`Deleting step: ${stepId}`);
-    await prisma.step.delete({ where: { id: stepId } });
+    await prisma.recipeStep.delete({ where: { id: stepId } });
 
     return this.getById(recipeId) as Promise<Recipe>;
   }

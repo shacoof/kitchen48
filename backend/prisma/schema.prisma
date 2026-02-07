@@ -54,17 +54,20 @@ model User {
   updatedAt DateTime @updatedAt @map("updated_at")
 
   // Profile Information
-  firstName      String?  @map("first_name")
-  lastName       String?  @map("last_name")
-  nickname       String?  @unique @map("nickname") // Unique URL-friendly identifier (e.g., jsmith)
-  profilePicture String?  @map("profile_picture") // URL or path to profile image
+  firstName      String? @map("first_name")
+  lastName       String? @map("last_name")
+  nickname       String? @unique @map("nickname") // Unique URL-friendly identifier (e.g., jsmith)
+  profilePicture String? @map("profile_picture") // URL or path to profile image
   phone          String?
-  phoneCountry   String?  @map("phone_country") // ISO country code (e.g., "US", "IL")
+  phoneCountry   String? @map("phone_country") // ISO country code (e.g., "US", "IL")
   description    String?
 
   // Language Preferences
-  videoLanguage     String @default("en") @map("video_language")     // ISO 639-1 code for video/audio content
+  videoLanguage     String @default("en") @map("video_language") // ISO 639-1 code for video/audio content
   interfaceLanguage String @default("en") @map("interface_language") // ISO 639-1 code for UI language
+
+  // Measurement Preference
+  measurementSystem String @default("metric") @map("measurement_system") // "metric" or "imperial" - LOV: Measurement System
 
   // Authentication
   passwordHash             String?   @map("password_hash")
@@ -87,7 +90,7 @@ model User {
 
 model OAuthAccount {
   id                String    @id @default(cuid())
-  provider          String    // "google", "facebook", "instagram"
+  provider          String // "google", "facebook", "instagram"
   providerAccountId String    @map("provider_account_id") // ID from the OAuth provider
   accessToken       String?   @map("access_token")
   refreshToken      String?   @map("refresh_token")
@@ -106,7 +109,7 @@ model OAuthAccount {
 model Recipe {
   id          String   @id @default(cuid())
   title       String   @db.VarChar(80) // Max 80 characters as per HLD
-  slug        String   // URL-friendly name, unique per author
+  slug        String // URL-friendly name, unique per author
   description String?
   prepTime    Int?     @map("prep_time") // in minutes
   cookTime    Int?     @map("cook_time") // in minutes
@@ -117,39 +120,44 @@ model Recipe {
   createdAt   DateTime @default(now()) @map("created_at")
   updatedAt   DateTime @updatedAt @map("updated_at")
 
+  // Measurement & Classification (LOV references stored as string values)
+  measurementSystem String? @map("measurement_system") // "metric" or "imperial" - from author profile at creation
+  difficulty        String? // LOV value: "easy", "medium", "hard"
+  cuisine           String? // LOV value: "italian", "japanese", etc.
+  mealType          String? @map("meal_type") // LOV value: "breakfast", "lunch", etc.
+
   // Relations
   authorId    String             @map("author_id")
   author      User               @relation(fields: [authorId], references: [id], onDelete: Cascade)
-  ingredients RecipeIngredient[]
-  steps       Step[]
+  steps       RecipeStep[]
   savedBy     SavedRecipe[]
+  dietaryTags RecipeDietaryTag[]
 
   @@unique([authorId, slug]) // Combination of author + slug must be unique
   @@map("recipes")
 }
 
-model RecipeIngredient {
-  id       String  @id @default(cuid())
-  name     String
-  amount   String? // e.g., "2 cups", "1 tbsp"
-  order    Int     @default(0)
-
-  // Relations
+model RecipeDietaryTag {
+  id       String @id @default(cuid())
   recipeId String @map("recipe_id")
-  recipe   Recipe @relation(fields: [recipeId], references: [id], onDelete: Cascade)
+  tag      String // LOV value: "vegetarian", "vegan", "gluten-free", etc.
 
-  @@map("recipe_ingredients")
+  recipe Recipe @relation(fields: [recipeId], references: [id], onDelete: Cascade)
+
+  @@unique([recipeId, tag])
+  @@map("recipe_dietary_tags")
 }
 
 model StepIngredient {
-  id     String  @id @default(cuid())
-  name   String  // Custom name if not from master, or copied from master
-  amount String? // e.g., "2 cups", "1 tbsp"
-  order  Int     @default(0)
+  id       String   @id @default(cuid())
+  name     String // Custom name if not from master, or copied from master
+  quantity Decimal? @db.Decimal(10, 3) // Stored as decimal for math (e.g., 0.333 for 1/3). Displayed as fraction via toFractionDisplay()
+  unit     String? // LOV value from Measurement Units (e.g., "cups", "g", "tbsp"). Tagged with system: universal/metric/imperial
+  order    Int      @default(0)
 
   // Relations
   stepId             String            @map("step_id")
-  step               Step              @relation(fields: [stepId], references: [id], onDelete: Cascade)
+  step               RecipeStep        @relation(fields: [stepId], references: [id], onDelete: Cascade)
   masterIngredientId String?           @map("master_ingredient_id") // If from master table
   masterIngredient   MasterIngredient? @relation(fields: [masterIngredientId], references: [id], onDelete: SetNull)
 
@@ -171,16 +179,17 @@ model MasterIngredient {
   @@map("master_ingredients")
 }
 
-model Step {
-  id          String    @id @default(cuid())
-  slug        String?   // URL-friendly step name (step1, step2, or custom)
-  instruction String    // Step description (mandatory)
-  order       Int
-  duration    Int?      // in seconds (for voice playback timing)
-  videoUrl    String?   @map("video_url") // Short video (up to 1 min)
-  workTime    Int?      @map("work_time") // How much work time this step takes
-  workTimeUnit TimeUnit? @map("work_time_unit")
-  waitTime    Int?      @map("wait_time") // Wait time (e.g., in oven, dough rising)
+model RecipeStep {
+  id           String    @id @default(cuid())
+  slug         String? // URL-friendly step name (step1, step2, or custom)
+  title        String? // Optional short label (e.g., "Sauté the Garlic"). Auto-derived from instruction if blank
+  instruction  String // Step description (mandatory)
+  order        Int
+  duration     Int? // in seconds (for voice playback timing)
+  videoUrl     String?   @map("video_url") // Short video (up to 1 min)
+  prepTime     Int?      @map("prep_time") // How much active preparation time this step takes
+  prepTimeUnit TimeUnit? @map("prep_time_unit")
+  waitTime     Int?      @map("wait_time") // Wait time (e.g., in oven, dough rising)
   waitTimeUnit TimeUnit? @map("wait_time_unit")
 
   // Relations
@@ -189,7 +198,7 @@ model Step {
   ingredients StepIngredient[]
 
   @@unique([recipeId, slug]) // Step slug unique within recipe
-  @@map("steps")
+  @@map("recipe_steps")
 }
 
 model SavedRecipe {
@@ -211,19 +220,19 @@ model SavedRecipe {
 // ============================================================================
 
 model Parameter {
-  id        String   @id @default(cuid())
-  key       String
-  value     String?
-  dataType  DataType @default(STRING) @map("data_type")
-  ownerType OwnerType @default(SYSTEM) @map("owner_type")
-  ownerId   String?  @map("owner_id")
-  category  String?
+  id          String    @id @default(cuid())
+  key         String
+  value       String?
+  dataType    DataType  @default(STRING) @map("data_type")
+  ownerType   OwnerType @default(SYSTEM) @map("owner_type")
+  ownerId     String?   @map("owner_id")
+  category    String?
   description String?
 
   // Metadata
-  isEncrypted     Boolean  @default(false) @map("is_encrypted")
-  defaultValue    String?  @map("default_value")
-  validationRules String?  @map("validation_rules") // JSON string
+  isEncrypted     Boolean @default(false) @map("is_encrypted")
+  defaultValue    String? @map("default_value")
+  validationRules String? @map("validation_rules") // JSON string
 
   // Audit fields
   createdAt DateTime @default(now()) @map("created_at")
@@ -252,16 +261,16 @@ model ListType {
 }
 
 model ListValue {
-  id          String   @id @default(cuid())
-  listTypeId  String   @map("list_type_id")
-  value       String   // Internal code/key (e.g., "VEGETABLES")
-  label       String   // Display text (e.g., "Vegetables")
-  description String?
-  sortOrder   Int      @default(0) @map("sort_order")
-  isActive    Boolean  @default(true) @map("is_active")
-  createdAt   DateTime @default(now()) @map("created_at")
-  updatedAt   DateTime @updatedAt @map("updated_at")
-  listType     ListType              @relation(fields: [listTypeId], references: [id], onDelete: Cascade)
+  id           String                 @id @default(cuid())
+  listTypeId   String                 @map("list_type_id")
+  value        String // Internal code/key (e.g., "VEGETABLES")
+  label        String // Display text (e.g., "Vegetables")
+  description  String?
+  sortOrder    Int                    @default(0) @map("sort_order")
+  isActive     Boolean                @default(true) @map("is_active")
+  createdAt    DateTime               @default(now()) @map("created_at")
+  updatedAt    DateTime               @updatedAt @map("updated_at")
+  listType     ListType               @relation(fields: [listTypeId], references: [id], onDelete: Cascade)
   translations ListValueTranslation[]
 
   @@unique([listTypeId, value])
@@ -269,13 +278,13 @@ model ListValue {
 }
 
 model ListValueTranslation {
-  id          String   @id @default(cuid())
-  listValueId String   @map("list_value_id")
-  language    String   // ISO 639-1 code: 'en', 'he', 'es', etc.
-  label       String   // Translated display text
-  description String?  // Translated description (optional)
-  createdAt   DateTime @default(now()) @map("created_at")
-  updatedAt   DateTime @updatedAt @map("updated_at")
+  id          String    @id @default(cuid())
+  listValueId String    @map("list_value_id")
+  language    String // ISO 639-1 code: 'en', 'he', 'es', etc.
+  label       String // Translated display text
+  description String? // Translated description (optional)
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
   listValue   ListValue @relation(fields: [listValueId], references: [id], onDelete: Cascade)
 
   @@unique([listValueId, language])
@@ -288,11 +297,11 @@ model ListValueTranslation {
 
 model DataMigration {
   id          String   @id @default(cuid())
-  scriptName  String   @unique @map("script_name")  // e.g., "1.1.0_add_user_nicknames.ts"
-  version     String                                 // Database version this belongs to
+  scriptName  String   @unique @map("script_name") // e.g., "1.1.0_add_user_nicknames.ts"
+  version     String // Database version this belongs to
   description String?
   executedAt  DateTime @default(now()) @map("executed_at")
-  executedBy  String?  @map("executed_by")           // "deploy-script" or user email
+  executedBy  String?  @map("executed_by") // "deploy-script" or user email
   success     Boolean  @default(true)
   errorLog    String?  @map("error_log")
 
@@ -306,7 +315,7 @@ model DataMigration {
 model Session {
   id           String   @id @default(cuid())
   userId       String?  @map("user_id")
-  deviceType   String   @map("device_type")  // 'browser', 'mobile_app', 'tablet'
+  deviceType   String   @map("device_type") // 'browser', 'mobile_app', 'tablet'
   userAgent    String?  @map("user_agent")
   ipAddress    String?  @map("ip_address")
   startedAt    DateTime @default(now()) @map("started_at")
@@ -323,12 +332,12 @@ model Session {
 
 model StatEvent {
   id         String   @id @default(cuid())
-  eventType  String   @map("event_type")   // e.g., 'user.login', 'recipe.view'
+  eventType  String   @map("event_type") // e.g., 'user.login', 'recipe.view'
   userId     String?  @map("user_id")
   sessionId  String?  @map("session_id")
-  entityType String?  @map("entity_type")  // e.g., 'recipe', 'user'
+  entityType String?  @map("entity_type") // e.g., 'recipe', 'user'
   entityId   String?  @map("entity_id")
-  metadata   Json?                         // Flexible additional data
+  metadata   Json? // Flexible additional data
   createdAt  DateTime @default(now()) @map("created_at")
 
   // Relations
