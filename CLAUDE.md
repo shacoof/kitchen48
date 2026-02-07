@@ -800,45 +800,97 @@ await prisma.parameter.upsert({
 });
 ```
 
-### Rule 3: Insert Data to Existing Tables (Non-Seed)
+### Rule 3: New LOV Types, Reference Data & Production Data Inserts (PREFERRED)
 
-For data that needs to be added to production but isn't seed data:
+**Use data migrations for ANY new data that must reach production automatically.**
+This includes: new LOV types/values, new parameters, reference data, translations, etc.
 
-**MANDATORY: Create a SQL script file**
+**How it works:**
+- Files in `backend/prisma/data-migrations/` are run automatically during deployment
+- The `data_migrations` table tracks each script by filename (unique)
+- Scripts that already ran successfully are **skipped** — guarantees run-once behavior
+- Runs during `npm run migrate:data` (called by `deploy.sh` after schema migrations)
 
-Location: `backend/prisma/scripts/`
+**Location:** `backend/prisma/data-migrations/`
 
-**Naming convention:** `YYYY-MM-DD_description.sql`
+**Naming convention:** `<version>_<description>.ts` (alphabetical sort = execution order)
 
-**Example:**
-```sql
--- backend/prisma/scripts/2026-01-25_add_new_parameters.sql
--- Description: Add new system parameters for feature X
--- Author: [name]
--- Run on production: [date]
+**MANDATORY: Create a data migration file for new LOV types/values:**
 
--- ALWAYS use INSERT ... ON CONFLICT for safety
-INSERT INTO parameters (key, value, data_type, description, is_active, created_at, updated_at)
-VALUES
-  ('feature.x.enabled', 'true', 'BOOLEAN', 'Enable feature X', true, NOW(), NOW()),
-  ('feature.x.limit', '100', 'NUMBER', 'Feature X rate limit', true, NOW(), NOW())
-ON CONFLICT (key) DO NOTHING;  -- Skip if already exists
+```typescript
+// backend/prisma/data-migrations/1.3.0_add_cuisine_lov.ts
+import { PrismaClient } from '@prisma/client';
+
+const prisma = new PrismaClient();
+
+export const version = '1.3.0';
+export const description = 'Add Cuisine LOV type and values';
+
+export async function run(): Promise<void> {
+  // Use upsert to be safe if data partially exists
+  const lovType = await prisma.listOfValueType.upsert({
+    where: { name: 'Cuisine' },
+    update: {},
+    create: {
+      name: 'Cuisine',
+      description: 'Types of cuisine',
+      isActive: true,
+    },
+  });
+
+  const values = ['Italian', 'Japanese', 'Mexican', 'Indian', 'French'];
+
+  for (const [index, label] of values.entries()) {
+    await prisma.listOfValue.upsert({
+      where: {
+        typeId_value: { typeId: lovType.id, value: label.toLowerCase() },
+      },
+      update: {},
+      create: {
+        typeId: lovType.id,
+        value: label.toLowerCase(),
+        label: label,
+        sortOrder: index + 1,
+        isActive: true,
+      },
+    });
+  }
+
+  console.log(`Created LOV type "Cuisine" with ${values.length} values`);
+}
 ```
 
-**Running on production (Cloud SQL):**
+**Development workflow:**
 ```bash
-# Connect to Cloud SQL and run script
-gcloud sql connect kitchen48-db --user=kitchen48_user --database=kitchen48_prod < backend/prisma/scripts/2026-01-25_add_new_parameters.sql
+# 1. Create the migration file in backend/prisma/data-migrations/
+# 2. Test locally:
+cd backend && npm run migrate:data
+
+# 3. Verify data was inserted correctly
+# 4. Commit the migration file
+# 5. On next deploy, it runs automatically and only once
 ```
 
 **Checklist:**
-- [ ] SQL script created in `backend/prisma/scripts/`
-- [ ] Script uses `ON CONFLICT DO NOTHING` or `ON CONFLICT DO UPDATE` for safety
-- [ ] Script committed to git before running on production
-- [ ] Script has header comment with description, author, date
-- [ ] After running on production, add comment with execution date
+- [ ] File created in `backend/prisma/data-migrations/` with correct naming
+- [ ] Exports `version`, `description`, and `run()` function
+- [ ] Uses `upsert` or `ON CONFLICT` for safety (idempotent within the script)
+- [ ] Tested locally with `npm run migrate:data`
+- [ ] Committed to git before deploying
 
-### Rule 4: Deleting or Modifying Production Data
+**When NOT to use data migrations (use manual SQL instead):**
+- One-time production fixes or data patches
+- Ad-hoc queries that don't belong in the codebase
+- For those, create SQL scripts in `backend/prisma/scripts/` (see Rule 4)
+
+### Rule 4: Manual SQL Scripts (One-Time Fixes Only)
+
+For ad-hoc data fixes that don't belong in the automated pipeline:
+
+**Location:** `backend/prisma/scripts/`
+**Naming:** `YYYY-MM-DD_description.sql`
+
+### Rule 5: Deleting or Modifying Production Data
 
 **FORBIDDEN without explicit approval:**
 - DELETE statements
@@ -877,19 +929,19 @@ COMMIT;
 └─────────────────────────────────────────────────────────────┘
 
 ┌─────────────────────────────────────────────────────────────┐
-│                    SEED DATA                                │
+│                    SEED DATA (initial only)                  │
 │  1. Edit backend/prisma/seed.ts                             │
 │  2. Use upsert (idempotent)                                 │
 │  3. Test: npx prisma db seed                                │
-│  4. Deploy: npx prisma db seed                              │
+│  4. Deploy: npx prisma db seed (manual, first deploy only)  │
 └─────────────────────────────────────────────────────────────┘
 
 ┌─────────────────────────────────────────────────────────────┐
-│                    INSERT DATA                              │
-│  1. Create: backend/prisma/scripts/YYYY-MM-DD_desc.sql      │
-│  2. Use INSERT ... ON CONFLICT                              │
-│  3. Commit script to git                                    │
-│  4. Run on production via Cloud SQL                         │
+│          NEW LOV / REFERENCE DATA (PREFERRED)               │
+│  1. Create: backend/prisma/data-migrations/<ver>_desc.ts    │
+│  2. Export version, description, run() with upserts         │
+│  3. Test: cd backend && npm run migrate:data                │
+│  4. Commit file — runs automatically on deploy (once only)  │
 └─────────────────────────────────────────────────────────────┘
 ```
 
