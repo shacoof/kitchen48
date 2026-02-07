@@ -288,6 +288,11 @@ class RecipeService {
       await prisma.recipeDietaryTag.deleteMany({ where: { recipeId: id } });
     }
 
+    // Handle steps: delete existing and recreate (cascade deletes ingredients)
+    if (data.steps) {
+      await prisma.recipeStep.deleteMany({ where: { recipeId: id } });
+    }
+
     const recipe = await prisma.recipe.update({
       where: { id },
       data: {
@@ -307,6 +312,31 @@ class RecipeService {
         ...(data.dietaryTags && {
           dietaryTags: {
             create: data.dietaryTags.map((tag) => ({ tag })),
+          },
+        }),
+        ...(data.steps && {
+          steps: {
+            create: data.steps.map((step, index) => ({
+              slug: step.slug || `step${index + 1}`,
+              title: step.title,
+              instruction: step.instruction,
+              order: step.order ?? index,
+              duration: step.duration,
+              videoUrl: step.videoUrl,
+              prepTime: step.prepTime,
+              prepTimeUnit: step.prepTimeUnit,
+              waitTime: step.waitTime,
+              waitTimeUnit: step.waitTimeUnit,
+              ingredients: {
+                create: step.ingredients?.map((ing, ingIndex) => ({
+                  name: ing.name,
+                  quantity: ing.quantity,
+                  unit: ing.unit,
+                  order: ing.order ?? ingIndex,
+                  masterIngredientId: ing.masterIngredientId,
+                })),
+              },
+            })),
           },
         }),
       },

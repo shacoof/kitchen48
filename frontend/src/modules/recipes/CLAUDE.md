@@ -129,6 +129,15 @@ recipesApi.generateSlug(title)
 - **Root Cause**: CreateRecipePage was not wired to useListValues hook or searchIngredients API
 - **Fix**: Unit field now uses `<select>` populated from "Measurement Units" LOV. Ingredient name has debounced autocomplete from master_ingredients table with dropdown UI. masterIngredientId is tracked and submitted.
 
+### 2026-02-07: Unit dropdown width, keyboard nav, ingredient save on update
+- **Bug A**: Unit dropdown too narrow (`w-24`) — "tablespoon" gets cut off
+- **Fix A**: Widened unit `<select>` from `w-24` to `w-32`
+- **Bug B**: Keyboard navigation not working in ingredient autocomplete dropdown
+- **Fix B**: Added `acHighlight` state and `onKeyDown` handler (ArrowUp/Down/Enter/Escape) with visual highlight
+- **Bug C**: Ingredients not saved when updating an existing recipe
+- **Root Cause C**: Backend `recipe.service.ts` `update()` method ignored `steps` array entirely
+- **Fix C**: Added delete-and-recreate logic for steps/ingredients in `update()` (safe due to Prisma cascade deletes)
+
 ---
 
 ## Implementation Date

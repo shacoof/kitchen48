@@ -69,6 +69,7 @@ export function CreateRecipePage() {
   // Ingredient autocomplete state
   const [acResults, setAcResults] = useState<MasterIngredient[]>([]);
   const [acActiveIdx, setAcActiveIdx] = useState<{ step: number; ing: number } | null>(null);
+  const [acHighlight, setAcHighlight] = useState(-1);
   const acTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const searchIngredients = useCallback(async (query: string) => {
@@ -92,6 +93,7 @@ export function CreateRecipePage() {
       };
       setSteps([...newSteps]);
       setAcActiveIdx({ step: stepIndex, ing: ingIndex });
+      setAcHighlight(-1);
 
       if (acTimerRef.current) clearTimeout(acTimerRef.current);
       acTimerRef.current = setTimeout(() => searchIngredients(value), 300);
@@ -110,6 +112,7 @@ export function CreateRecipePage() {
       setSteps([...newSteps]);
       setAcResults([]);
       setAcActiveIdx(null);
+      setAcHighlight(-1);
     },
     [steps],
   );
@@ -585,85 +588,111 @@ export function CreateRecipePage() {
                         <p className="text-sm text-gray-400 italic">No ingredients added</p>
                       ) : (
                         <div className="space-y-2">
-                          {step.ingredients.map((ing, ingIndex) => (
-                            <div key={ingIndex} className="flex gap-2 items-start">
-                              <input
-                                type="text"
-                                inputMode="decimal"
-                                value={ing.quantity}
-                                onChange={(e) =>
-                                  updateIngredient(stepIndex, ingIndex, 'quantity', e.target.value)
-                                }
-                                className="w-20 px-3 py-1.5 border border-gray-300 rounded focus:ring-2 focus:ring-accent-orange focus:border-transparent text-sm"
-                                placeholder="Qty"
-                              />
-                              <select
-                                value={ing.unit}
-                                onChange={(e) =>
-                                  updateIngredient(stepIndex, ingIndex, 'unit', e.target.value)
-                                }
-                                className="w-24 px-2 py-1.5 border border-gray-300 rounded focus:ring-2 focus:ring-accent-orange focus:border-transparent text-sm"
-                              >
-                                <option value="">—</option>
-                                {unitOptions.map((u) => (
-                                  <option key={u.value} value={u.value}>
-                                    {u.label}
-                                  </option>
-                                ))}
-                              </select>
-                              <div className="flex-1 relative">
+                          {step.ingredients.map((ing, ingIndex) => {
+                            const showDropdown =
+                              acActiveIdx?.step === stepIndex &&
+                              acActiveIdx?.ing === ingIndex &&
+                              acResults.length > 0;
+
+                            return (
+                              <div key={ingIndex} className="flex gap-2 items-start">
                                 <input
                                   type="text"
-                                  value={ing.name}
+                                  inputMode="decimal"
+                                  value={ing.quantity}
                                   onChange={(e) =>
-                                    handleIngredientNameChange(stepIndex, ingIndex, e.target.value)
+                                    updateIngredient(stepIndex, ingIndex, 'quantity', e.target.value)
                                   }
-                                  onBlur={() => setTimeout(() => setAcActiveIdx(null), 200)}
-                                  onFocus={() => {
-                                    if (ing.name.length >= 2) {
-                                      setAcActiveIdx({ step: stepIndex, ing: ingIndex });
-                                      searchIngredients(ing.name);
-                                    }
-                                  }}
-                                  className="w-full px-3 py-1.5 border border-gray-300 rounded focus:ring-2 focus:ring-accent-orange focus:border-transparent text-sm"
-                                  placeholder="Ingredient name"
+                                  className="w-20 px-3 py-1.5 border border-gray-300 rounded focus:ring-2 focus:ring-accent-orange focus:border-transparent text-sm"
+                                  placeholder="Qty"
                                 />
-                                {/* Autocomplete dropdown */}
-                                {acActiveIdx?.step === stepIndex &&
-                                  acActiveIdx?.ing === ingIndex &&
-                                  acResults.length > 0 && (
+                                <select
+                                  value={ing.unit}
+                                  onChange={(e) =>
+                                    updateIngredient(stepIndex, ingIndex, 'unit', e.target.value)
+                                  }
+                                  className="w-32 px-2 py-1.5 border border-gray-300 rounded focus:ring-2 focus:ring-accent-orange focus:border-transparent text-sm"
+                                >
+                                  <option value="">—</option>
+                                  {unitOptions.map((u) => (
+                                    <option key={u.value} value={u.value}>
+                                      {u.label}
+                                    </option>
+                                  ))}
+                                </select>
+                                <div className="flex-1 relative">
+                                  <input
+                                    type="text"
+                                    value={ing.name}
+                                    onChange={(e) =>
+                                      handleIngredientNameChange(stepIndex, ingIndex, e.target.value)
+                                    }
+                                    onBlur={() => setTimeout(() => { setAcActiveIdx(null); setAcHighlight(-1); }, 200)}
+                                    onFocus={() => {
+                                      if (ing.name.length >= 2) {
+                                        setAcActiveIdx({ step: stepIndex, ing: ingIndex });
+                                        setAcHighlight(-1);
+                                        searchIngredients(ing.name);
+                                      }
+                                    }}
+                                    onKeyDown={(e) => {
+                                      if (!showDropdown) return;
+                                      if (e.key === 'ArrowDown') {
+                                        e.preventDefault();
+                                        setAcHighlight((h) => Math.min(h + 1, acResults.length - 1));
+                                      } else if (e.key === 'ArrowUp') {
+                                        e.preventDefault();
+                                        setAcHighlight((h) => Math.max(h - 1, 0));
+                                      } else if (e.key === 'Enter' && acHighlight >= 0) {
+                                        e.preventDefault();
+                                        selectAutocomplete(stepIndex, ingIndex, acResults[acHighlight]);
+                                      } else if (e.key === 'Escape') {
+                                        setAcActiveIdx(null);
+                                        setAcHighlight(-1);
+                                      }
+                                    }}
+                                    className="w-full px-3 py-1.5 border border-gray-300 rounded focus:ring-2 focus:ring-accent-orange focus:border-transparent text-sm"
+                                    placeholder="Ingredient name"
+                                  />
+                                  {/* Autocomplete dropdown */}
+                                  {showDropdown && (
                                     <div className="absolute z-10 top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-40 overflow-y-auto">
-                                      {acResults.map((mi) => (
+                                      {acResults.map((mi, idx) => (
                                         <button
                                           key={mi.id}
                                           type="button"
                                           onMouseDown={() =>
                                             selectAutocomplete(stepIndex, ingIndex, mi)
                                           }
-                                          className="w-full text-left px-3 py-2 text-sm hover:bg-accent-orange/10 transition-colors"
+                                          className={`w-full text-left px-3 py-2 text-sm transition-colors ${
+                                            idx === acHighlight
+                                              ? 'bg-accent-orange/20 font-medium'
+                                              : 'hover:bg-accent-orange/10'
+                                          }`}
                                         >
                                           {mi.name}
                                         </button>
                                       ))}
                                     </div>
                                   )}
-                                {ing.masterIngredientId && (
-                                  <span className="absolute right-2 top-1.5 text-xs text-green-500">
-                                    <span className="material-symbols-outlined text-xs">
-                                      check_circle
+                                  {ing.masterIngredientId && (
+                                    <span className="absolute right-2 top-1.5 text-xs text-green-500">
+                                      <span className="material-symbols-outlined text-xs">
+                                        check_circle
+                                      </span>
                                     </span>
-                                  </span>
-                                )}
+                                  )}
+                                </div>
+                                <button
+                                  type="button"
+                                  onClick={() => removeIngredient(stepIndex, ingIndex)}
+                                  className="text-red-400 hover:text-red-600 mt-1"
+                                >
+                                  <span className="material-symbols-outlined text-sm">close</span>
+                                </button>
                               </div>
-                              <button
-                                type="button"
-                                onClick={() => removeIngredient(stepIndex, ingIndex)}
-                                className="text-red-400 hover:text-red-600 mt-1"
-                              >
-                                <span className="material-symbols-outlined text-sm">close</span>
-                              </button>
-                            </div>
-                          ))}
+                            );
+                          })}
                         </div>
                       )}
                     </div>
