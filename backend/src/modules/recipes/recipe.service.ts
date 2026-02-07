@@ -13,6 +13,8 @@ import type {
   Recipe,
   RecipeListItem,
   RecipeQueryInput,
+  ReorderStepsInput,
+  AggregatedIngredient,
 } from './recipe.types.js';
 
 const logger = createLogger('RecipeService');
@@ -488,6 +490,259 @@ class RecipeService {
 
     logger.debug(`Deleting step: ${stepId}`);
     await prisma.recipeStep.delete({ where: { id: stepId } });
+
+    return this.getById(recipeId) as Promise<Recipe>;
+  }
+
+  /**
+   * Get aggregated ingredient summary across all steps of a recipe
+   */
+  async getIngredientSummary(recipeId: string): Promise<AggregatedIngredient[]> {
+    logger.debug(`Getting ingredient summary for recipe: ${recipeId}`);
+
+    const steps = await prisma.recipeStep.findMany({
+      where: { recipeId },
+      orderBy: { order: 'asc' },
+      include: {
+        ingredients: { orderBy: { order: 'asc' } },
+      },
+    });
+
+    // Group by name+unit (or masterIngredientId if available)
+    const grouped = new Map<string, AggregatedIngredient>();
+
+    for (const step of steps) {
+      for (const ing of step.ingredients) {
+        const key = ing.masterIngredientId
+          ? `master:${ing.masterIngredientId}:${ing.unit || ''}`
+          : `name:${ing.name.toLowerCase()}:${ing.unit || ''}`;
+
+        const existing = grouped.get(key);
+        const stepRef = {
+          stepId: step.id,
+          stepOrder: step.order,
+          stepTitle: step.title,
+        };
+
+        if (existing) {
+          if (existing.totalQuantity !== null && ing.quantity) {
+            existing.totalQuantity += Number(ing.quantity);
+          } else if (ing.quantity) {
+            existing.totalQuantity = Number(ing.quantity);
+          }
+          existing.stepReferences.push(stepRef);
+        } else {
+          grouped.set(key, {
+            name: ing.name,
+            totalQuantity: ing.quantity ? Number(ing.quantity) : null,
+            unit: ing.unit,
+            masterIngredientId: ing.masterIngredientId,
+            stepReferences: [stepRef],
+          });
+        }
+      }
+    }
+
+    return Array.from(grouped.values());
+  }
+
+  /**
+   * Save (bookmark) a recipe for a user
+   */
+  async saveRecipe(userId: string, recipeId: string): Promise<void> {
+    const recipe = await prisma.recipe.findUnique({
+      where: { id: recipeId },
+      select: { id: true, isPublished: true, authorId: true },
+    });
+
+    if (!recipe) {
+      throw new Error('Recipe not found');
+    }
+
+    if (!recipe.isPublished && recipe.authorId !== userId) {
+      throw new Error('Recipe not found');
+    }
+
+    await prisma.savedRecipe.upsert({
+      where: { userId_recipeId: { userId, recipeId } },
+      update: {},
+      create: { userId, recipeId },
+    });
+
+    logger.debug(`User ${userId} saved recipe ${recipeId}`);
+  }
+
+  /**
+   * Remove a saved (bookmarked) recipe for a user
+   */
+  async unsaveRecipe(userId: string, recipeId: string): Promise<void> {
+    await prisma.savedRecipe.deleteMany({
+      where: { userId, recipeId },
+    });
+
+    logger.debug(`User ${userId} unsaved recipe ${recipeId}`);
+  }
+
+  /**
+   * Duplicate a recipe for the current user
+   */
+  async duplicateRecipe(recipeId: string, newAuthorId: string): Promise<Recipe> {
+    const original = await prisma.recipe.findUnique({
+      where: { id: recipeId },
+      include: {
+        steps: {
+          orderBy: { order: 'asc' },
+          include: {
+            ingredients: { orderBy: { order: 'asc' } },
+          },
+        },
+        dietaryTags: true,
+      },
+    });
+
+    if (!original) {
+      throw new Error('Recipe not found');
+    }
+
+    // Only allow duplicating published recipes or own recipes
+    if (!original.isPublished && original.authorId !== newAuthorId) {
+      throw new Error('Recipe not found');
+    }
+
+    // Generate unique slug for the copy
+    let baseSlug = `${original.slug}-copy`;
+    let slug = baseSlug;
+    let counter = 2;
+
+    while (await prisma.recipe.findFirst({ where: { authorId: newAuthorId, slug } })) {
+      slug = `${baseSlug}-${counter}`;
+      counter++;
+    }
+
+    logger.debug(`Duplicating recipe ${recipeId} for user ${newAuthorId}`);
+
+    const recipe = await prisma.recipe.create({
+      data: {
+        title: `${original.title} (Copy)`,
+        slug,
+        description: original.description,
+        prepTime: original.prepTime,
+        cookTime: original.cookTime,
+        servings: original.servings,
+        imageUrl: original.imageUrl,
+        videoUrl: original.videoUrl,
+        isPublished: false,
+        measurementSystem: original.measurementSystem,
+        difficulty: original.difficulty,
+        cuisine: original.cuisine,
+        mealType: original.mealType,
+        authorId: newAuthorId,
+        steps: {
+          create: original.steps.map((step) => ({
+            slug: step.slug,
+            title: step.title,
+            instruction: step.instruction,
+            order: step.order,
+            duration: step.duration,
+            videoUrl: step.videoUrl,
+            prepTime: step.prepTime,
+            prepTimeUnit: step.prepTimeUnit,
+            waitTime: step.waitTime,
+            waitTimeUnit: step.waitTimeUnit,
+            ingredients: {
+              create: step.ingredients.map((ing) => ({
+                name: ing.name,
+                quantity: ing.quantity,
+                unit: ing.unit,
+                order: ing.order,
+                masterIngredientId: ing.masterIngredientId,
+              })),
+            },
+          })),
+        },
+        dietaryTags: {
+          create: original.dietaryTags.map((dt) => ({ tag: dt.tag })),
+        },
+      },
+      include: recipeFullInclude,
+    });
+
+    return recipe as Recipe;
+  }
+
+  /**
+   * Toggle the publish status of a recipe
+   */
+  async togglePublish(recipeId: string, authorId: string): Promise<Recipe> {
+    const existing = await prisma.recipe.findUnique({
+      where: { id: recipeId },
+      select: { authorId: true, isPublished: true },
+    });
+
+    if (!existing) {
+      throw new Error('Recipe not found');
+    }
+
+    if (existing.authorId !== authorId) {
+      throw new Error('You can only publish your own recipes');
+    }
+
+    logger.debug(`Toggling publish for recipe ${recipeId}: ${!existing.isPublished}`);
+
+    const recipe = await prisma.recipe.update({
+      where: { id: recipeId },
+      data: { isPublished: !existing.isPublished },
+      include: recipeFullInclude,
+    });
+
+    return recipe as Recipe;
+  }
+
+  /**
+   * Reorder steps within a recipe
+   */
+  async reorderSteps(
+    recipeId: string,
+    authorId: string,
+    data: ReorderStepsInput
+  ): Promise<Recipe> {
+    const recipe = await prisma.recipe.findUnique({
+      where: { id: recipeId },
+      select: { authorId: true },
+    });
+
+    if (!recipe) {
+      throw new Error('Recipe not found');
+    }
+
+    if (recipe.authorId !== authorId) {
+      throw new Error('You can only edit your own recipes');
+    }
+
+    // Verify all step IDs belong to this recipe
+    const existingSteps = await prisma.recipeStep.findMany({
+      where: { recipeId },
+      select: { id: true },
+    });
+
+    const existingIds = new Set(existingSteps.map((s) => s.id));
+    for (const stepId of data.stepIds) {
+      if (!existingIds.has(stepId)) {
+        throw new Error(`Step ${stepId} not found in this recipe`);
+      }
+    }
+
+    logger.debug(`Reordering ${data.stepIds.length} steps for recipe ${recipeId}`);
+
+    // Update order for each step in a transaction
+    await prisma.$transaction(
+      data.stepIds.map((stepId, index) =>
+        prisma.recipeStep.update({
+          where: { id: stepId },
+          data: { order: index },
+        })
+      )
+    );
 
     return this.getById(recipeId) as Promise<Recipe>;
   }

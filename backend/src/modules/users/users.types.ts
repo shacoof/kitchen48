@@ -41,6 +41,7 @@ export const updateProfileSchema = z.object({
   description: z.preprocess(emptyStringToNull, z.string().optional().nullable()),
   videoLanguage: z.string().min(2).max(5).optional(),
   interfaceLanguage: z.string().min(2).max(5).optional(),
+  measurementSystem: z.enum(['metric', 'imperial']).optional(),
 });
 
 /**
@@ -56,6 +57,7 @@ export const adminUpdateUserSchema = z.object({
   description: z.preprocess(emptyStringToNull, z.string().optional().nullable()),
   emailVerified: z.boolean().optional(),
   userType: z.enum(['regular', 'admin']).optional(),
+  measurementSystem: z.enum(['metric', 'imperial']).optional(),
 });
 
 // ============================================================================
@@ -88,6 +90,7 @@ export interface FullUserProfile extends PublicUserProfile {
   userType: 'regular' | 'admin';
   videoLanguage: string;
   interfaceLanguage: string;
+  measurementSystem: string;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -106,6 +109,7 @@ export interface AdminUserListItem {
   userType: 'regular' | 'admin';
   videoLanguage: string;
   interfaceLanguage: string;
+  measurementSystem: string;
   createdAt: Date;
   updatedAt: Date;
 }

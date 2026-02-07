@@ -237,6 +237,7 @@ class AuthService {
     userType: UserType;
     videoLanguage: string;
     interfaceLanguage: string;
+    measurementSystem: string;
   }): AuthUser {
     return {
       id: user.id,
@@ -249,6 +250,7 @@ class AuthService {
       userType: user.userType,
       videoLanguage: user.videoLanguage,
       interfaceLanguage: user.interfaceLanguage,
+      measurementSystem: user.measurementSystem,
     };
   }
 }

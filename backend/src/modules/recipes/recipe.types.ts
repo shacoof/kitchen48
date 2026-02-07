@@ -77,6 +77,11 @@ export const createRecipeSchema = z.object({
 
 export const updateRecipeSchema = createRecipeSchema.partial();
 
+// Reorder steps schema
+export const reorderStepsSchema = z.object({
+  stepIds: z.array(z.string()).min(1, 'At least one step ID is required'),
+});
+
 // Query schemas
 export const recipeQuerySchema = z.object({
   page: z.coerce.number().int().positive().optional().default(1),
@@ -94,6 +99,7 @@ export type UpdateStepInput = z.infer<typeof updateStepSchema>;
 export type CreateRecipeInput = z.infer<typeof createRecipeSchema>;
 export type UpdateRecipeInput = z.infer<typeof updateRecipeSchema>;
 export type RecipeQueryInput = z.infer<typeof recipeQuerySchema>;
+export type ReorderStepsInput = z.infer<typeof reorderStepsSchema>;
 
 // Full types (from database)
 export interface StepIngredient {
@@ -168,4 +174,16 @@ export interface RecipeListItem {
   _count: {
     steps: number;
   };
+}
+
+export interface AggregatedIngredient {
+  name: string;
+  totalQuantity: number | null;
+  unit: string | null;
+  masterIngredientId: string | null;
+  stepReferences: Array<{
+    stepId: string;
+    stepOrder: number;
+    stepTitle: string | null;
+  }>;
 }

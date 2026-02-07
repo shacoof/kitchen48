@@ -4,7 +4,8 @@
  */
 
 import { Router, Request, Response } from 'express';
-import { requireAuth } from '../auth/auth.middleware.js';
+import { requireAuth, optionalAuth } from '../auth/auth.middleware.js';
+import { prisma } from '../../core/database/prisma.js';
 import { recipeService } from './recipe.service.js';
 import {
   createRecipeSchema,
@@ -12,6 +13,7 @@ import {
   createStepSchema,
   updateStepSchema,
   recipeQuerySchema,
+  reorderStepsSchema,
 } from './recipe.types.js';
 import { createLogger } from '../../lib/logger.js';
 
@@ -63,10 +65,68 @@ router.get('/search-ingredients', async (req: Request, res: Response) => {
 });
 
 /**
+ * GET /api/recipes/by-user/:nickname
+ * Get recipes by user nickname (public: published only, owner: all)
+ */
+router.get('/by-user/:nickname', optionalAuth, async (req: Request, res: Response) => {
+  try {
+    const nickname = req.params.nickname as string;
+
+    // Check if the requesting user is the owner
+    let includeUnpublished = false;
+    if (req.userId) {
+      const user = await prisma.user.findUnique({
+        where: { nickname },
+        select: { id: true },
+      });
+      if (user && user.id === req.userId) {
+        includeUnpublished = true;
+      }
+    }
+
+    const recipes = await recipeService.getByNickname(nickname, includeUnpublished);
+    res.json({ recipes });
+  } catch (error) {
+    logger.error(`Error fetching recipes by nickname: ${error instanceof Error ? error.message : String(error)}`);
+    res.status(500).json({ error: 'Failed to fetch recipes' });
+  }
+});
+
+/**
+ * GET /api/recipes/by-url/:nickname/:slug
+ * Get recipe by semantic URL (author nickname + recipe slug)
+ */
+router.get('/by-url/:nickname/:slug', optionalAuth, async (req: Request, res: Response) => {
+  try {
+    const nickname = req.params.nickname as string;
+    const slug = req.params.slug as string;
+    const recipe = await recipeService.getBySemanticUrl(nickname, slug);
+
+    if (!recipe) {
+      res.status(404).json({ error: 'Recipe not found' });
+      return;
+    }
+
+    // If not published, only author can view
+    if (!recipe.isPublished) {
+      if (!req.userId || req.userId !== recipe.authorId) {
+        res.status(404).json({ error: 'Recipe not found' });
+        return;
+      }
+    }
+
+    res.json({ recipe });
+  } catch (error) {
+    logger.error(`Error fetching recipe by URL: ${error instanceof Error ? error.message : String(error)}`);
+    res.status(500).json({ error: 'Failed to fetch recipe' });
+  }
+});
+
+/**
  * GET /api/recipes/:id
  * Get recipe by ID
  */
-router.get('/:id', async (req: Request, res: Response) => {
+router.get('/:id', optionalAuth, async (req: Request, res: Response) => {
   try {
     const id = req.params.id as string;
     const recipe = await recipeService.getById(id);
@@ -186,6 +246,161 @@ router.delete('/:id', requireAuth, async (req: Request, res: Response) => {
     }
 
     res.status(500).json({ error: 'Failed to delete recipe' });
+  }
+});
+
+/**
+ * GET /api/recipes/:id/ingredient-summary
+ * Get aggregated ingredient list across all steps
+ */
+router.get('/:id/ingredient-summary', optionalAuth, async (req: Request, res: Response) => {
+  try {
+    const recipeId = req.params.id as string;
+
+    // Verify recipe exists and is accessible
+    const recipe = await recipeService.getById(recipeId);
+    if (!recipe) {
+      res.status(404).json({ error: 'Recipe not found' });
+      return;
+    }
+
+    if (!recipe.isPublished) {
+      if (!req.userId || req.userId !== recipe.authorId) {
+        res.status(404).json({ error: 'Recipe not found' });
+        return;
+      }
+    }
+
+    const ingredients = await recipeService.getIngredientSummary(recipeId);
+    res.json({ ingredients });
+  } catch (error) {
+    logger.error(`Error fetching ingredient summary: ${error instanceof Error ? error.message : String(error)}`);
+    res.status(500).json({ error: 'Failed to fetch ingredient summary' });
+  }
+});
+
+/**
+ * POST /api/recipes/:id/save
+ * Bookmark a recipe (auth required)
+ */
+router.post('/:id/save', requireAuth, async (req: Request, res: Response) => {
+  try {
+    const recipeId = req.params.id as string;
+    await recipeService.saveRecipe(req.userId!, recipeId);
+    res.status(201).json({ saved: true });
+  } catch (error) {
+    logger.error(`Error saving recipe: ${error instanceof Error ? error.message : String(error)}`);
+
+    if (error instanceof Error && error.message === 'Recipe not found') {
+      res.status(404).json({ error: error.message });
+      return;
+    }
+
+    res.status(500).json({ error: 'Failed to save recipe' });
+  }
+});
+
+/**
+ * DELETE /api/recipes/:id/save
+ * Remove bookmark from a recipe (auth required)
+ */
+router.delete('/:id/save', requireAuth, async (req: Request, res: Response) => {
+  try {
+    const recipeId = req.params.id as string;
+    await recipeService.unsaveRecipe(req.userId!, recipeId);
+    res.status(204).send();
+  } catch (error) {
+    logger.error(`Error unsaving recipe: ${error instanceof Error ? error.message : String(error)}`);
+    res.status(500).json({ error: 'Failed to unsave recipe' });
+  }
+});
+
+/**
+ * POST /api/recipes/:id/duplicate
+ * Clone a recipe for the current user (auth required)
+ */
+router.post('/:id/duplicate', requireAuth, async (req: Request, res: Response) => {
+  try {
+    const recipeId = req.params.id as string;
+    const recipe = await recipeService.duplicateRecipe(recipeId, req.userId!);
+    res.status(201).json({ recipe });
+  } catch (error) {
+    logger.error(`Error duplicating recipe: ${error instanceof Error ? error.message : String(error)}`);
+
+    if (error instanceof Error && error.message === 'Recipe not found') {
+      res.status(404).json({ error: error.message });
+      return;
+    }
+
+    res.status(500).json({ error: 'Failed to duplicate recipe' });
+  }
+});
+
+/**
+ * PATCH /api/recipes/:id/publish
+ * Toggle publish status (auth required, owner only)
+ */
+router.patch('/:id/publish', requireAuth, async (req: Request, res: Response) => {
+  try {
+    const recipeId = req.params.id as string;
+    const recipe = await recipeService.togglePublish(recipeId, req.userId!);
+    res.json({ recipe });
+  } catch (error) {
+    logger.error(`Error toggling publish: ${error instanceof Error ? error.message : String(error)}`);
+
+    if (error instanceof Error) {
+      if (error.message === 'Recipe not found') {
+        res.status(404).json({ error: error.message });
+        return;
+      }
+      if (error.message.includes('only publish your own')) {
+        res.status(403).json({ error: error.message });
+        return;
+      }
+    }
+
+    res.status(500).json({ error: 'Failed to toggle publish status' });
+  }
+});
+
+/**
+ * PATCH /api/recipes/:id/steps/reorder
+ * Reorder steps within a recipe (auth required, owner only)
+ */
+router.patch('/:id/steps/reorder', requireAuth, async (req: Request, res: Response) => {
+  try {
+    const recipeId = req.params.id as string;
+    const validation = reorderStepsSchema.safeParse(req.body);
+
+    if (!validation.success) {
+      res.status(400).json({
+        error: 'Validation failed',
+        details: validation.error.flatten().fieldErrors,
+      });
+      return;
+    }
+
+    const recipe = await recipeService.reorderSteps(recipeId, req.userId!, validation.data);
+    res.json({ recipe });
+  } catch (error) {
+    logger.error(`Error reordering steps: ${error instanceof Error ? error.message : String(error)}`);
+
+    if (error instanceof Error) {
+      if (error.message === 'Recipe not found') {
+        res.status(404).json({ error: error.message });
+        return;
+      }
+      if (error.message.includes('only edit your own')) {
+        res.status(403).json({ error: error.message });
+        return;
+      }
+      if (error.message.includes('not found in this recipe')) {
+        res.status(400).json({ error: error.message });
+        return;
+      }
+    }
+
+    res.status(500).json({ error: 'Failed to reorder steps' });
   }
 });
 

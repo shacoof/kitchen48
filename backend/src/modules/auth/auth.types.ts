@@ -53,6 +53,7 @@ export interface AuthUser {
   userType: UserType;
   videoLanguage: string;
   interfaceLanguage: string;
+  measurementSystem: string;
 }
 
 export interface JwtPayload {
