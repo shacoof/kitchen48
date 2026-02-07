@@ -129,6 +129,11 @@ recipesApi.generateSlug(title)
 - **Root Cause**: CreateRecipePage was not wired to useListValues hook or searchIngredients API
 - **Fix**: Unit field now uses `<select>` populated from "Measurement Units" LOV. Ingredient name has debounced autocomplete from master_ingredients table with dropdown UI. masterIngredientId is tracked and submitted.
 
+### 2026-02-07: Play mode help button and "help" voice command
+- **Feature**: Added help button (?) in voice control bar that opens an overlay listing all available voice commands with icons and descriptions
+- **Voice command**: Saying "help" (or "עזרה" in Hebrew) opens the help overlay AND reads all commands aloud via TTS
+- **i18n**: All 11 command descriptions translated (EN + HE) with keyword and description keys
+
 ### 2026-02-07: Play mode voice commands, stale ingredients, exit button
 - **Bug A**: Voice commands "read instructions" / "read ingredients" not recognized
 - **Fix A**: Added keywords to `VOICE_COMMANDS` map; updated hint buttons to show new commands

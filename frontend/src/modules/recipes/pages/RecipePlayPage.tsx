@@ -56,6 +56,7 @@ const VOICE_COMMANDS: Record<string, string[]> = {
   timerStatus: ['timer status', 'סטטוס טיימר'],
   restart: ['restart', 'התחל מחדש'],
   exit: ['exit', 'יציאה'],
+  help: ['help', 'עזרה'],
 };
 
 function matchVoiceCommand(transcript: string): string | null {
@@ -100,6 +101,9 @@ export function RecipePlayPage() {
 
   // Volume level
   const [volume, setVolume] = useState(1.0);
+
+  // Help overlay
+  const [showHelp, setShowHelp] = useState(false);
 
   // Wake lock
   const wakeLockRef = useRef<WakeLockSentinel | null>(null);
@@ -363,6 +367,24 @@ export function RecipePlayPage() {
         case 'exit':
           navigate(`/${nickname}/${recipeSlug}`);
           break;
+        case 'help': {
+          setShowHelp(true);
+          const helpText = [
+            `${t('play.help_cmd_read_instructions')}`,
+            `${t('play.help_cmd_read_ingredients')}`,
+            `${t('play.help_cmd_stop')}`,
+            `${t('play.help_cmd_next')}`,
+            `${t('play.help_cmd_previous')}`,
+            `${t('play.help_cmd_louder')}`,
+            `${t('play.help_cmd_quieter')}`,
+            `${t('play.help_cmd_timer')}`,
+            `${t('play.help_cmd_restart')}`,
+            `${t('play.help_cmd_exit')}`,
+            `${t('play.help_cmd_help')}`,
+          ].join('. ');
+          speak(helpText);
+          break;
+        }
       }
     };
   }, [activeStepIdx, activeStep, timers, volume, goToStep, speak, stopSpeaking, startTimer, t, navigate, nickname, recipeSlug]);
@@ -773,12 +795,13 @@ export function RecipePlayPage() {
                 </button>
               </div>
 
-              {/* Manual override toggle (xl) */}
+              {/* Help button */}
               <button
-                onClick={toggleVoice}
-                className="hidden xl:block text-[10px] text-white/40 font-bold uppercase tracking-widest px-3 py-1 border border-white/10 rounded-full hover:border-white/30 transition-colors flex-shrink-0"
+                onClick={() => setShowHelp((v) => !v)}
+                className="p-2 rounded-full border border-white/10 hover:border-white/30 hover:bg-white/5 transition-colors flex-shrink-0"
+                title={t('play.help_title')}
               >
-                {voiceEnabled ? t('play.manual_override') : t('play.enable_voice')}
+                <span className="material-symbols-outlined text-white/60 text-xl">help</span>
               </button>
             </div>
 
@@ -911,6 +934,56 @@ export function RecipePlayPage() {
             </div>
           </div>
         </div>
+
+        {/* ── Help Overlay ── */}
+        {showHelp && (
+          <div
+            className="absolute inset-0 z-50 bg-black/90 backdrop-blur-sm flex items-center justify-center p-6"
+            onClick={() => setShowHelp(false)}
+          >
+            <div
+              className="bg-[#1a2e20] border border-white/10 rounded-2xl p-6 sm:p-8 max-w-md w-full max-h-[80vh] overflow-y-auto"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-xl font-bold text-white flex items-center gap-2">
+                  <span className="material-symbols-outlined text-[#13ec5b]">help</span>
+                  {t('play.help_title')}
+                </h2>
+                <button
+                  onClick={() => setShowHelp(false)}
+                  className="p-1 rounded-full hover:bg-white/10 transition-colors"
+                >
+                  <span className="material-symbols-outlined text-white/60">close</span>
+                </button>
+              </div>
+              <ul className="space-y-3">
+                {[
+                  { icon: 'record_voice_over', cmd: t('play.help_kw_read_instructions'), desc: t('play.help_cmd_read_instructions') },
+                  { icon: 'shopping_basket', cmd: t('play.help_kw_read_ingredients'), desc: t('play.help_cmd_read_ingredients') },
+                  { icon: 'stop_circle', cmd: t('play.help_kw_stop'), desc: t('play.help_cmd_stop') },
+                  { icon: 'skip_next', cmd: t('play.help_kw_next'), desc: t('play.help_cmd_next') },
+                  { icon: 'skip_previous', cmd: t('play.help_kw_previous'), desc: t('play.help_cmd_previous') },
+                  { icon: 'volume_up', cmd: t('play.help_kw_louder'), desc: t('play.help_cmd_louder') },
+                  { icon: 'volume_down', cmd: t('play.help_kw_quieter'), desc: t('play.help_cmd_quieter') },
+                  { icon: 'timer', cmd: t('play.help_kw_timer'), desc: t('play.help_cmd_timer') },
+                  { icon: 'replay', cmd: t('play.help_kw_restart'), desc: t('play.help_cmd_restart') },
+                  { icon: 'logout', cmd: t('play.help_kw_exit'), desc: t('play.help_cmd_exit') },
+                  { icon: 'help', cmd: t('play.help_kw_help'), desc: t('play.help_cmd_help') },
+                ].map((item) => (
+                  <li key={item.cmd} className="flex items-start gap-3">
+                    <span className="material-symbols-outlined text-[#13ec5b] text-lg flex-shrink-0 mt-0.5">{item.icon}</span>
+                    <div>
+                      <span className="font-bold text-white text-sm">{item.cmd}</span>
+                      <p className="text-white/50 text-xs">{item.desc}</p>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+              <p className="mt-6 text-xs text-white/30 text-center">{t('play.help_hint')}</p>
+            </div>
+          </div>
+        )}
 
         {/* ── Bottom Navigation Bar (Sticky) ── */}
         <div className="p-3 sm:p-4 md:p-6 border-t border-white/10 bg-[#0c1a11]/80 backdrop-blur-md flex-shrink-0">
