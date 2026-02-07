@@ -404,7 +404,16 @@ export function RecipePlayPage() {
 
   // ──────────────────────────────────────────────────────────────────────
   // Voice Control (Web Speech API)
+  // iOS/iPadOS: All browsers use WebKit which has unreliable continuous
+  // mode. We use single-shot mode + delayed restart on iOS.
   // ──────────────────────────────────────────────────────────────────────
+
+  const isIOSRef = useRef(
+    /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+    (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)
+  );
+  const voiceRestartTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const voiceRetryCountRef = useRef(0);
 
   const startVoiceRecognition = useCallback(() => {
     const SpeechRecognitionCtor =
@@ -417,13 +426,15 @@ export function RecipePlayPage() {
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const recognition = new (SpeechRecognitionCtor as any)();
-    recognition.continuous = true;
+    // iOS WebKit: continuous mode is unreliable — use single-shot + restart
+    recognition.continuous = !isIOSRef.current;
     recognition.interimResults = false;
     recognition.lang = document.documentElement.lang === 'he' ? 'he-IL' : 'en-US';
 
     recognition.onresult = (event: { results: { length: number; [i: number]: { isFinal: boolean; 0: { transcript: string } } } }) => {
       const last = event.results[event.results.length - 1];
       if (last.isFinal) {
+        voiceRetryCountRef.current = 0; // successful result resets retry counter
         const transcript = last[0].transcript;
         logger.debug(`Voice recognized: ${transcript}`);
         const cmd = matchVoiceCommand(transcript);
@@ -436,23 +447,43 @@ export function RecipePlayPage() {
     };
 
     recognition.onerror = (event: { error: string }) => {
+      if (event.error === 'not-allowed' || event.error === 'service-not-allowed') {
+        logger.warning('Microphone permission denied');
+        recognitionRef.current = null;
+        setVoiceEnabled(false);
+        return;
+      }
       if (event.error !== 'no-speech' && event.error !== 'aborted') {
         logger.warning(`Speech recognition error: ${event.error}`);
       }
     };
 
     recognition.onend = () => {
-      // Auto-restart if still enabled
+      // Auto-restart if still enabled (delayed for iOS compatibility)
       if (recognitionRef.current === recognition) {
-        try {
-          recognition.start();
-        } catch {
-          /* already running or stopped intentionally */
+        if (voiceRetryCountRef.current >= 5) {
+          // Too many silent restarts — stop to avoid battery drain
+          logger.warning('Voice recognition: too many retries, pausing');
+          recognitionRef.current = null;
+          setVoiceEnabled(false);
+          return;
         }
+        voiceRetryCountRef.current += 1;
+        const delay = isIOSRef.current ? 300 : 50;
+        voiceRestartTimerRef.current = setTimeout(() => {
+          if (recognitionRef.current === recognition) {
+            try {
+              recognition.start();
+            } catch {
+              /* already running or stopped intentionally */
+            }
+          }
+        }, delay);
       }
     };
 
     recognitionRef.current = recognition;
+    voiceRetryCountRef.current = 0;
     try {
       recognition.start();
       setVoiceEnabled(true);
@@ -462,6 +493,10 @@ export function RecipePlayPage() {
   }, []);
 
   const stopVoiceRecognition = useCallback(() => {
+    if (voiceRestartTimerRef.current) {
+      clearTimeout(voiceRestartTimerRef.current);
+      voiceRestartTimerRef.current = null;
+    }
     if (recognitionRef.current) {
       const ref = recognitionRef.current;
       recognitionRef.current = null; // prevent restart in onend
@@ -482,6 +517,9 @@ export function RecipePlayPage() {
   // Cleanup on unmount
   useEffect(() => {
     return () => {
+      if (voiceRestartTimerRef.current) {
+        clearTimeout(voiceRestartTimerRef.current);
+      }
       if (recognitionRef.current) {
         const ref = recognitionRef.current;
         recognitionRef.current = null;

@@ -9,21 +9,37 @@ export default function Header() {
   const { t } = useTranslation('landing')
   const { t: tc } = useTranslation('common')
   const [menuOpen, setMenuOpen] = useState(false)
+  const [mobileNavOpen, setMobileNavOpen] = useState(false)
 
-  // Close menu when clicking outside
+  // Close menus when clicking outside
   useEffect(() => {
-    if (!menuOpen) return
-    const handleClickOutside = () => setMenuOpen(false)
+    if (!menuOpen && !mobileNavOpen) return
+    const handleClickOutside = () => {
+      setMenuOpen(false)
+      setMobileNavOpen(false)
+    }
     document.addEventListener('click', handleClickOutside)
     return () => document.removeEventListener('click', handleClickOutside)
-  }, [menuOpen])
+  }, [menuOpen, mobileNavOpen])
 
   const displayName = user?.firstName || user?.email?.split('@')[0] || 'User'
 
   return (
     <header className="sticky top-0 z-50 bg-primary border-b border-slate-700/50 shadow-xl">
-      <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
-        <div className="flex items-center h-full py-1">
+      <div className="max-w-7xl mx-auto px-4 md:px-6 h-16 md:h-20 flex items-center justify-between">
+        <div className="flex items-center gap-2 h-full py-1">
+          {/* Hamburger menu button (mobile only) */}
+          <button
+            onClick={(e) => {
+              e.stopPropagation()
+              setMobileNavOpen(!mobileNavOpen)
+            }}
+            className="md:hidden p-2 -ml-2 text-white/80 hover:text-white transition-colors"
+          >
+            <span className="material-symbols-outlined text-[24px]">
+              {mobileNavOpen ? 'close' : 'menu'}
+            </span>
+          </button>
           <img
             alt="Kitchen48 Logo"
             className="h-full w-auto object-contain"
@@ -121,6 +137,44 @@ export default function Header() {
           )}
         </div>
       </div>
+
+      {/* Mobile navigation dropdown */}
+      {mobileNavOpen && (
+        <nav className="md:hidden bg-primary border-t border-slate-700/50 px-4 py-3 space-y-1">
+          <a
+            href="#"
+            onClick={() => setMobileNavOpen(false)}
+            className="block px-3 py-3 text-white/90 hover:bg-slate-700/50 rounded-lg transition-colors font-medium flex items-center gap-3"
+          >
+            <span className="material-symbols-outlined text-[20px] text-white/60">explore</span>
+            {tc('navigation.explore')}
+          </a>
+          <Link
+            to={isAuthenticated ? '/recipes' : '#'}
+            onClick={() => setMobileNavOpen(false)}
+            className="block px-3 py-3 text-white/90 hover:bg-slate-700/50 rounded-lg transition-colors font-medium flex items-center gap-3"
+          >
+            <span className="material-symbols-outlined text-[20px] text-white/60">menu_book</span>
+            {tc('navigation.recipes')}
+          </Link>
+          <a
+            href="#"
+            onClick={() => setMobileNavOpen(false)}
+            className="block px-3 py-3 text-white/90 hover:bg-slate-700/50 rounded-lg transition-colors font-medium flex items-center gap-3"
+          >
+            <span className="material-symbols-outlined text-[20px] text-white/60">person</span>
+            {tc('navigation.chefs')}
+          </a>
+          <a
+            href="#"
+            onClick={() => setMobileNavOpen(false)}
+            className="block px-3 py-3 text-white/90 hover:bg-slate-700/50 rounded-lg transition-colors font-medium flex items-center gap-3"
+          >
+            <span className="material-symbols-outlined text-[20px] text-white/60">groups</span>
+            {tc('navigation.community')}
+          </a>
+        </nav>
+      )}
     </header>
   )
 }
