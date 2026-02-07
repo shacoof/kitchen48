@@ -626,6 +626,13 @@ Deploy the entire application with a single command:
   ```
 ## During Work
 
+- [ ] **Install new dependencies immediately**
+  - When adding a new `import` from a package not yet in `package.json`, run `npm install <package>` right away
+  - When adding packages to `package.json` (manually or via install), always verify:
+    1. `npm install` completes successfully
+    2. `package-lock.json` is updated and committed
+    3. The app starts without import resolution errors (`npm run dev`)
+  - **NEVER** commit code that imports packages without installing them first
 - [ ] **Commit after each logical unit**
   - Don't batch unrelated changes
   - Write descriptive commit messages
@@ -638,6 +645,7 @@ Deploy the entire application with a single command:
 - ❌ Lost context from missing implementation plans
 - ❌ Merge conflicts from batched changes
 - ❌ Guideline violations from skipping reviews
+- ❌ Broken builds from missing dependencies
 
 **NO SHORTCUTS. NO EXCEPTIONS. EVERY TIME.**
 
@@ -881,7 +889,7 @@ COMMIT;
 
 Kitchen48 uses [Tabulator](https://tabulator.info/) for data grids.
 
-**Full documentation: [`doc/tabulator.md`](doc/tabulator.md)**
+**Full documentation: [`docs/tabulator.md`](docs/tabulator.md)**
 
 ### Critical Rules (Quick Reference)
 
