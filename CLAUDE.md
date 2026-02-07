@@ -637,6 +637,15 @@ Deploy the entire application with a single command:
   - Don't batch unrelated changes
   - Write descriptive commit messages
 
+## Post-Implementation Verification (BEFORE final commit)
+
+- [ ] **Run `npm run build` and verify it passes**
+  - This runs TypeScript compilation + Vite build (frontend) + tsc (backend)
+  - Catches: missing packages, type errors, import failures, syntax errors
+  - If build fails, fix ALL errors before committing
+  - For frontend-only changes: `npm run build:frontend` is sufficient
+  - For backend-only changes: `npm run build:backend` is sufficient
+
 ---
 
 **THIS CHECKLIST IS MANDATORY. Following it prevents:**
@@ -646,6 +655,7 @@ Deploy the entire application with a single command:
 - ❌ Merge conflicts from batched changes
 - ❌ Guideline violations from skipping reviews
 - ❌ Broken builds from missing dependencies
+- ❌ Shipping code that fails to compile
 
 **NO SHORTCUTS. NO EXCEPTIONS. EVERY TIME.**
 
