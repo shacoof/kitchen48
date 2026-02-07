@@ -38,5 +38,43 @@
     "deleted": "Recipe deleted",
     "duplicated": "Recipe duplicated",
     "loading": "Loading recipes..."
+  },
+  "summary": {
+    "by": "by",
+    "prep_time": "Prep Time",
+    "total_time": "Total Time",
+    "servings": "Servings",
+    "difficulty": "Difficulty",
+    "ingredients": "Ingredients",
+    "cooking_steps": "Cooking Steps",
+    "step_number": "Step {{number}}",
+    "prep_label": "Prep",
+    "wait_label": "Wait",
+    "no_steps": "No steps added yet.",
+    "no_ingredients": "No ingredients added yet.",
+    "used_in_steps": "Used in steps: {{steps}}",
+    "start_cooking": "Start Cooking",
+    "print_recipe": "Print Recipe",
+    "save_for_later": "Save for Later",
+    "saved": "Saved",
+    "share": "Share",
+    "edit_recipe": "Edit Recipe",
+    "draft_banner": "This recipe is not published yet",
+    "publish_button": "Publish",
+    "published_badge": "Published",
+    "link_copied": "Link copied to clipboard!",
+    "loading": "Loading recipe...",
+    "not_found": "Recipe Not Found",
+    "not_found_message": "We couldn't find this recipe",
+    "error": "Error",
+    "error_message": "Something went wrong loading this recipe",
+    "go_home": "Go Home",
+    "watch_intro_video": "Watch Intro Video",
+    "time_units": {
+      "sec": "sec",
+      "min": "min",
+      "hr": "hr",
+      "days": "days"
+    }
   }
 }

@@ -38,5 +38,43 @@
     "deleted": "המתכון נמחק",
     "duplicated": "המתכון שוכפל",
     "loading": "טוען מתכונים..."
+  },
+  "summary": {
+    "by": "מאת",
+    "prep_time": "זמן הכנה",
+    "total_time": "זמן כולל",
+    "servings": "מנות",
+    "difficulty": "רמת קושי",
+    "ingredients": "מרכיבים",
+    "cooking_steps": "שלבי הכנה",
+    "step_number": "שלב {{number}}",
+    "prep_label": "הכנה",
+    "wait_label": "המתנה",
+    "no_steps": "עדיין לא נוספו שלבים.",
+    "no_ingredients": "עדיין לא נוספו מרכיבים.",
+    "used_in_steps": "בשימוש בשלבים: {{steps}}",
+    "start_cooking": "בואו נבשל",
+    "print_recipe": "הדפסת מתכון",
+    "save_for_later": "שמירה למועד מאוחר",
+    "saved": "נשמר",
+    "share": "שיתוף",
+    "edit_recipe": "עריכת מתכון",
+    "draft_banner": "מתכון זה טרם פורסם",
+    "publish_button": "פרסום",
+    "published_badge": "פורסם",
+    "link_copied": "הקישור הועתק!",
+    "loading": "טוען מתכון...",
+    "not_found": "המתכון לא נמצא",
+    "not_found_message": "לא הצלחנו למצוא את המתכון הזה",
+    "error": "שגיאה",
+    "error_message": "משהו השתבש בטעינת המתכון",
+    "go_home": "חזרה לדף הבית",
+    "watch_intro_video": "צפייה בסרטון הקדמה",
+    "time_units": {
+      "sec": "שנ'",
+      "min": "דק'",
+      "hr": "שע'",
+      "days": "ימים"
+    }
   }
 }
