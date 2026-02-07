@@ -35,9 +35,9 @@ export default function Header() {
           <a className="text-white/90 hover:text-white transition-colors font-medium" href="#">
             {tc('navigation.explore')}
           </a>
-          <a className="text-white/90 hover:text-white transition-colors font-medium" href="#">
+          <Link to={isAuthenticated ? '/recipes' : '#'} className="text-white/90 hover:text-white transition-colors font-medium">
             {tc('navigation.recipes')}
-          </a>
+          </Link>
           <a className="text-white/90 hover:text-white transition-colors font-medium" href="#">
             {tc('navigation.chefs')}
           </a>
@@ -82,6 +82,14 @@ export default function Header() {
                     <p className="text-white text-sm font-medium">{user?.firstName} {user?.lastName}</p>
                     <p className="text-slate-400 text-xs truncate">{user?.email}</p>
                   </div>
+                  <Link
+                    to="/recipes"
+                    onClick={() => setMenuOpen(false)}
+                    className="w-full text-left px-4 py-3 text-white hover:bg-slate-700 transition-colors flex items-center gap-2"
+                  >
+                    <span className="material-symbols-outlined text-[18px]">menu_book</span>
+                    {tc('navigation.recipes')}
+                  </Link>
                   <Link
                     to="/profile/edit"
                     onClick={() => setMenuOpen(false)}

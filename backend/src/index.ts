@@ -68,6 +68,9 @@ async function loadApplication() {
   const { listValuesPublicRouter } = await import('./modules/list-types/listType.routes.js');
   console.log('[STARTUP] list-types routes imported');
 
+  const recipeRoutes = (await import('./modules/recipes/recipe.routes.js')).default;
+  console.log('[STARTUP] recipe routes imported');
+
   const path = (await import('path')).default;
   console.log('[STARTUP] path module imported');
 
@@ -101,6 +104,7 @@ async function loadApplication() {
   app.use('/api/admin/statistics', statisticsRoutes);
   app.use('/api/list-types', listTypeRoutes);
   app.use('/api/list-values', listValuesPublicRouter);
+  app.use('/api/recipes', recipeRoutes);
   console.log('[STARTUP] Routes configured');
 
   // Mark server as ready
