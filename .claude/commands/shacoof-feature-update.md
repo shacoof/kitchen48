@@ -247,6 +247,7 @@ Select one:
 | Caching (no-store for editable) | ☐ Yes ☐ No | ☐ Compliant ☐ N/A | |
 | Custom Editors | ☐ Yes ☐ No | ☐ Compliant ☐ N/A | |
 | Race Conditions | ☐ Yes ☐ No | ☐ Compliant ☐ N/A | |
+| Statistics Tracking | ☐ Yes ☐ No | ☐ Compliant ☐ N/A | |
 
 **Additional Checks**:
 - [ ] Update does NOT introduce hardcoded text (breaks i18n)
@@ -256,6 +257,11 @@ Select one:
 - [ ] Update does NOT add custom CSS values (must use theme tokens)
 - [ ] Update does NOT create destructive database operations
 - [ ] Module CLAUDE.md will be updated with implementation details
+
+**Build & Dependencies**:
+- [ ] All new packages installed (`npm install`) and `package-lock.json` committed
+- [ ] `npm run build` passes with no errors
+- [ ] New LOV types/reference data use data migrations (`backend/prisma/data-migrations/`), NOT manual SQL or seed.ts
 
 ### Testing Strategy
 
