@@ -59,23 +59,30 @@ frontend/src/components/LandingPage/
 - Uses `useAuth()` from AuthContext
 
 ### RecipeCard
-- Displays recipe thumbnail, title, author
-- Reusable across sections
-- Props: `image`, `title`, `author`, `time`
+- Displays recipe thumbnail, title, description, time, dietary tag
+- Links to recipe page via `/:nickname/:slug`
+- Props: `imageUrl`, `title`, `description`, `prepTime`, `cookTime`, `tag`, `authorNickname`, `slug`
+- Fallback placeholder when no image
 
 ### YourRecipes
-- Horizontal scrolling carousel
-- Multiple RecipeCards
-- Placeholder data (needs backend integration)
+- Horizontal scrolling carousel of published recipes
+- Fetches from `GET /api/recipes?isPublished=true&limit=5`
+- Loading skeleton while fetching
+- Hidden when no published recipes exist
+- "View All" links to `/explore`
 
 ### MeetOurMasters / ChefCard
-- Grid of chef profile cards
-- Shows avatar, name, specialty
-- Placeholder data (needs backend integration)
+- Grid of featured author cards (users with published recipes)
+- Fetches from `GET /api/users/featured?limit=4`
+- ChefCard links to user profile (`/:nickname`)
+- Shows description or recipe count as subtitle
+- Fallback avatar when no profile picture
 
 ### WhatsHot / TrendingCard
-- Large featured recipe cards
-- Trending/popular recipes section
+- Large featured recipe cards (currently shows most recent published)
+- Fetches from `GET /api/recipes?isPublished=true&limit=2`
+- Shows dietary tags as badges, step count
+- Links to recipe pages
 
 ### Newsletter
 - Email input + subscribe button
@@ -111,8 +118,8 @@ Uses Tailwind CSS with custom theme:
 
 ## Image Handling
 
-Currently uses external URLs from Google's image hosting as placeholders.
-**TODO:** Replace with local assets or CDN for production.
+Recipe and chef images come from the database (`imageUrl`, `profilePicture` fields).
+Components include fallback placeholders (material icons) when no image is set.
 
 ---
 
@@ -126,15 +133,26 @@ Currently uses external URLs from Google's image hosting as placeholders.
 
 ## Known Issues & TODOs
 
-- [ ] Replace placeholder images with real assets
 - [ ] Connect Newsletter to backend API
-- [ ] Fetch real recipes from API
-- [ ] Fetch real chefs from API
 - [ ] Add recipe search functionality
 - [ ] Add category filtering
+- [ ] Add true "trending" logic (view-based ranking via statistics)
+- [ ] Add likes/comments system for social engagement metrics
+- [x] ~~Replace placeholder images with real assets~~ (Dynamic data, 2026-02-08)
+- [x] ~~Fetch real recipes from API~~ (2026-02-08)
+- [x] ~~Fetch real chefs from API~~ (2026-02-08)
 - [x] ~~Improve mobile responsiveness~~ (Header mobile nav added 2026-02-07)
 
 ## Fixes Applied
+
+### 2026-02-08: Dynamic landing page sections (replaced hardcoded data)
+- **Issue**: YourRecipes, WhatsHot, and MeetOurMasters all used hardcoded placeholder arrays
+- **Fix**: All three sections now fetch real data from the API:
+  - YourRecipes: `recipesApi.getRecipes({ isPublished: true, limit: 5 })`
+  - WhatsHot: `recipesApi.getRecipes({ isPublished: true, limit: 2 })`
+  - MeetOurMasters: `usersApi.getFeaturedAuthors(4)` (new endpoint)
+- **Backend changes**: Added `GET /api/users/featured` endpoint, enhanced recipe list response with `prepTime`, `cookTime`, `dietaryTags`, author `profilePicture`
+- **UX**: Loading skeletons while fetching, sections hidden when no data, cards link to real pages
 
 ### 2026-02-07: Mobile hamburger menu for Header navigation
 - **Bug**: Main nav (Explore, Recipes, Chefs, Community) hidden on mobile (<768px) with no alternative
