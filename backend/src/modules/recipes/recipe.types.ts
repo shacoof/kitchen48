@@ -163,6 +163,8 @@ export interface RecipeListItem {
   slug: string;
   description: string | null;
   imageUrl: string | null;
+  prepTime: number | null;
+  cookTime: number | null;
   isPublished: boolean;
   createdAt: Date;
   author: {
@@ -170,7 +172,9 @@ export interface RecipeListItem {
     nickname: string | null;
     firstName: string | null;
     lastName: string | null;
+    profilePicture: string | null;
   };
+  dietaryTags: Array<{ tag: string }>;
   _count: {
     steps: number;
   };
