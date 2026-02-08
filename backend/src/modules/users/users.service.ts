@@ -8,6 +8,7 @@ import { createLogger } from '../../lib/logger.js';
 import type {
   PublicUserProfile,
   FullUserProfile,
+  FeaturedAuthor,
   AdminUserListItem,
   UpdateProfileInput,
   AdminUpdateUserInput,
@@ -178,6 +179,42 @@ class UsersService {
       logger.error(`Failed to update profile picture for user ${userId}: ${error}`);
       return false;
     }
+  }
+
+  // ============================================================================
+  // Public Discovery Methods
+  // ============================================================================
+
+  /**
+   * Get featured authors — users who have at least one published recipe
+   */
+  async getFeaturedAuthors(limit: number = 6): Promise<FeaturedAuthor[]> {
+    const users = await prisma.user.findMany({
+      where: {
+        recipes: {
+          some: { isPublished: true },
+        },
+      },
+      select: {
+        id: true,
+        firstName: true,
+        lastName: true,
+        nickname: true,
+        profilePicture: true,
+        description: true,
+        _count: {
+          select: {
+            recipes: { where: { isPublished: true } },
+          },
+        },
+      },
+      orderBy: {
+        recipes: { _count: 'desc' },
+      },
+      take: limit,
+    });
+
+    return users;
   }
 
   // ============================================================================

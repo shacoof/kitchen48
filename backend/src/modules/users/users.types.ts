@@ -96,6 +96,21 @@ export interface FullUserProfile extends PublicUserProfile {
 }
 
 /**
+ * Featured author (user with published recipes, for landing page)
+ */
+export interface FeaturedAuthor {
+  id: string;
+  firstName: string | null;
+  lastName: string | null;
+  nickname: string | null;
+  profilePicture: string | null;
+  description: string | null;
+  _count: {
+    recipes: number;
+  };
+}
+
+/**
  * Admin user list item
  */
 export interface AdminUserListItem {

@@ -34,9 +34,15 @@ router.put('/me/profile', requireAuth, usersController.updateOwnProfile.bind(use
 // ============================================================================
 
 /**
+ * GET /api/users/featured
+ * Get featured authors (users with published recipes) for landing page
+ */
+router.get('/featured', usersController.getFeaturedAuthors.bind(usersController));
+
+/**
  * GET /api/users/:nickname
  * Get public profile by nickname
- * Note: This comes after /me routes to avoid matching "me" as a nickname
+ * Note: This comes after /me and /featured routes to avoid matching them as nicknames
  */
 router.get('/:nickname', usersController.getPublicProfile.bind(usersController));
 
