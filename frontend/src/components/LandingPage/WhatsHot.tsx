@@ -1,25 +1,49 @@
+import { useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import TrendingCard from './TrendingCard'
+import { recipesApi } from '../../modules/recipes/services/recipes.api'
+import type { RecipeListItem } from '../../modules/recipes/services/recipes.api'
+import { createLogger } from '../../lib/logger'
 
-const trendingRecipes = [
-  {
-    image: "https://lh3.googleusercontent.com/aida-public/AB6AXuCHbs0ltbP54P_slcLAbGGDiQtODG7oxl5OBmf_f-dBmaeCyThsoEIYLm4mfBjnHJvoE8UIWw8aQaGdTRayAxr9bzRvjnquHshjtMgY4PnE8-WdbiUeXZQbvO5f3e7hKkK7GI3yNhT34UyKhq_mT3fJ0aI0PU84PD9YhsCaBUucYG_v79sZEzkZsEaQG1Jkxfj29OU4MHwi7RrT-0KHC2WvplZcuakIdZXQ_djcEq1F33u71G4XtRNFEJ2-OQHpbz-kVlbg1EdB_5M",
-    title: "Authentic Neapolitan Pizza",
-    tags: ["TRENDING", "SPICY"],
-    likes: "12.4k",
-    comments: "342",
-  },
-  {
-    image: "https://lh3.googleusercontent.com/aida-public/AB6AXuAVuplc26jwPMezFlPNt2i2EexAALD6Bg1xqVdOErYlh8djlDi9Bygk49R-yN_o2x3qxlj_oOUTL5Z9O940dVkNmKExW_PNIK2yd4A16sdkMp3xmlVI-SFw3Gby5hDBO6ZOynHKUfRSqmXf6N4XbsV8x_2iBlsrCACAKbxDFdBEaPDMJTclTduC-DA9eEF2Z7IxHdlbUERd49yfbz4dD94kykCA47OdJBmGASG4Czna_gQnlKQ0GyrEqHEpj_1R3M9V5pU9Jam19BY",
-    title: "Tomahawk Steak with Chimichurri",
-    tags: ["TRENDING", "PREMIUM"],
-    likes: "8.9k",
-    comments: "128",
-  },
-]
+const logger = createLogger('WhatsHot')
 
 export default function WhatsHot() {
   const { t } = useTranslation('landing')
+  const [recipes, setRecipes] = useState<RecipeListItem[]>([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    const fetchTrending = async () => {
+      const result = await recipesApi.getRecipes({ isPublished: true, limit: 2 })
+      if (result.success && result.recipes) {
+        setRecipes(result.recipes)
+      } else {
+        logger.error('Failed to fetch trending recipes')
+      }
+      setLoading(false)
+    }
+    fetchTrending()
+  }, [])
+
+  if (loading) {
+    return (
+      <section>
+        <div className="flex items-center gap-4 mb-8">
+          <span className="material-symbols-outlined text-accent-orange">trending_up</span>
+          <h2 className="font-display text-3xl font-bold text-white">{t('whats_hot.title')}</h2>
+        </div>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          {[...Array(2)].map((_, i) => (
+            <div key={i} className="h-[400px] rounded-3xl bg-slate-700 animate-pulse" />
+          ))}
+        </div>
+      </section>
+    )
+  }
+
+  if (recipes.length === 0) {
+    return null
+  }
 
   return (
     <section>
@@ -28,9 +52,23 @@ export default function WhatsHot() {
         <h2 className="font-display text-3xl font-bold text-white">{t('whats_hot.title')}</h2>
       </div>
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        {trendingRecipes.map((recipe, index) => (
-          <TrendingCard key={index} {...recipe} />
-        ))}
+        {recipes.map((recipe) => {
+          const tags: string[] = ['TRENDING']
+          if (recipe.dietaryTags && recipe.dietaryTags.length > 0) {
+            tags.push(recipe.dietaryTags[0].tag.toUpperCase())
+          }
+          return (
+            <TrendingCard
+              key={recipe.id}
+              imageUrl={recipe.imageUrl}
+              title={recipe.title}
+              tags={tags}
+              stepCount={recipe._count.steps}
+              authorNickname={recipe.author.nickname}
+              slug={recipe.slug}
+            />
+          )
+        })}
       </div>
     </section>
   )
