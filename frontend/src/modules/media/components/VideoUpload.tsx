@@ -26,7 +26,7 @@ interface VideoUploadProps {
 }
 
 const ACCEPTED_TYPES = ['video/mp4', 'video/webm', 'video/quicktime', 'video/x-msvideo'];
-const MAX_SIZE_MB = 500;
+const MAX_SIZE_MB = 200;
 const MAX_SIZE_BYTES = MAX_SIZE_MB * 1024 * 1024;
 
 function formatDuration(seconds: number): string {

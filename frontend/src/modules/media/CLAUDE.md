@@ -63,10 +63,20 @@ import { VideoPlayer } from '../../media/components/VideoPlayer';
 
 ## Dependencies
 
-- `hls.js` — HLS video playback for non-Safari browsers
-- `tus-js-client` — Resumable video uploads (TUS protocol)
+- `hls.js` — HLS video playback for non-Safari browsers (dynamically imported for code splitting)
 
-Both are dynamically imported for code splitting.
+### Upload Strategy
+
+Videos use simple FormData POST uploads (same as images) to Cloudflare's direct upload URL.
+TUS resumable uploads were evaluated but dropped — recipe videos are short (1-3 min, <200MB)
+and simple uploads are more reliable with less complexity.
+
+### Fixes Applied
+
+#### 2026-02-14: Video upload TUS 400 error — switched to simple upload
+- **Bug**: Video upload failed with "Decoding Error" when tus-js-client POSTed to Cloudflare's direct upload URL
+- **Root Cause**: Cloudflare's `/stream/direct_upload` returns a URL for simple form uploads, not TUS creation. tus-js-client sent a TUS creation POST which Cloudflare couldn't decode.
+- **Fix**: Replaced TUS upload with simple XHR FormData POST (same pattern as image uploads). Removed `tus-js-client` dependency. Max video size set to 200MB.
 
 ---
 

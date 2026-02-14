@@ -150,31 +150,9 @@ export function useMediaUpload(): UseMediaUploadReturn {
         originalName: file.name,
       });
 
-      // 2. Upload to Cloudflare via TUS
+      // 2. Upload to Cloudflare via simple form upload
       setStatus('uploading');
-
-      // Dynamic import tus-js-client for code splitting
-      const { Upload } = await import('tus-js-client');
-
-      await new Promise<void>((resolve, reject) => {
-        const upload = new Upload(file, {
-          endpoint: uploadURL,
-          chunkSize: 5 * 1024 * 1024, // 5MB chunks
-          retryDelays: [0, 1000, 3000, 5000],
-          metadata: {
-            filename: file.name,
-            filetype: file.type,
-          },
-          onProgress: (bytesUploaded, bytesTotal) => {
-            const pct = Math.round((bytesUploaded / bytesTotal) * 100);
-            setProgress(pct);
-          },
-          onSuccess: () => resolve(),
-          onError: (err) => reject(err),
-        });
-
-        upload.start();
-      });
+      await mediaApi.uploadVideoToCloudflare(uploadURL, file, setProgress);
 
       // 3. Wait for processing
       setStatus('processing');

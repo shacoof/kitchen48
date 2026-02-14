@@ -151,6 +151,46 @@ class MediaApi {
   }
 
   /**
+   * Upload a video file directly to Cloudflare using the signed URL
+   */
+  async uploadVideoToCloudflare(
+    uploadURL: string,
+    file: File,
+    onProgress?: (percent: number) => void
+  ): Promise<void> {
+    logger.debug(`Uploading video to Cloudflare: ${file.name}`);
+
+    const formData = new FormData();
+    formData.append('file', file);
+
+    return new Promise((resolve, reject) => {
+      const xhr = new XMLHttpRequest();
+
+      xhr.upload.addEventListener('progress', (event) => {
+        if (event.lengthComputable && onProgress) {
+          const percent = Math.round((event.loaded / event.total) * 100);
+          onProgress(percent);
+        }
+      });
+
+      xhr.addEventListener('load', () => {
+        if (xhr.status >= 200 && xhr.status < 300) {
+          resolve();
+        } else {
+          reject(new Error(`Video upload failed with status ${xhr.status}: ${xhr.responseText}`));
+        }
+      });
+
+      xhr.addEventListener('error', () => {
+        reject(new Error('Video upload failed: network error'));
+      });
+
+      xhr.open('POST', uploadURL);
+      xhr.send(formData);
+    });
+  }
+
+  /**
    * Confirm an image upload (triggers CDN URL generation)
    */
   async confirmImageUpload(assetId: string): Promise<MediaAsset> {
