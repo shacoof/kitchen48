@@ -71,6 +71,9 @@ async function loadApplication() {
   const recipeRoutes = (await import('./modules/recipes/recipe.routes.js')).default;
   console.log('[STARTUP] recipe routes imported');
 
+  const { mediaRouter } = await import('./modules/media/media.routes.js');
+  console.log('[STARTUP] media routes imported');
+
   const path = (await import('path')).default;
   console.log('[STARTUP] path module imported');
 
@@ -105,6 +108,7 @@ async function loadApplication() {
   app.use('/api/list-types', listTypeRoutes);
   app.use('/api/list-values', listValuesPublicRouter);
   app.use('/api/recipes', recipeRoutes);
+  app.use('/api/media', mediaRouter);
   console.log('[STARTUP] Routes configured');
 
   // Mark server as ready
