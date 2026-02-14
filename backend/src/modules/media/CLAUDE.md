@@ -80,6 +80,15 @@ backend/src/modules/media/
 
 ---
 
+## Known Issues & Fixes
+
+### 2026-02-14: Image/video upload 500 error in production
+- **Bug**: All media uploads failed with "Failed to create image upload" (HTTP 500) in production
+- **Root Cause**: `deploy.sh` did not pass Cloudflare env vars (`CF_ACCOUNT_ID`, `CF_API_TOKEN`, `CF_IMAGES_ACCOUNT_HASH`, `CF_STREAM_WEBHOOK_SECRET`) to Cloud Run. The cloudflare client throws when `CF_API_TOKEN` or `CF_ACCOUNT_ID` are undefined.
+- **Fix**: Updated `deploy.sh` to pass `CF_ACCOUNT_ID` and `CF_IMAGES_ACCOUNT_HASH` as env vars, and `CF_API_TOKEN` and `CF_STREAM_WEBHOOK_SECRET` as Secret Manager secrets. Updated `.env.production.example` with the required variables.
+
+---
+
 ## Implementation Date
 
 2026-02-14

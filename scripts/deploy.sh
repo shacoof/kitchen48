@@ -421,6 +421,15 @@ setup_secrets() {
         create_or_update_secret "kitchen48-google-client-secret" "$GOOGLE_CLIENT_SECRET"
     fi
 
+    # Cloudflare secrets
+    if [[ -n "$CF_API_TOKEN" ]]; then
+        create_or_update_secret "kitchen48-cf-api-token" "$CF_API_TOKEN"
+    fi
+
+    if [[ -n "$CF_STREAM_WEBHOOK_SECRET" ]]; then
+        create_or_update_secret "kitchen48-cf-stream-webhook-secret" "$CF_STREAM_WEBHOOK_SECRET"
+    fi
+
     print_success "Secrets configured"
 }
 
@@ -474,6 +483,14 @@ deploy_app() {
         print_info "Google OAuth callback URL: https://${FRONTEND_DOMAIN}/api/auth/google/callback"
     fi
 
+    # Cloudflare Media (Images + Stream)
+    if [[ -n "$CF_ACCOUNT_ID" ]]; then
+        env_vars+=",CF_ACCOUNT_ID=${CF_ACCOUNT_ID}"
+    fi
+    if [[ -n "$CF_IMAGES_ACCOUNT_HASH" ]]; then
+        env_vars+=",CF_IMAGES_ACCOUNT_HASH=${CF_IMAGES_ACCOUNT_HASH}"
+    fi
+
     # Build secrets string
     local secrets="DATABASE_URL=kitchen48-database-url:latest"
     secrets+=",JWT_SECRET=kitchen48-jwt-secret:latest"
@@ -484,6 +501,14 @@ deploy_app() {
 
     if gcloud secrets describe "kitchen48-google-client-secret" --project="$GCP_PROJECT_ID" &>/dev/null; then
         secrets+=",GOOGLE_CLIENT_SECRET=kitchen48-google-client-secret:latest"
+    fi
+
+    if gcloud secrets describe "kitchen48-cf-api-token" --project="$GCP_PROJECT_ID" &>/dev/null; then
+        secrets+=",CF_API_TOKEN=kitchen48-cf-api-token:latest"
+    fi
+
+    if gcloud secrets describe "kitchen48-cf-stream-webhook-secret" --project="$GCP_PROJECT_ID" &>/dev/null; then
+        secrets+=",CF_STREAM_WEBHOOK_SECRET=kitchen48-cf-stream-webhook-secret:latest"
     fi
 
     print_info "Building and deploying combined app..."
