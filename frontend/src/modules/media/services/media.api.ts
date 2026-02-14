@@ -9,6 +9,17 @@ const API_BASE = '/api';
 const logger = createLogger('MediaApi');
 
 // Types
+
+/** Lightweight media asset reference used in joined queries */
+export interface MediaAssetRef {
+  id: string;
+  type: string;
+  url: string | null;
+  thumbnailUrl: string | null;
+  status: string;
+  durationSeconds: number | null;
+}
+
 export interface MediaAsset {
   id: string;
   type: 'image' | 'video';

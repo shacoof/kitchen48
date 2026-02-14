@@ -57,10 +57,16 @@ model User {
   firstName      String? @map("first_name")
   lastName       String? @map("last_name")
   nickname       String? @unique @map("nickname") // Unique URL-friendly identifier (e.g., jsmith)
-  profilePicture String? @map("profile_picture") // URL or path to profile image
+  profilePicture String? @map("profile_picture") // URL or path to profile image (legacy)
   phone          String?
   phoneCountry   String? @map("phone_country") // ISO country code (e.g., "US", "IL")
   description    String?
+
+  // Media assets (Cloudflare)
+  profilePhotoId String?     @map("profile_photo_id")
+  profilePhoto   MediaAsset? @relation("UserProfilePhoto", fields: [profilePhotoId], references: [id], onDelete: SetNull)
+  introVideoId   String?     @map("intro_video_id")
+  introVideo     MediaAsset? @relation("UserIntroVideo", fields: [introVideoId], references: [id], onDelete: SetNull)
 
   // Language Preferences
   videoLanguage     String @default("en") @map("video_language") // ISO 639-1 code for video/audio content
@@ -238,11 +244,13 @@ model MediaAsset {
   updatedAt       DateTime @updatedAt @map("updated_at")
 
   // Relations
-  user             User         @relation(fields: [uploadedBy], references: [id], onDelete: Cascade)
-  recipeHeroImages Recipe[]     @relation("RecipeHeroImage")
-  recipeIntroVideos Recipe[]    @relation("RecipeIntroVideo")
-  stepImages       RecipeStep[] @relation("StepImage")
-  stepVideos       RecipeStep[] @relation("StepVideo")
+  user               User         @relation(fields: [uploadedBy], references: [id], onDelete: Cascade)
+  recipeHeroImages   Recipe[]     @relation("RecipeHeroImage")
+  recipeIntroVideos  Recipe[]     @relation("RecipeIntroVideo")
+  stepImages         RecipeStep[] @relation("StepImage")
+  stepVideos         RecipeStep[] @relation("StepVideo")
+  userProfilePhotos  User[]       @relation("UserProfilePhoto")
+  userIntroVideos    User[]       @relation("UserIntroVideo")
 
   @@index([uploadedBy])
   @@index([cfAssetId])

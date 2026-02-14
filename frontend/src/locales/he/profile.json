@@ -17,6 +17,9 @@
     "cancel_button": "ביטול",
     "success_message": "הפרופיל עודכן בהצלחה!",
     "picture_updated": "תמונת הפרופיל עודכנה!",
+    "video_updated": "סרטון ההקדמה עודכן!",
+    "intro_video_label": "סרטון הקדמה",
+    "intro_video_help": "סרטון קצר שמציג אותך למשתמשים אחרים",
     "error_message": "טעינת הפרופיל נכשלה",
     "loading": "טוען...",
     "view_profile": "צפה בפרופיל"
@@ -30,7 +33,8 @@
     "about": "אודות",
     "recipes": "מתכונים",
     "coming_soon": "בקרוב...",
-    "default_name": "משתמש Kitchen48"
+    "default_name": "משתמש Kitchen48",
+    "intro_video": "הקדמה"
   },
   "picture_upload": {
     "change_photo": "שנה תמונה",

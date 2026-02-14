@@ -42,6 +42,9 @@ export const updateProfileSchema = z.object({
   videoLanguage: z.string().min(2).max(5).optional(),
   interfaceLanguage: z.string().min(2).max(5).optional(),
   measurementSystem: z.enum(['metric', 'imperial']).optional(),
+  // Media asset references (Cloudflare)
+  profilePhotoId: z.preprocess(emptyStringToNull, z.string().optional().nullable()),
+  introVideoId: z.preprocess(emptyStringToNull, z.string().optional().nullable()),
 });
 
 /**
@@ -67,6 +70,16 @@ export const adminUpdateUserSchema = z.object({
 export type UpdateProfileInput = z.infer<typeof updateProfileSchema>;
 export type AdminUpdateUserInput = z.infer<typeof adminUpdateUserSchema>;
 
+/** Media asset reference (lightweight shape for joins) */
+export interface MediaAssetRef {
+  id: string;
+  type: string;
+  url: string | null;
+  thumbnailUrl: string | null;
+  status: string;
+  durationSeconds: number | null;
+}
+
 /**
  * Public user profile (visible to anyone)
  */
@@ -77,6 +90,8 @@ export interface PublicUserProfile {
   nickname: string | null;
   profilePicture: string | null;
   description: string | null;
+  profilePhoto: MediaAssetRef | null;
+  introVideo: MediaAssetRef | null;
 }
 
 /**
@@ -91,6 +106,8 @@ export interface FullUserProfile extends PublicUserProfile {
   videoLanguage: string;
   interfaceLanguage: string;
   measurementSystem: string;
+  profilePhotoId: string | null;
+  introVideoId: string | null;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -105,6 +122,8 @@ export interface AdminUserListItem {
   lastName: string | null;
   nickname: string | null;
   profilePicture: string | null;
+  profilePhoto: MediaAssetRef | null;
+  introVideo: MediaAssetRef | null;
   emailVerified: boolean;
   userType: 'regular' | 'admin';
   videoLanguage: string;

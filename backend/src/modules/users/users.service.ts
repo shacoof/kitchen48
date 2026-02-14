@@ -15,6 +15,16 @@ import type {
 
 const logger = createLogger('UsersService');
 
+/** Select clause for media asset references */
+const mediaAssetSelect = {
+  id: true,
+  type: true,
+  url: true,
+  thumbnailUrl: true,
+  status: true,
+  durationSeconds: true,
+};
+
 class UsersService {
   /**
    * Generate a unique nickname from first and last name
@@ -73,6 +83,8 @@ class UsersService {
         nickname: true,
         profilePicture: true,
         description: true,
+        profilePhoto: { select: mediaAssetSelect },
+        introVideo: { select: mediaAssetSelect },
       },
     });
 
@@ -100,6 +112,10 @@ class UsersService {
         videoLanguage: true,
         interfaceLanguage: true,
         measurementSystem: true,
+        profilePhotoId: true,
+        introVideoId: true,
+        profilePhoto: { select: mediaAssetSelect },
+        introVideo: { select: mediaAssetSelect },
         createdAt: true,
         updatedAt: true,
       },
@@ -136,6 +152,8 @@ class UsersService {
           ...(input.videoLanguage !== undefined && { videoLanguage: input.videoLanguage }),
           ...(input.interfaceLanguage !== undefined && { interfaceLanguage: input.interfaceLanguage }),
           ...(input.measurementSystem !== undefined && { measurementSystem: input.measurementSystem }),
+          ...(input.profilePhotoId !== undefined && { profilePhotoId: input.profilePhotoId }),
+          ...(input.introVideoId !== undefined && { introVideoId: input.introVideoId }),
         },
         select: {
           id: true,
@@ -152,6 +170,10 @@ class UsersService {
           videoLanguage: true,
           interfaceLanguage: true,
           measurementSystem: true,
+          profilePhotoId: true,
+          introVideoId: true,
+          profilePhoto: { select: mediaAssetSelect },
+          introVideo: { select: mediaAssetSelect },
           createdAt: true,
           updatedAt: true,
         },
@@ -196,6 +218,8 @@ class UsersService {
         lastName: true,
         nickname: true,
         profilePicture: true,
+        profilePhoto: { select: mediaAssetSelect },
+        introVideo: { select: mediaAssetSelect },
         emailVerified: true,
         userType: true,
         videoLanguage: true,
@@ -261,6 +285,10 @@ class UsersService {
           videoLanguage: true,
           interfaceLanguage: true,
           measurementSystem: true,
+          profilePhotoId: true,
+          introVideoId: true,
+          profilePhoto: { select: mediaAssetSelect },
+          introVideo: { select: mediaAssetSelect },
           createdAt: true,
           updatedAt: true,
         },
