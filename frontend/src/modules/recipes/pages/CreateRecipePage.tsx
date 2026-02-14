@@ -4,12 +4,13 @@
  * Accessible via /recipes/new or /recipes/:id/edit
  */
 
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../../auth/hooks/useAuth';
 import { recipesApi, CreateRecipeInput, CreateStepInput, MasterIngredient } from '../services/recipes.api';
 import { useListValues } from '../../../hooks/useListValues';
 import { createLogger } from '../../../lib/logger';
+import { toMinutes, formatTotalTime } from '../../../utils/time';
 
 const logger = createLogger('CreateRecipePage');
 
@@ -55,13 +56,22 @@ export function CreateRecipePage() {
   const [title, setTitle] = useState('');
   const [slug, setSlug] = useState('');
   const [description, setDescription] = useState('');
-  const [prepTime, setPrepTime] = useState('');
-  const [cookTime, setCookTime] = useState('');
   const [servings, setServings] = useState('');
   const [imageUrl, setImageUrl] = useState('');
   const [videoUrl, setVideoUrl] = useState('');
   const [isPublished, setIsPublished] = useState(false);
   const [steps, setSteps] = useState<StepFormData[]>([{ ...emptyStep }]);
+
+  // Computed recipe-level times from steps
+  const { computedPrepMinutes, computedCookMinutes } = useMemo(() => {
+    let prep = 0;
+    let cook = 0;
+    for (const step of steps) {
+      prep += toMinutes(step.prepTime ? parseInt(step.prepTime) : null, step.prepTimeUnit || null);
+      cook += toMinutes(step.waitTime ? parseInt(step.waitTime) : null, step.waitTimeUnit || null);
+    }
+    return { computedPrepMinutes: prep, computedCookMinutes: cook };
+  }, [steps]);
 
   // LOV: Measurement Units
   const { values: unitOptions } = useListValues({ typeName: 'Measurement Units' });
@@ -132,8 +142,6 @@ export function CreateRecipePage() {
           setTitle(r.title);
           setSlug(r.slug);
           setDescription(r.description || '');
-          setPrepTime(r.prepTime?.toString() || '');
-          setCookTime(r.cookTime?.toString() || '');
           setServings(r.servings?.toString() || '');
           setImageUrl(r.imageUrl || '');
           setVideoUrl(r.videoUrl || '');
@@ -253,8 +261,6 @@ export function CreateRecipePage() {
       title,
       slug,
       description: description || null,
-      prepTime: prepTime ? parseInt(prepTime) : null,
-      cookTime: cookTime ? parseInt(cookTime) : null,
       servings: servings ? parseInt(servings) : null,
       imageUrl: imageUrl || null,
       videoUrl: videoUrl || null,
@@ -369,28 +375,24 @@ export function CreateRecipePage() {
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Prep Time (minutes)
+                  Prep Time
                 </label>
-                <input
-                  type="number"
-                  value={prepTime}
-                  onChange={(e) => setPrepTime(e.target.value)}
-                  min={0}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-accent-orange focus:border-transparent"
-                />
+                <div className="flex items-center gap-2 px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg text-gray-600">
+                  <span className="material-symbols-outlined text-base text-accent-orange">schedule</span>
+                  <span>{formatTotalTime(computedPrepMinutes)}</span>
+                  <span className="text-xs text-gray-400">(calculated from steps)</span>
+                </div>
               </div>
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Cook Time (minutes)
+                  Cook Time
                 </label>
-                <input
-                  type="number"
-                  value={cookTime}
-                  onChange={(e) => setCookTime(e.target.value)}
-                  min={0}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-accent-orange focus:border-transparent"
-                />
+                <div className="flex items-center gap-2 px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg text-gray-600">
+                  <span className="material-symbols-outlined text-base text-accent-orange">hourglass_top</span>
+                  <span>{formatTotalTime(computedCookMinutes)}</span>
+                  <span className="text-xs text-gray-400">(calculated from steps)</span>
+                </div>
               </div>
 
               <div>

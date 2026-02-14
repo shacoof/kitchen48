@@ -167,6 +167,12 @@ recipesApi.generateSlug(title)
 - **Root Cause**: All iPad browsers use WebKit. Safari's `webkitSpeechRecognition` with `continuous: true` is unreliable — stops after one utterance, and auto-restart in `onend` fails silently because iOS blocks non-user-gesture `.start()` calls
 - **Fix**: Detect iOS via user agent; use `continuous: false` (single-shot mode) on iOS; restart recognition with 300ms delay in `onend`; track retry count to avoid infinite silent restarts (stops after 5 retries); handle `not-allowed` error to detect permission denial
 
+### 2026-02-14: Recipe-level prep/cook time now calculated from steps
+- **Bug**: CreateRecipePage had manual input fields for recipe `prepTime` and `cookTime` that were disconnected from step-level times
+- **Root Cause**: No link between recipe-level and step-level times; manual entry was redundant
+- **Fix**: Removed manual inputs. Added `useMemo` that computes totals from step data in real-time using shared `toMinutes()` and `formatTotalTime()` from `utils/time.ts`. Display is read-only with smart formatting (minutes/hours/days). Backend now auto-computes on save.
+- **Shared utility**: Extracted `toMinutes()` and `formatTotalTime()` to `frontend/src/utils/time.ts`. RecipePage now imports from there instead of defining locally. `formatTotalTime()` extended to handle days (>24h).
+
 ### 2026-02-07: Main navigation menu not visible on mobile
 - **Bug**: Main nav bar (Explore, Recipes, Chefs, Community) hidden on screens < 768px with no alternative
 - **Root Cause**: `Header.tsx` nav used `hidden md:flex` with no hamburger menu or mobile drawer

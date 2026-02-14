@@ -3,7 +3,7 @@
  * Business logic for recipes, steps, and step ingredients
  */
 
-import { Prisma } from '@prisma/client';
+import { Prisma, TimeUnit } from '@prisma/client';
 import { prisma } from '../../core/database/prisma.js';
 import { createLogger } from '../../lib/logger.js';
 import type {
@@ -19,6 +19,32 @@ import type {
 } from './recipe.types.js';
 
 const logger = createLogger('RecipeService');
+
+/** Convert a time value + unit to minutes */
+function toMinutes(value: number | null | undefined, unit: TimeUnit | string | null | undefined): number {
+  if (!value || !unit) return 0;
+  switch (unit) {
+    case 'SECONDS': return value / 60;
+    case 'MINUTES': return value;
+    case 'HOURS': return value * 60;
+    case 'DAYS': return value * 1440;
+    default: return value;
+  }
+}
+
+/** Compute recipe-level prepTime and cookTime from step data */
+function computeTimesFromSteps(steps: Array<{ prepTime?: number | null; prepTimeUnit?: TimeUnit | string | null; waitTime?: number | null; waitTimeUnit?: TimeUnit | string | null }>): { prepTime: number | null; cookTime: number | null } {
+  let totalPrep = 0;
+  let totalCook = 0;
+  for (const step of steps) {
+    totalPrep += toMinutes(step.prepTime, step.prepTimeUnit);
+    totalCook += toMinutes(step.waitTime, step.waitTimeUnit);
+  }
+  return {
+    prepTime: totalPrep > 0 ? Math.round(totalPrep) : null,
+    cookTime: totalCook > 0 ? Math.round(totalCook) : null,
+  };
+}
 
 /** Include clause for full recipe with steps + ingredients + dietary tags */
 const recipeFullInclude = {
@@ -54,6 +80,21 @@ class RecipeService {
       .replace(/\s+/g, '-')
       .replace(/-+/g, '-')
       .substring(0, 80);
+  }
+
+  /**
+   * Recalculate and store recipe-level prepTime/cookTime from steps
+   */
+  private async recalculateRecipeTimes(recipeId: string): Promise<void> {
+    const steps = await prisma.recipeStep.findMany({
+      where: { recipeId },
+      select: { prepTime: true, prepTimeUnit: true, waitTime: true, waitTimeUnit: true },
+    });
+    const { prepTime, cookTime } = computeTimesFromSteps(steps);
+    await prisma.recipe.update({
+      where: { id: recipeId },
+      data: { prepTime, cookTime },
+    });
   }
 
   /**
@@ -204,13 +245,16 @@ class RecipeService {
 
     logger.debug(`Creating recipe: ${data.title} for author ${authorId}`);
 
+    // Compute recipe-level times from steps
+    const computedTimes = computeTimesFromSteps(data.steps || []);
+
     const recipe = await prisma.recipe.create({
       data: {
         title: data.title,
         slug: data.slug,
         description: data.description,
-        prepTime: data.prepTime,
-        cookTime: data.cookTime,
+        prepTime: computedTimes.prepTime,
+        cookTime: computedTimes.cookTime,
         servings: data.servings,
         imageUrl: data.imageUrl,
         videoUrl: data.videoUrl,
@@ -294,14 +338,16 @@ class RecipeService {
       await prisma.recipeStep.deleteMany({ where: { recipeId: id } });
     }
 
+    // Compute recipe-level times from steps if steps are provided
+    const computedTimes = data.steps ? computeTimesFromSteps(data.steps) : {};
+
     const recipe = await prisma.recipe.update({
       where: { id },
       data: {
         title: data.title,
         slug: data.slug,
         description: data.description,
-        prepTime: data.prepTime,
-        cookTime: data.cookTime,
+        ...computedTimes,
         servings: data.servings,
         imageUrl: data.imageUrl,
         videoUrl: data.videoUrl,
@@ -424,6 +470,9 @@ class RecipeService {
       },
     });
 
+    // Recalculate recipe-level times
+    await this.recalculateRecipeTimes(recipeId);
+
     // Return updated recipe
     return this.getById(recipeId) as Promise<Recipe>;
   }
@@ -489,6 +538,9 @@ class RecipeService {
       },
     });
 
+    // Recalculate recipe-level times
+    await this.recalculateRecipeTimes(recipeId);
+
     return this.getById(recipeId) as Promise<Recipe>;
   }
 
@@ -521,6 +573,9 @@ class RecipeService {
 
     logger.debug(`Deleting step: ${stepId}`);
     await prisma.recipeStep.delete({ where: { id: stepId } });
+
+    // Recalculate recipe-level times
+    await this.recalculateRecipeTimes(recipeId);
 
     return this.getById(recipeId) as Promise<Recipe>;
   }
