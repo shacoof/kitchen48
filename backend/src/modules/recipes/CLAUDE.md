@@ -154,6 +154,13 @@ Values: `SECONDS`, `MINUTES`, `HOURS`, `DAYS`
 - [ ] Add recipe duplication/fork feature
 - [ ] Add recipe versioning
 
+## Fixes Applied
+
+### 2026-02-14: Recipe-level prepTime/cookTime are now auto-calculated from steps
+- **Bug**: Recipe `prepTime` and `cookTime` were manually entered, disconnected from step-level times
+- **Root Cause**: No aggregation logic existed; recipe times and step times were independent
+- **Fix**: Added `toMinutes()` and `computeTimesFromSteps()` helpers. Recipe times are now computed from steps on every mutation: `create()`, `update()`, `addStep()`, `updateStep()`, `deleteStep()`. A `recalculateRecipeTimes()` method fetches steps and updates the recipe. DB fields are kept as cached computed values for listing/filtering.
+
 ---
 
 ## Implementation Date

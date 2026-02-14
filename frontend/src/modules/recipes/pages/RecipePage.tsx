@@ -12,31 +12,10 @@ import { useAuth } from '../../auth/hooks/useAuth';
 import { recipesApi, Recipe, AggregatedIngredient } from '../services/recipes.api';
 import { UserAvatar } from '../../../components/common/UserAvatar';
 import { formatQuantity } from '../../../utils/measurement';
+import { toMinutes, formatTotalTime } from '../../../utils/time';
 import { createLogger } from '../../../lib/logger';
 
 const logger = createLogger('RecipePage');
-
-/** Normalize all step times to minutes for aggregation */
-function toMinutes(value: number | null, unit: string | null): number {
-  if (!value || !unit) return 0;
-  switch (unit) {
-    case 'SECONDS': return value / 60;
-    case 'MINUTES': return value;
-    case 'HOURS': return value * 60;
-    case 'DAYS': return value * 1440;
-    default: return value;
-  }
-}
-
-/** Format a total-minutes value to a human-friendly string */
-function formatTotalTime(totalMinutes: number): string {
-  if (totalMinutes <= 0) return '—';
-  if (totalMinutes < 1) return '<1 min';
-  if (totalMinutes < 60) return `${Math.round(totalMinutes)}m`;
-  const hours = Math.floor(totalMinutes / 60);
-  const mins = Math.round(totalMinutes % 60);
-  return mins > 0 ? `${hours}h ${mins}m` : `${hours}h`;
-}
 
 export function RecipePage() {
   const { nickname, recipeSlug } = useParams<{ nickname: string; recipeSlug: string }>();
