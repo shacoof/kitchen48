@@ -21,6 +21,15 @@ export interface StepIngredient {
   masterIngredientId: string | null;
 }
 
+export interface MediaAssetRef {
+  id: string;
+  type: string;
+  url: string | null;
+  thumbnailUrl: string | null;
+  status: string;
+  durationSeconds: number | null;
+}
+
 export interface Step {
   id: string;
   slug: string | null;
@@ -34,6 +43,10 @@ export interface Step {
   waitTime: number | null;
   waitTimeUnit: TimeUnit | null;
   recipeId: string;
+  imageId: string | null;
+  image: MediaAssetRef | null;
+  videoId: string | null;
+  video: MediaAssetRef | null;
   ingredients: StepIngredient[];
 }
 
@@ -60,6 +73,10 @@ export interface Recipe {
   servings: number | null;
   imageUrl: string | null;
   videoUrl: string | null;
+  heroImageId: string | null;
+  heroImage: MediaAssetRef | null;
+  introVideoId: string | null;
+  introVideo: MediaAssetRef | null;
   isPublished: boolean;
   measurementSystem: string | null;
   difficulty: string | null;
@@ -120,6 +137,8 @@ export interface CreateStepInput {
   order: number;
   duration?: number | null;
   videoUrl?: string | null;
+  imageId?: string | null;
+  videoId?: string | null;
   prepTime?: number | null;
   prepTimeUnit?: TimeUnit | null;
   waitTime?: number | null;
@@ -136,6 +155,8 @@ export interface CreateRecipeInput {
   servings?: number | null;
   imageUrl?: string | null;
   videoUrl?: string | null;
+  heroImageId?: string | null;
+  introVideoId?: string | null;
   isPublished?: boolean;
   measurementSystem?: string | null;
   difficulty?: string | null;
