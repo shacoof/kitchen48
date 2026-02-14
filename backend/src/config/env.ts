@@ -31,6 +31,12 @@ const envSchema = z.object({
 
   // Frontend URL (for email links)
   FRONTEND_URL: z.string().url().default('http://localhost:5173'),
+
+  // Cloudflare Media (Stream + Images)
+  CF_ACCOUNT_ID: z.string().optional(),
+  CF_API_TOKEN: z.string().optional(),
+  CF_STREAM_WEBHOOK_SECRET: z.string().optional(),
+  CF_IMAGES_ACCOUNT_HASH: z.string().optional(),
 });
 
 function validateEnv() {
