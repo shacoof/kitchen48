@@ -79,9 +79,12 @@ export interface RecipeListItem {
   slug: string;
   description: string | null;
   imageUrl: string | null;
+  prepTime: number | null;
+  cookTime: number | null;
   isPublished: boolean;
   createdAt: string;
   author: RecipeAuthor;
+  dietaryTags?: Array<{ tag: string }>;
   _count: {
     steps: number;
   };

@@ -48,6 +48,18 @@ export interface UploadResult {
   filename: string;
 }
 
+export interface FeaturedAuthor {
+  id: string;
+  firstName: string | null;
+  lastName: string | null;
+  nickname: string | null;
+  profilePicture: string | null;
+  description: string | null;
+  _count: {
+    recipes: number;
+  };
+}
+
 interface ApiResponse<T> {
   data?: T;
   error?: string;
@@ -99,6 +111,13 @@ class UsersApiService {
       logger.error(`API request failed: ${error}`);
       return { error: 'Network error' };
     }
+  }
+
+  /**
+   * Get featured authors (users with published recipes)
+   */
+  async getFeaturedAuthors(limit: number = 6): Promise<ApiResponse<FeaturedAuthor[]>> {
+    return this.request<FeaturedAuthor[]>(`/users/featured?limit=${limit}`);
   }
 
   /**

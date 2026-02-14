@@ -108,6 +108,21 @@ class UsersController {
     }
   }
 
+  /**
+   * GET /api/users/featured
+   * Get featured authors (users with published recipes)
+   */
+  async getFeaturedAuthors(req: Request, res: Response): Promise<void> {
+    try {
+      const limit = Math.min(Number(req.query.limit) || 6, 20);
+      const authors = await usersService.getFeaturedAuthors(limit);
+      res.json({ data: authors });
+    } catch (error) {
+      logger.error(`Error getting featured authors: ${error}`);
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  }
+
   // ============================================================================
   // Admin Methods
   // ============================================================================

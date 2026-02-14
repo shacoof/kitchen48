@@ -127,6 +127,8 @@ class RecipeService {
           slug: true,
           description: true,
           imageUrl: true,
+          prepTime: true,
+          cookTime: true,
           isPublished: true,
           createdAt: true,
           author: {
@@ -135,7 +137,11 @@ class RecipeService {
               nickname: true,
               firstName: true,
               lastName: true,
+              profilePicture: true,
             },
+          },
+          dietaryTags: {
+            select: { tag: true },
           },
           _count: {
             select: { steps: true },
@@ -213,6 +219,8 @@ class RecipeService {
         slug: true,
         description: true,
         imageUrl: true,
+        prepTime: true,
+        cookTime: true,
         isPublished: true,
         createdAt: true,
         author: {
@@ -221,7 +229,11 @@ class RecipeService {
             nickname: true,
             firstName: true,
             lastName: true,
+            profilePicture: true,
           },
+        },
+        dietaryTags: {
+          select: { tag: true },
         },
         _count: {
           select: { steps: true },

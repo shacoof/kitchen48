@@ -32,17 +32,22 @@
     "success": "Thanks for subscribing! We'll be in touch soon.",
     "privacy": "We respect your privacy. Unsubscribe at any time."
   },
-  "whats_hot": {
-    "title": "What's Hot Right Now"
-  },
   "your_recipes": {
     "title": "Your Recipes",
     "subtitle": "Personalized collection based on your taste",
-    "view_all": "View all"
+    "view_all": "View all",
+    "empty": "No recipes published yet. Be the first to share!"
   },
   "meet_our_masters": {
     "title": "Meet Our Masters",
-    "subtitle": "The culinary visionaries trending this week"
+    "subtitle": "The culinary visionaries trending this week",
+    "empty": "Our masters are cooking something special...",
+    "recipes_count": "{{count}} recipes"
+  },
+  "whats_hot": {
+    "title": "What's Hot Right Now",
+    "empty": "Nothing trending yet — check back soon!",
+    "steps": "{{count}} steps"
   },
   "recipe_tags": {
     "healthy": "Healthy",
