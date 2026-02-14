@@ -3,17 +3,19 @@
  * Edit own profile page at /profile/edit
  */
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../../context/AuthContext';
-import { ProfilePictureUpload } from '../components/ProfilePictureUpload';
+import { ImageUpload } from '../../media/components/ImageUpload';
+import { VideoUpload } from '../../media/components/VideoUpload';
 import { usersApi, FullUserProfile } from '../services/users.api';
 import { useListValues } from '../../../hooks/useListValues';
 import { createLogger } from '../../../lib/logger';
+import type { MediaAsset } from '../../media/services/media.api';
 
 const logger = createLogger('EditProfilePage');
 
@@ -49,6 +51,10 @@ export function EditProfilePage() {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
 
+  // Media state
+  const [profilePhotoId, setProfilePhotoId] = useState<string | null>(null);
+  const [introVideoId, setIntroVideoId] = useState<string | null>(null);
+
   const {
     register,
     handleSubmit,
@@ -78,6 +84,8 @@ export function EditProfilePage() {
         setError(t('edit.error_message'));
       } else if (result.data) {
         setProfile(result.data);
+        setProfilePhotoId(result.data.profilePhotoId || null);
+        setIntroVideoId(result.data.introVideoId || null);
         // Reset form with fetched data
         reset({
           nickname: result.data.nickname || '',
@@ -107,6 +115,8 @@ export function EditProfilePage() {
       description: data.description || null,
       videoLanguage: data.videoLanguage,
       interfaceLanguage: data.interfaceLanguage,
+      profilePhotoId,
+      introVideoId,
     });
 
     if (result.error) {
@@ -131,17 +141,44 @@ export function EditProfilePage() {
     setSaving(false);
   };
 
-  const handlePictureUploadSuccess = async (url: string) => {
-    logger.debug(`Profile picture updated: ${url}`);
-    // Refresh profile data
-    const result = await usersApi.getOwnProfile();
+  const handlePhotoUploadComplete = useCallback(async (asset: MediaAsset) => {
+    logger.debug(`Profile photo uploaded: ${asset.id}`);
+    setProfilePhotoId(asset.id);
+    // Save immediately so user doesn't lose the upload
+    const result = await usersApi.updateProfile({ profilePhotoId: asset.id });
+    if (result.data) {
+      setProfile(result.data);
+      await refreshUser();
+      setSuccess(t('edit.picture_updated'));
+    }
+  }, [refreshUser, t]);
+
+  const handlePhotoRemove = useCallback(async () => {
+    setProfilePhotoId(null);
+    const result = await usersApi.updateProfile({ profilePhotoId: null });
+    if (result.data) {
+      setProfile(result.data);
+      await refreshUser();
+    }
+  }, [refreshUser]);
+
+  const handleVideoUploadComplete = useCallback(async (asset: MediaAsset) => {
+    logger.debug(`Intro video uploaded: ${asset.id}`);
+    setIntroVideoId(asset.id);
+    const result = await usersApi.updateProfile({ introVideoId: asset.id });
+    if (result.data) {
+      setProfile(result.data);
+      setSuccess(t('edit.video_updated', 'Intro video updated'));
+    }
+  }, [t]);
+
+  const handleVideoRemove = useCallback(async () => {
+    setIntroVideoId(null);
+    const result = await usersApi.updateProfile({ introVideoId: null });
     if (result.data) {
       setProfile(result.data);
     }
-    // Refresh auth context to update header avatar
-    await refreshUser();
-    setSuccess(t('edit.picture_updated'));
-  };
+  }, []);
 
   if (authLoading || loading) {
     return (
@@ -159,7 +196,22 @@ export function EditProfilePage() {
     );
   }
 
-  const displayName = [profile.firstName, profile.lastName].filter(Boolean).join(' ') || 'User';
+  // Build existing asset refs for upload components
+  const existingPhoto = profile.profilePhoto ? {
+    id: profile.profilePhoto.id,
+    url: profile.profilePhoto.url,
+    thumbnailUrl: profile.profilePhoto.thumbnailUrl,
+    status: profile.profilePhoto.status,
+    durationSeconds: null,
+  } : null;
+
+  const existingVideo = profile.introVideo ? {
+    id: profile.introVideo.id,
+    url: profile.introVideo.url,
+    thumbnailUrl: profile.introVideo.thumbnailUrl,
+    status: profile.introVideo.status,
+    durationSeconds: profile.introVideo.durationSeconds,
+  } : null;
 
   return (
     <div className="min-h-screen bg-background-light">
@@ -199,14 +251,31 @@ export function EditProfilePage() {
         )}
 
         <div className="bg-white rounded-2xl shadow-lg p-8">
-          {/* Profile Picture Section */}
+          {/* Profile Photo Section (Cloudflare) */}
           <div className="mb-8 pb-8 border-b border-gray-100">
             <h2 className="text-lg font-semibold text-gray-700 mb-4">{t('edit.profile_picture_label')}</h2>
-            <ProfilePictureUpload
-              currentPicture={profile.profilePicture}
-              userName={displayName}
-              onUploadSuccess={handlePictureUploadSuccess}
-              onUploadError={(err) => setError(err)}
+            <ImageUpload
+              context="profile"
+              existingAsset={existingPhoto}
+              existingUrl={profile.profilePicture}
+              onUploadComplete={handlePhotoUploadComplete}
+              onRemove={handlePhotoRemove}
+            />
+          </div>
+
+          {/* Intro Video Section (Cloudflare) */}
+          <div className="mb-8 pb-8 border-b border-gray-100">
+            <h2 className="text-lg font-semibold text-gray-700 mb-4">
+              {t('edit.intro_video_label', 'Introduction Video')}
+            </h2>
+            <p className="text-sm text-gray-500 mb-3">
+              {t('edit.intro_video_help', 'A short video introducing yourself to other users')}
+            </p>
+            <VideoUpload
+              context="step"
+              existingAsset={existingVideo}
+              onUploadComplete={handleVideoUploadComplete}
+              onRemove={handleVideoRemove}
             />
           </div>
 

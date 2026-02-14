@@ -2,12 +2,15 @@
  * RecipeCard
  * Card component for displaying a recipe in the My Recipes grid.
  * Shows thumbnail, title, status badge, stats row, and quick actions menu.
+ * Media priority: heroImage > imageUrl > introVideo thumbnail > placeholder.
+ * If introVideo exists, shows play overlay; clicking it plays video inline.
  */
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import type { RecipeListItem } from '../services/recipes.api';
+import { VideoPlayer } from '../../media/components/VideoPlayer';
 
 interface RecipeCardProps {
   recipe: RecipeListItem;
@@ -20,6 +23,7 @@ interface RecipeCardProps {
 export function RecipeCard({ recipe, onEdit, onDuplicate, onDelete, onTogglePublish }: RecipeCardProps) {
   const { t } = useTranslation('recipes');
   const [menuOpen, setMenuOpen] = useState(false);
+  const [playing, setPlaying] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
   // Close menu when clicking outside
@@ -44,24 +48,74 @@ export function RecipeCard({ recipe, onEdit, onDuplicate, onDelete, onTogglePubl
     year: 'numeric',
   });
 
+  // Media priority: heroImage URL > legacy imageUrl > introVideo thumbnail
+  const heroImg = recipe.heroImage?.status === 'ready' ? recipe.heroImage : null;
+  const introVid = recipe.introVideo?.status === 'ready' ? recipe.introVideo : null;
+  const imageSource = heroImg?.url || recipe.imageUrl || introVid?.thumbnailUrl || null;
+  const videoSource = introVid?.url || null;
+  const hasVideo = !!videoSource;
+
+  const handlePlayClick = useCallback((e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setPlaying(true);
+  }, []);
+
+  const handleStopClick = useCallback((e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setPlaying(false);
+  }, []);
+
   return (
     <div className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-lg transition-shadow group relative">
-      {/* Thumbnail */}
-      <Link to={recipeUrl} className="block">
-        <div className="w-full h-44 bg-gray-100 overflow-hidden">
-          {recipe.imageUrl ? (
-            <img
-              src={recipe.imageUrl}
-              alt={recipe.title}
-              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-            />
-          ) : (
-            <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200">
-              <span className="material-symbols-outlined text-5xl text-gray-300">restaurant_menu</span>
-            </div>
-          )}
+      {/* Thumbnail / Video */}
+      {playing && videoSource ? (
+        <div className="w-full h-44 bg-black relative">
+          <VideoPlayer
+            src={videoSource}
+            poster={imageSource || undefined}
+            autoPlay
+          />
+          <button
+            type="button"
+            onClick={handleStopClick}
+            className="absolute top-2 right-2 z-10 w-7 h-7 bg-black/60 rounded-full flex items-center justify-center hover:bg-black/80 transition-colors"
+          >
+            <span className="material-symbols-outlined text-white text-sm">close</span>
+          </button>
         </div>
-      </Link>
+      ) : (
+        <Link to={recipeUrl} className="block">
+          <div className="w-full h-44 bg-gray-100 overflow-hidden relative">
+            {imageSource ? (
+              <img
+                src={imageSource}
+                alt={recipe.title}
+                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+              />
+            ) : (
+              <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200">
+                <span className="material-symbols-outlined text-5xl text-gray-300">restaurant_menu</span>
+              </div>
+            )}
+            {/* Play overlay when video exists */}
+            {hasVideo && !playing && (
+              <button
+                type="button"
+                onClick={handlePlayClick}
+                className="absolute inset-0 flex items-center justify-center bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity"
+              >
+                <div className="w-12 h-12 rounded-full bg-black/60 flex items-center justify-center">
+                  <span className="material-symbols-outlined text-white text-2xl" style={{ fontVariationSettings: "'FILL' 1" }}>
+                    play_arrow
+                  </span>
+                </div>
+              </button>
+            )}
+          </div>
+        </Link>
+      )}
 
       {/* Status Badge */}
       <div className="absolute top-3 left-3">

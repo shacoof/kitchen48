@@ -1,12 +1,14 @@
 /**
  * UserProfilePage
  * Public profile page accessible via /:nickname
+ * Shows profile photo (Cloudflare > legacy), intro video via VideoPlayer, description.
  */
 
 import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { UserAvatar } from '../../../components/common/UserAvatar';
+import { VideoPlayer } from '../../media/components/VideoPlayer';
 import { usersApi, PublicUserProfile } from '../services/users.api';
 import { createLogger } from '../../../lib/logger';
 
@@ -56,7 +58,7 @@ export function UserProfilePage() {
   if (error || !profile) {
     return (
       <div className="min-h-screen bg-background-light flex flex-col items-center justify-center gap-4">
-        <div className="text-6xl">😕</div>
+        <div className="text-6xl">:/</div>
         <h1 className="text-2xl font-bold text-gray-800">
           {error === 'User not found' ? t('view.not_found') : t('view.error_heading')}
         </h1>
@@ -77,6 +79,11 @@ export function UserProfilePage() {
 
   const displayName = [profile.firstName, profile.lastName].filter(Boolean).join(' ') || t('view.default_name');
 
+  // Media priority: Cloudflare profilePhoto > legacy profilePicture
+  const profilePhotoUrl = (profile.profilePhoto?.status === 'ready' ? profile.profilePhoto.url : null)
+    || profile.profilePicture;
+  const introVid = profile.introVideo?.status === 'ready' ? profile.introVideo : null;
+
   return (
     <div className="min-h-screen bg-background-light">
       {/* Header */}
@@ -94,7 +101,7 @@ export function UserProfilePage() {
           {/* Profile Header */}
           <div className="flex flex-col sm:flex-row items-center gap-6 mb-8">
             <UserAvatar
-              profilePicture={profile.profilePicture}
+              profilePicture={profilePhotoUrl}
               name={displayName}
               size="xl"
               className="border-4 border-gray-100"
@@ -106,6 +113,20 @@ export function UserProfilePage() {
               )}
             </div>
           </div>
+
+          {/* Intro Video */}
+          {introVid?.url && (
+            <div className="mb-8">
+              <h2 className="text-lg font-semibold text-gray-700 mb-3">
+                {t('view.intro_video', 'Introduction')}
+              </h2>
+              <VideoPlayer
+                src={introVid.url}
+                poster={introVid.thumbnailUrl}
+                className="max-w-xl"
+              />
+            </div>
+          )}
 
           {/* Description */}
           {profile.description && (

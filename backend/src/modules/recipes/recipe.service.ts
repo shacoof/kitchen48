@@ -46,7 +46,17 @@ function computeTimesFromSteps(steps: Array<{ prepTime?: number | null; prepTime
   };
 }
 
-/** Include clause for full recipe with steps + ingredients + dietary tags */
+/** Select clause for media asset references */
+const mediaAssetSelect = {
+  id: true,
+  type: true,
+  url: true,
+  thumbnailUrl: true,
+  status: true,
+  durationSeconds: true,
+};
+
+/** Include clause for full recipe with steps + ingredients + dietary tags + media */
 const recipeFullInclude = {
   author: {
     select: {
@@ -57,12 +67,16 @@ const recipeFullInclude = {
       profilePicture: true,
     },
   },
+  heroImage: { select: mediaAssetSelect },
+  introVideo: { select: mediaAssetSelect },
   steps: {
     orderBy: { order: 'asc' as const },
     include: {
       ingredients: {
         orderBy: { order: 'asc' as const },
       },
+      image: { select: mediaAssetSelect },
+      video: { select: mediaAssetSelect },
     },
   },
   dietaryTags: true,
@@ -143,6 +157,8 @@ class RecipeService {
           dietaryTags: {
             select: { tag: true },
           },
+          heroImage: { select: mediaAssetSelect },
+          introVideo: { select: mediaAssetSelect },
           _count: {
             select: { steps: true },
           },
@@ -235,6 +251,8 @@ class RecipeService {
         dietaryTags: {
           select: { tag: true },
         },
+        heroImage: { select: mediaAssetSelect },
+        introVideo: { select: mediaAssetSelect },
         _count: {
           select: { steps: true },
         },
@@ -270,6 +288,8 @@ class RecipeService {
         servings: data.servings,
         imageUrl: data.imageUrl,
         videoUrl: data.videoUrl,
+        heroImageId: data.heroImageId,
+        introVideoId: data.introVideoId,
         isPublished: data.isPublished,
         measurementSystem: data.measurementSystem,
         difficulty: data.difficulty,
@@ -284,6 +304,8 @@ class RecipeService {
             order: step.order ?? index,
             duration: step.duration,
             videoUrl: step.videoUrl,
+            imageId: step.imageId,
+            videoId: step.videoId,
             prepTime: step.prepTime,
             prepTimeUnit: step.prepTimeUnit,
             waitTime: step.waitTime,
@@ -363,6 +385,8 @@ class RecipeService {
         servings: data.servings,
         imageUrl: data.imageUrl,
         videoUrl: data.videoUrl,
+        heroImageId: data.heroImageId,
+        introVideoId: data.introVideoId,
         isPublished: data.isPublished,
         measurementSystem: data.measurementSystem,
         difficulty: data.difficulty,
@@ -382,6 +406,8 @@ class RecipeService {
               order: step.order ?? index,
               duration: step.duration,
               videoUrl: step.videoUrl,
+              imageId: step.imageId,
+              videoId: step.videoId,
               prepTime: step.prepTime,
               prepTimeUnit: step.prepTimeUnit,
               waitTime: step.waitTime,
@@ -466,6 +492,8 @@ class RecipeService {
         order: data.order,
         duration: data.duration,
         videoUrl: data.videoUrl,
+        imageId: data.imageId,
+        videoId: data.videoId,
         prepTime: data.prepTime,
         prepTimeUnit: data.prepTimeUnit,
         waitTime: data.waitTime,
@@ -543,6 +571,8 @@ class RecipeService {
         order: data.order,
         duration: data.duration,
         videoUrl: data.videoUrl,
+        imageId: data.imageId,
+        videoId: data.videoId,
         prepTime: data.prepTime,
         prepTimeUnit: data.prepTimeUnit,
         waitTime: data.waitTime,
@@ -729,6 +759,8 @@ class RecipeService {
         servings: original.servings,
         imageUrl: original.imageUrl,
         videoUrl: original.videoUrl,
+        heroImageId: original.heroImageId,
+        introVideoId: original.introVideoId,
         isPublished: false,
         measurementSystem: original.measurementSystem,
         difficulty: original.difficulty,
@@ -743,6 +775,8 @@ class RecipeService {
             order: step.order,
             duration: step.duration,
             videoUrl: step.videoUrl,
+            imageId: step.imageId,
+            videoId: step.videoId,
             prepTime: step.prepTime,
             prepTimeUnit: step.prepTimeUnit,
             waitTime: step.waitTime,

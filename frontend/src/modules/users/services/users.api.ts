@@ -4,6 +4,7 @@
  */
 
 import { createLogger } from '../../../lib/logger';
+import type { MediaAssetRef } from '../../media/services/media.api';
 
 const logger = createLogger('UsersApi');
 
@@ -18,6 +19,8 @@ export interface PublicUserProfile {
   nickname: string | null;
   profilePicture: string | null;
   description: string | null;
+  profilePhoto: MediaAssetRef | null;
+  introVideo: MediaAssetRef | null;
 }
 
 export interface FullUserProfile extends PublicUserProfile {
@@ -28,6 +31,8 @@ export interface FullUserProfile extends PublicUserProfile {
   userType: 'regular' | 'admin';
   videoLanguage: string;
   interfaceLanguage: string;
+  profilePhotoId: string | null;
+  introVideoId: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -41,6 +46,8 @@ export interface UpdateProfileInput {
   description?: string | null;
   videoLanguage?: string;
   interfaceLanguage?: string;
+  profilePhotoId?: string | null;
+  introVideoId?: string | null;
 }
 
 export interface UploadResult {
@@ -145,7 +152,7 @@ class UsersApiService {
   }
 
   /**
-   * Upload profile picture (requires auth)
+   * Upload profile picture (requires auth) — legacy, uses local file storage
    */
   async uploadProfilePicture(file: File): Promise<ApiResponse<UploadResult>> {
     const formData = new FormData();

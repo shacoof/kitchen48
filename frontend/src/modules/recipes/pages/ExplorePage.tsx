@@ -154,19 +154,39 @@ export function ExplorePage() {
                   to={recipeUrl}
                   className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-lg transition-shadow group"
                 >
-                  {/* Thumbnail */}
-                  <div className="w-full h-44 bg-gray-100 overflow-hidden">
-                    {recipe.imageUrl ? (
-                      <img
-                        src={recipe.imageUrl}
-                        alt={recipe.title}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                      />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200">
-                        <span className="material-symbols-outlined text-5xl text-gray-300">restaurant_menu</span>
-                      </div>
-                    )}
+                  {/* Thumbnail with media priority: heroImage > imageUrl > introVideo thumbnail */}
+                  <div className="w-full h-44 bg-gray-100 overflow-hidden relative">
+                    {(() => {
+                      const heroImg = recipe.heroImage?.status === 'ready' ? recipe.heroImage : null;
+                      const introVid = recipe.introVideo?.status === 'ready' ? recipe.introVideo : null;
+                      const imgSrc = heroImg?.url || recipe.imageUrl || introVid?.thumbnailUrl || null;
+                      const hasVid = !!(introVid?.url);
+
+                      return (
+                        <>
+                          {imgSrc ? (
+                            <img
+                              src={imgSrc}
+                              alt={recipe.title}
+                              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                            />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200">
+                              <span className="material-symbols-outlined text-5xl text-gray-300">restaurant_menu</span>
+                            </div>
+                          )}
+                          {hasVid && (
+                            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                              <div className="w-12 h-12 rounded-full bg-black/60 flex items-center justify-center">
+                                <span className="material-symbols-outlined text-white text-2xl" style={{ fontVariationSettings: "'FILL' 1" }}>
+                                  play_arrow
+                                </span>
+                              </div>
+                            </div>
+                          )}
+                        </>
+                      );
+                    })()}
                   </div>
 
                   {/* Content */}

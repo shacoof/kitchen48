@@ -11,6 +11,7 @@ import { useTranslation } from 'react-i18next';
 import { recipesApi, Recipe, Step } from '../services/recipes.api';
 import { formatQuantity } from '../../../utils/measurement';
 import { createLogger } from '../../../lib/logger';
+import { VideoPlayer } from '../../media/components/VideoPlayer';
 
 const logger = createLogger('RecipePlayPage');
 
@@ -879,26 +880,36 @@ export function RecipePlayPage() {
               </button>
             </div>
 
-            {/* Video Player Area */}
-            {activeStep?.videoUrl && (
-              <div className="relative aspect-video w-full rounded-b-xl lg:rounded-b-lg overflow-hidden shadow-2xl bg-black border-x border-b border-white/10">
-                <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black/80 flex items-center justify-center">
-                  <a
-                    href={activeStep.videoUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="w-20 h-20 bg-[#13ec5b] rounded-full flex items-center justify-center text-[#102216] hover:scale-110 transition-transform shadow-lg"
-                  >
-                    <span
-                      className="material-symbols-outlined text-4xl"
-                      style={{ fontVariationSettings: "'FILL' 1" }}
-                    >
-                      play_arrow
-                    </span>
-                  </a>
+            {/* Step Image */}
+            {(() => {
+              const stepImg = activeStep?.image?.status === 'ready' ? activeStep.image : null;
+              const stepImgUrl = stepImg?.url || null;
+              return stepImgUrl ? (
+                <div className="w-full rounded-lg overflow-hidden shadow-2xl border border-white/10">
+                  <img
+                    src={stepImgUrl}
+                    alt={activeStep?.title || t('play.step_label', { n: activeStepIdx + 1 })}
+                    className="w-full max-h-72 object-cover"
+                  />
                 </div>
-              </div>
-            )}
+              ) : null;
+            })()}
+
+            {/* Video Player Area */}
+            {(() => {
+              const stepVid = activeStep?.video?.status === 'ready' ? activeStep.video : null;
+              const videoSrc = stepVid?.url || activeStep?.videoUrl || null;
+              const posterSrc = stepVid?.thumbnailUrl || null;
+              return videoSrc ? (
+                <div className="w-full rounded-lg overflow-hidden shadow-2xl border border-white/10">
+                  <VideoPlayer
+                    src={videoSrc}
+                    poster={posterSrc}
+                    className="rounded-lg"
+                  />
+                </div>
+              ) : null;
+            })()}
 
             {/* Step Content */}
             <div className="mt-6 sm:mt-8 md:mt-10 grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-10">

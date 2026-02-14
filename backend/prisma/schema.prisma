@@ -57,10 +57,16 @@ model User {
   firstName      String? @map("first_name")
   lastName       String? @map("last_name")
   nickname       String? @unique @map("nickname") // Unique URL-friendly identifier (e.g., jsmith)
-  profilePicture String? @map("profile_picture") // URL or path to profile image
+  profilePicture String? @map("profile_picture") // URL or path to profile image (legacy)
   phone          String?
   phoneCountry   String? @map("phone_country") // ISO country code (e.g., "US", "IL")
   description    String?
+
+  // Media assets (Cloudflare)
+  profilePhotoId String?     @map("profile_photo_id")
+  profilePhoto   MediaAsset? @relation("UserProfilePhoto", fields: [profilePhotoId], references: [id], onDelete: SetNull)
+  introVideoId   String?     @map("intro_video_id")
+  introVideo     MediaAsset? @relation("UserIntroVideo", fields: [introVideoId], references: [id], onDelete: SetNull)
 
   // Language Preferences
   videoLanguage     String @default("en") @map("video_language") // ISO 639-1 code for video/audio content
@@ -84,6 +90,7 @@ model User {
   oauthAccounts OAuthAccount[]
   sessions      Session[]
   statEvents    StatEvent[]
+  mediaAssets   MediaAsset[]
 
   @@map("users")
 }
@@ -125,6 +132,12 @@ model Recipe {
   difficulty        String? // LOV value: "easy", "medium", "hard"
   cuisine           String? // LOV value: "italian", "japanese", etc.
   mealType          String? @map("meal_type") // LOV value: "breakfast", "lunch", etc.
+
+  // Media assets (Cloudflare)
+  heroImageId  String?     @map("hero_image_id")
+  heroImage    MediaAsset? @relation("RecipeHeroImage", fields: [heroImageId], references: [id], onDelete: SetNull)
+  introVideoId String?     @map("intro_video_id")
+  introVideo   MediaAsset? @relation("RecipeIntroVideo", fields: [introVideoId], references: [id], onDelete: SetNull)
 
   // Relations
   authorId    String             @map("author_id")
@@ -186,11 +199,17 @@ model RecipeStep {
   instruction  String // Step description (mandatory)
   order        Int
   duration     Int? // in seconds (for voice playback timing)
-  videoUrl     String?   @map("video_url") // Short video (up to 1 min)
+  videoUrl     String?   @map("video_url") // Short video (up to 1 min) - legacy, use video relation
   prepTime     Int?      @map("prep_time") // How much active preparation time this step takes
   prepTimeUnit TimeUnit? @map("prep_time_unit")
   waitTime     Int?      @map("wait_time") // Wait time (e.g., in oven, dough rising)
   waitTimeUnit TimeUnit? @map("wait_time_unit")
+
+  // Media assets (Cloudflare)
+  imageId String?     @map("image_id")
+  image   MediaAsset? @relation("StepImage", fields: [imageId], references: [id], onDelete: SetNull)
+  videoId String?     @map("video_id")
+  video   MediaAsset? @relation("StepVideo", fields: [videoId], references: [id], onDelete: SetNull)
 
   // Relations
   recipeId    String           @map("recipe_id")
@@ -199,6 +218,44 @@ model RecipeStep {
 
   @@unique([recipeId, slug]) // Step slug unique within recipe
   @@map("recipe_steps")
+}
+
+// ============================================================================
+// Media Assets (Cloudflare Stream + Images)
+// ============================================================================
+
+model MediaAsset {
+  id              String   @id @default(cuid())
+  type            String // "image" | "video"
+  provider        String   @default("cloudflare") // Future-proof for other CDNs
+  cfAssetId       String?  @map("cf_asset_id") // Cloudflare asset UID
+  url             String? // Public CDN URL (image delivery) or HLS URL (video)
+  thumbnailUrl    String?  @map("thumbnail_url") // Video thumbnail or image variant
+  status          String   @default("pending") // pending | processing | ready | error
+  originalName    String?  @map("original_name")
+  mimeType        String?  @map("mime_type")
+  fileSize        Int?     @map("file_size") // bytes
+  durationSeconds Float?   @map("duration_seconds") // video only
+  width           Int?
+  height          Int?
+  errorMessage    String?  @map("error_message")
+  uploadedBy      String   @map("uploaded_by")
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  user               User         @relation(fields: [uploadedBy], references: [id], onDelete: Cascade)
+  recipeHeroImages   Recipe[]     @relation("RecipeHeroImage")
+  recipeIntroVideos  Recipe[]     @relation("RecipeIntroVideo")
+  stepImages         RecipeStep[] @relation("StepImage")
+  stepVideos         RecipeStep[] @relation("StepVideo")
+  userProfilePhotos  User[]       @relation("UserProfilePhoto")
+  userIntroVideos    User[]       @relation("UserIntroVideo")
+
+  @@index([uploadedBy])
+  @@index([cfAssetId])
+  @@index([status])
+  @@map("media_assets")
 }
 
 model SavedRecipe {
