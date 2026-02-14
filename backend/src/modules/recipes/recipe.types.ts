@@ -194,6 +194,8 @@ export interface RecipeListItem {
     firstName: string | null;
     lastName: string | null;
   };
+  heroImage: MediaAssetRef | null;
+  introVideo: MediaAssetRef | null;
   _count: {
     steps: number;
   };

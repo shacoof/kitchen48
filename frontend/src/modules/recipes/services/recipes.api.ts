@@ -99,6 +99,8 @@ export interface RecipeListItem {
   isPublished: boolean;
   createdAt: string;
   author: RecipeAuthor;
+  heroImage?: MediaAssetRef | null;
+  introVideo?: MediaAssetRef | null;
   _count: {
     steps: number;
   };

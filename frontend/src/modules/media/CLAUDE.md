@@ -78,6 +78,13 @@ and simple uploads are more reliable with less complexity.
 - **Root Cause**: Cloudflare's `/stream/direct_upload` returns a URL for simple form uploads, not TUS creation. tus-js-client sent a TUS creation POST which Cloudflare couldn't decode.
 - **Fix**: Replaced TUS upload with simple XHR FormData POST (same pattern as image uploads). Removed `tus-js-client` dependency. Max video size set to 200MB.
 
+#### 2026-02-14: Recipe cards & play mode media display
+- **Feature**: Recipe cards (My Recipes + Explore) now show Cloudflare media with priority: heroImage > imageUrl > introVideo thumbnail
+- **Cards**: If introVideo exists, play overlay appears on hover; clicking plays video inline (RecipeCard) or indicates video on navigate (ExplorePage)
+- **Play mode**: Step images displayed above content; step videos use VideoPlayer (HLS) instead of external link
+- **Backend**: List queries (`getAll`, `getByNickname`) now include `heroImage` and `introVideo` joins
+- **Types**: `RecipeListItem` extended with `heroImage` and `introVideo` fields (both backend and frontend)
+
 ---
 
 ## Implementation Date

@@ -110,6 +110,8 @@ class RecipeService {
               lastName: true,
             },
           },
+          heroImage: { select: mediaAssetSelect },
+          introVideo: { select: mediaAssetSelect },
           _count: {
             select: { steps: true },
           },
@@ -196,6 +198,8 @@ class RecipeService {
             lastName: true,
           },
         },
+        heroImage: { select: mediaAssetSelect },
+        introVideo: { select: mediaAssetSelect },
         _count: {
           select: { steps: true },
         },
