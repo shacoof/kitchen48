@@ -10,6 +10,10 @@ import { useAuth } from '../../auth/hooks/useAuth';
 import { recipesApi, CreateRecipeInput, CreateStepInput, MasterIngredient } from '../services/recipes.api';
 import { useListValues } from '../../../hooks/useListValues';
 import { createLogger } from '../../../lib/logger';
+import { ImageUpload } from '../../media/components/ImageUpload';
+import { VideoUpload } from '../../media/components/VideoUpload';
+import type { MediaAsset } from '../../media/services/media.api';
+import type { MediaAssetRef } from '../services/recipes.api';
 
 const logger = createLogger('CreateRecipePage');
 
@@ -28,6 +32,10 @@ interface StepFormData {
   waitTime: string;
   waitTimeUnit: string;
   videoUrl: string;
+  imageId: string | null;
+  image: MediaAssetRef | null;
+  videoId: string | null;
+  video: MediaAssetRef | null;
   ingredients: IngredientFormData[];
 }
 
@@ -38,6 +46,10 @@ const emptyStep: StepFormData = {
   waitTime: '',
   waitTimeUnit: 'MINUTES',
   videoUrl: '',
+  imageId: null,
+  image: null,
+  videoId: null,
+  video: null,
   ingredients: [],
 };
 
@@ -60,6 +72,10 @@ export function CreateRecipePage() {
   const [servings, setServings] = useState('');
   const [imageUrl, setImageUrl] = useState('');
   const [videoUrl, setVideoUrl] = useState('');
+  const [heroImageId, setHeroImageId] = useState<string | null>(null);
+  const [heroImage, setHeroImage] = useState<MediaAssetRef | null>(null);
+  const [introVideoId, setIntroVideoId] = useState<string | null>(null);
+  const [introVideo, setIntroVideo] = useState<MediaAssetRef | null>(null);
   const [isPublished, setIsPublished] = useState(false);
   const [steps, setSteps] = useState<StepFormData[]>([{ ...emptyStep }]);
 
@@ -137,6 +153,10 @@ export function CreateRecipePage() {
           setServings(r.servings?.toString() || '');
           setImageUrl(r.imageUrl || '');
           setVideoUrl(r.videoUrl || '');
+          setHeroImageId(r.heroImageId || null);
+          setHeroImage(r.heroImage || null);
+          setIntroVideoId(r.introVideoId || null);
+          setIntroVideo(r.introVideo || null);
           setIsPublished(r.isPublished);
           setSteps(
             r.steps.length > 0
@@ -148,6 +168,10 @@ export function CreateRecipePage() {
                   waitTime: s.waitTime?.toString() || '',
                   waitTimeUnit: s.waitTimeUnit || 'MINUTES',
                   videoUrl: s.videoUrl || '',
+                  imageId: s.imageId || null,
+                  image: s.image || null,
+                  videoId: s.videoId || null,
+                  video: s.video || null,
                   ingredients: s.ingredients.map((i) => ({
                     name: i.name,
                     quantity: i.quantity != null ? String(i.quantity) : '',
@@ -238,6 +262,8 @@ export function CreateRecipePage() {
       waitTime: s.waitTime ? parseInt(s.waitTime) : null,
       waitTimeUnit: s.waitTime ? (s.waitTimeUnit as 'SECONDS' | 'MINUTES' | 'HOURS' | 'DAYS') : null,
       videoUrl: s.videoUrl || null,
+      imageId: s.imageId || null,
+      videoId: s.videoId || null,
       ingredients: s.ingredients
         .filter((i) => i.name.trim())
         .map((i, ingIndex) => ({
@@ -258,6 +284,8 @@ export function CreateRecipePage() {
       servings: servings ? parseInt(servings) : null,
       imageUrl: imageUrl || null,
       videoUrl: videoUrl || null,
+      heroImageId: heroImageId || null,
+      introVideoId: introVideoId || null,
       isPublished,
       steps: stepsData,
     };
@@ -406,29 +434,58 @@ export function CreateRecipePage() {
                 />
               </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Image URL
+              <div className="md:col-span-2">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Hero Image
                 </label>
-                <input
-                  type="url"
-                  value={imageUrl}
-                  onChange={(e) => setImageUrl(e.target.value)}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-accent-orange focus:border-transparent"
-                  placeholder="https://..."
+                <ImageUpload
+                  context="recipe"
+                  entityId={id}
+                  existingAsset={heroImage ? {
+                    id: heroImage.id,
+                    url: heroImage.url,
+                    thumbnailUrl: heroImage.thumbnailUrl,
+                    status: heroImage.status,
+                  } : undefined}
+                  existingUrl={imageUrl || undefined}
+                  onUploadComplete={(asset: MediaAsset) => {
+                    setHeroImageId(asset.id);
+                    setHeroImage({ id: asset.id, type: 'image', url: asset.url, thumbnailUrl: asset.thumbnailUrl, status: asset.status, durationSeconds: null });
+                    setImageUrl('');
+                  }}
+                  onRemove={() => {
+                    setHeroImageId(null);
+                    setHeroImage(null);
+                    setImageUrl('');
+                  }}
                 />
               </div>
 
               <div className="md:col-span-2">
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Intro Video URL
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Intro Video
                 </label>
-                <input
-                  type="url"
-                  value={videoUrl}
-                  onChange={(e) => setVideoUrl(e.target.value)}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-accent-orange focus:border-transparent"
-                  placeholder="https://..."
+                <VideoUpload
+                  context="recipe"
+                  entityId={id}
+                  existingAsset={introVideo ? {
+                    id: introVideo.id,
+                    url: introVideo.url,
+                    thumbnailUrl: introVideo.thumbnailUrl,
+                    status: introVideo.status,
+                    durationSeconds: introVideo.durationSeconds,
+                  } : undefined}
+                  existingUrl={videoUrl || undefined}
+                  onUploadComplete={(asset: MediaAsset) => {
+                    setIntroVideoId(asset.id);
+                    setIntroVideo({ id: asset.id, type: 'video', url: asset.url, thumbnailUrl: asset.thumbnailUrl, status: asset.status, durationSeconds: asset.durationSeconds });
+                    setVideoUrl('');
+                  }}
+                  onRemove={() => {
+                    setIntroVideoId(null);
+                    setIntroVideo(null);
+                    setVideoUrl('');
+                  }}
                 />
               </div>
 
@@ -557,17 +614,68 @@ export function CreateRecipePage() {
                       </div>
                     </div>
 
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Step Video URL
-                      </label>
-                      <input
-                        type="url"
-                        value={step.videoUrl}
-                        onChange={(e) => updateStep(stepIndex, 'videoUrl', e.target.value)}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-accent-orange focus:border-transparent"
-                        placeholder="https://..."
-                      />
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Step Image
+                        </label>
+                        <ImageUpload
+                          context="step"
+                          entityId={step.id}
+                          existingAsset={step.image ? {
+                            id: step.image.id,
+                            url: step.image.url,
+                            thumbnailUrl: step.image.thumbnailUrl,
+                            status: step.image.status,
+                          } : undefined}
+                          onUploadComplete={(asset: MediaAsset) => {
+                            const newSteps = [...steps];
+                            newSteps[stepIndex] = {
+                              ...newSteps[stepIndex],
+                              imageId: asset.id,
+                              image: { id: asset.id, type: 'image', url: asset.url, thumbnailUrl: asset.thumbnailUrl, status: asset.status, durationSeconds: null },
+                            };
+                            setSteps(newSteps);
+                          }}
+                          onRemove={() => {
+                            const newSteps = [...steps];
+                            newSteps[stepIndex] = { ...newSteps[stepIndex], imageId: null, image: null };
+                            setSteps(newSteps);
+                          }}
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Step Video
+                        </label>
+                        <VideoUpload
+                          context="step"
+                          entityId={step.id}
+                          existingAsset={step.video ? {
+                            id: step.video.id,
+                            url: step.video.url,
+                            thumbnailUrl: step.video.thumbnailUrl,
+                            status: step.video.status,
+                            durationSeconds: step.video.durationSeconds,
+                          } : undefined}
+                          existingUrl={step.videoUrl || undefined}
+                          onUploadComplete={(asset: MediaAsset) => {
+                            const newSteps = [...steps];
+                            newSteps[stepIndex] = {
+                              ...newSteps[stepIndex],
+                              videoId: asset.id,
+                              video: { id: asset.id, type: 'video', url: asset.url, thumbnailUrl: asset.thumbnailUrl, status: asset.status, durationSeconds: asset.durationSeconds },
+                              videoUrl: '',
+                            };
+                            setSteps(newSteps);
+                          }}
+                          onRemove={() => {
+                            const newSteps = [...steps];
+                            newSteps[stepIndex] = { ...newSteps[stepIndex], videoId: null, video: null, videoUrl: '' };
+                            setSteps(newSteps);
+                          }}
+                        />
+                      </div>
                     </div>
 
                     {/* Ingredients */}

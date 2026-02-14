@@ -20,6 +20,7 @@ import {
   MasterIngredient,
 } from '../services/recipes.api';
 import { formatQuantity } from '../../../utils/measurement';
+import { VideoPlayer } from '../../media/components/VideoPlayer';
 import { createLogger } from '../../../lib/logger';
 
 const logger = createLogger('RecipeStepPage');
@@ -759,8 +760,26 @@ export function RecipeStepPage() {
                 </div>
               </div>
 
+              {/* Step Image */}
+              {activeStep.image?.url && (
+                <div className="mb-6 rounded-xl overflow-hidden">
+                  <img
+                    src={activeStep.image.url}
+                    alt={activeStep.title || `Step ${activeStepIdx + 1}`}
+                    className="w-full h-auto max-h-80 object-cover rounded-xl"
+                  />
+                </div>
+              )}
+
               {/* Step Video */}
-              {activeStep.videoUrl && (
+              {activeStep.video?.url ? (
+                <div className="mb-6">
+                  <VideoPlayer
+                    src={activeStep.video.url}
+                    poster={activeStep.video.thumbnailUrl}
+                  />
+                </div>
+              ) : activeStep.videoUrl ? (
                 <div className="mb-6 p-4 bg-gray-50 rounded-xl">
                   <a
                     href={activeStep.videoUrl}
@@ -772,7 +791,7 @@ export function RecipeStepPage() {
                     {t('steps.video')}
                   </a>
                 </div>
-              )}
+              ) : null}
 
               {/* Instructions */}
               <div className="mb-6">

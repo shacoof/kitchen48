@@ -12,6 +12,7 @@ import { useAuth } from '../../auth/hooks/useAuth';
 import { recipesApi, Recipe, AggregatedIngredient } from '../services/recipes.api';
 import { UserAvatar } from '../../../components/common/UserAvatar';
 import { formatQuantity } from '../../../utils/measurement';
+import { VideoPlayer } from '../../media/components/VideoPlayer';
 import { createLogger } from '../../../lib/logger';
 
 const logger = createLogger('RecipePage');
@@ -227,10 +228,10 @@ export function RecipePage() {
 
       {/* Hero Section */}
       <div className="relative">
-        {recipe.imageUrl ? (
+        {(recipe.heroImage?.url || recipe.imageUrl) ? (
           <div className="relative w-full h-64 md:h-[420px] overflow-hidden">
             <img
-              src={recipe.imageUrl}
+              src={recipe.heroImage?.url || recipe.imageUrl!}
               alt={recipe.title}
               className="w-full h-full object-cover"
             />
@@ -295,14 +296,21 @@ export function RecipePage() {
 
       <main className="max-w-5xl mx-auto px-6">
         {/* Description + Video */}
-        {(recipe.description || recipe.videoUrl) && (
+        {(recipe.description || recipe.introVideo?.url || recipe.videoUrl) && (
           <div className="mt-6 bg-white rounded-xl shadow-sm p-6">
             {recipe.description && (
               <p className="text-gray-700 whitespace-pre-wrap leading-relaxed">
                 {recipe.description}
               </p>
             )}
-            {recipe.videoUrl && (
+            {recipe.introVideo?.url ? (
+              <div className="mt-4">
+                <VideoPlayer
+                  src={recipe.introVideo.url}
+                  poster={recipe.introVideo.thumbnailUrl}
+                />
+              </div>
+            ) : recipe.videoUrl ? (
               <a
                 href={recipe.videoUrl}
                 target="_blank"
@@ -312,7 +320,7 @@ export function RecipePage() {
                 <span className="material-symbols-outlined">play_circle</span>
                 {t('summary.watch_intro_video')}
               </a>
-            )}
+            ) : null}
           </div>
         )}
 
