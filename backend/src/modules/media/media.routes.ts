@@ -97,7 +97,8 @@ router.post('/upload/video', requireAuth, async (req: Request, res: Response) =>
  */
 router.get('/:id', requireAuth, async (req: Request, res: Response) => {
   try {
-    const asset = await mediaService.getById(req.params.id);
+    const id = req.params.id as string;
+    const asset = await mediaService.getById(id);
 
     if (!asset) {
       res.status(404).json({ error: 'Media asset not found' });
@@ -122,7 +123,8 @@ router.get('/:id', requireAuth, async (req: Request, res: Response) => {
  */
 router.post('/:id/confirm', requireAuth, async (req: Request, res: Response) => {
   try {
-    const asset = await mediaService.confirmImageUpload(req.params.id, req.userId!);
+    const id = req.params.id as string;
+    const asset = await mediaService.confirmImageUpload(id, req.userId!);
     res.json({ asset });
   } catch (error) {
     logger.error(`Error confirming upload: ${error instanceof Error ? error.message : String(error)}`);
@@ -148,7 +150,8 @@ router.post('/:id/confirm', requireAuth, async (req: Request, res: Response) => 
  */
 router.post('/:id/poll', requireAuth, async (req: Request, res: Response) => {
   try {
-    const asset = await mediaService.pollVideoStatus(req.params.id, req.userId!);
+    const id = req.params.id as string;
+    const asset = await mediaService.pollVideoStatus(id, req.userId!);
     res.json({ asset });
   } catch (error) {
     logger.error(`Error polling status: ${error instanceof Error ? error.message : String(error)}`);
@@ -174,13 +177,14 @@ router.post('/:id/poll', requireAuth, async (req: Request, res: Response) => {
  */
 router.delete('/:id', requireAuth, async (req: Request, res: Response) => {
   try {
-    await mediaService.delete(req.params.id, req.userId!);
+    const id = req.params.id as string;
+    await mediaService.delete(id, req.userId!);
 
     statisticsService.track({
       eventType: 'media.delete',
       userId: req.userId!,
       entityType: 'media',
-      entityId: req.params.id,
+      entityId: id,
     });
 
     res.status(204).send();

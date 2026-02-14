@@ -44,6 +44,9 @@ export const createStepSchema = z.object({
   prepTimeUnit: z.preprocess(emptyStringToNull, timeUnitSchema.optional().nullable()),
   waitTime: z.preprocess(emptyStringToNull, z.number().int().positive().optional().nullable()),
   waitTimeUnit: z.preprocess(emptyStringToNull, timeUnitSchema.optional().nullable()),
+  // Media asset references (Cloudflare)
+  imageId: z.preprocess(emptyStringToNull, z.string().optional().nullable()),
+  videoId: z.preprocess(emptyStringToNull, z.string().optional().nullable()),
   ingredients: z.array(createStepIngredientSchema).optional().default([]),
 });
 
@@ -65,6 +68,9 @@ export const createRecipeSchema = z.object({
   servings: z.preprocess(emptyStringToNull, z.number().int().positive().optional().nullable()),
   imageUrl: z.preprocess(emptyStringToNull, z.string().url().optional().nullable()),
   videoUrl: z.preprocess(emptyStringToNull, z.string().url().optional().nullable()),
+  // Media asset references (Cloudflare)
+  heroImageId: z.preprocess(emptyStringToNull, z.string().optional().nullable()),
+  introVideoId: z.preprocess(emptyStringToNull, z.string().optional().nullable()),
   isPublished: z.boolean().optional().default(false),
   // New classification fields
   measurementSystem: z.preprocess(emptyStringToNull, z.string().optional().nullable()),
@@ -112,6 +118,15 @@ export interface StepIngredient {
   masterIngredientId: string | null;
 }
 
+export interface MediaAssetRef {
+  id: string;
+  type: string;
+  url: string | null;
+  thumbnailUrl: string | null;
+  status: string;
+  durationSeconds: number | null;
+}
+
 export interface RecipeStep {
   id: string;
   slug: string | null;
@@ -125,6 +140,10 @@ export interface RecipeStep {
   waitTime: number | null;
   waitTimeUnit: TimeUnit | null;
   recipeId: string;
+  imageId: string | null;
+  image: MediaAssetRef | null;
+  videoId: string | null;
+  video: MediaAssetRef | null;
   ingredients: StepIngredient[];
 }
 
@@ -138,6 +157,10 @@ export interface Recipe {
   servings: number | null;
   imageUrl: string | null;
   videoUrl: string | null;
+  heroImageId: string | null;
+  heroImage: MediaAssetRef | null;
+  introVideoId: string | null;
+  introVideo: MediaAssetRef | null;
   isPublished: boolean;
   measurementSystem: string | null;
   difficulty: string | null;
