@@ -183,5 +183,18 @@
     "help_cmd_restart": "Go back to step 1",
     "help_cmd_exit": "Return to recipe details",
     "help_cmd_help": "Show this help and read all commands"
+  },
+  "media": {
+    "preparing": "Preparing...",
+    "uploading": "Uploading...",
+    "processing_video": "Processing video...",
+    "finalizing": "Finalizing...",
+    "ready": "Ready",
+    "upload_error": "Upload failed",
+    "change": "Change",
+    "remove": "Remove",
+    "drop_video": "Drop video here or click to browse",
+    "drop_image": "Drop image here or click to browse",
+    "try_again": "Try again"
   }
 }

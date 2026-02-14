@@ -183,5 +183,18 @@
     "help_cmd_restart": "חזור לשלב 1",
     "help_cmd_exit": "חזרה לפרטי המתכון",
     "help_cmd_help": "הצג עזרה זו וקרא את כל הפקודות"
+  },
+  "media": {
+    "preparing": "מכין...",
+    "uploading": "מעלה...",
+    "processing_video": "מעבד סרטון...",
+    "finalizing": "מסיים...",
+    "ready": "מוכן",
+    "upload_error": "ההעלאה נכשלה",
+    "change": "שינוי",
+    "remove": "הסרה",
+    "drop_video": "גרור סרטון לכאן או לחץ לבחירה",
+    "drop_image": "גרור תמונה לכאן או לחץ לבחירה",
+    "try_again": "נסה שוב"
   }
 }
