@@ -16,10 +16,20 @@ const PORT = 3000;
 let serverReady = false;
 
 app.get('/api/health', (_req, res) => {
-  res.json({
-    status: serverReady ? 'ok' : 'starting',
+  const status = serverReady ? 'ok' : 'starting';
+  res.status(serverReady ? 200 : 503).json({
+    status,
     timestamp: new Date().toISOString(),
     service: 'kitchen48-api',
+  });
+});
+
+// Return 503 for all non-health API routes while the app is still loading
+app.use('/api', (_req, res, next) => {
+  if (serverReady) return next();
+  res.status(503).json({
+    error: 'Service is starting up, please try again in a moment',
+    status: 'starting',
   });
 });
 

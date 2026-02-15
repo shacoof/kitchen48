@@ -164,6 +164,15 @@ FRONTEND_URL="http://localhost:5173"
 - Set `FRONTEND_DOMAIN=www.kitchen48.com` in `scripts/.env.production`
 - Register `https://www.kitchen48.com/api/auth/google/callback` in Google Cloud Console
 
+### Fixed: 502 Bad Gateway / "Cannot GET /api/auth/google" on cold start (2026-02-15)
+**Symptom:** Intermittent 502 Bad Gateway when clicking Google login in production, followed by "Cannot GET /api/auth/google" on refresh. Resolves after ~1 minute.
+**Root Cause:** Cloud Run cold start + async module loading in `backend/src/index.ts`. The backend takes ~51 seconds to fully load all modules. During this window: (1) nginx gets 502 when Node.js hasn't started yet, (2) Express returns "Cannot GET" for routes not yet mounted. Cloud Run's TCP startup probe on port 8080 (nginx) passes immediately, so traffic is routed before the backend is ready.
+**Fix:**
+1. `backend/src/index.ts` — Health endpoint returns 503 (not 200) when `serverReady === false`; added catch-all middleware returning 503 for all non-health routes during startup
+2. `nginx.conf` — Intercepts 502 from proxy and returns clean 503 JSON
+3. `frontend/src/components/WakeUpScreen.tsx` — Full-screen animated "waking up" screen shown during cold starts; polls health endpoint every 4 seconds until backend is ready
+4. `frontend/src/App.tsx` — Gates all app interaction behind a health check; prevents users from clicking Google login before backend is ready
+
 ---
 
 ## TODOs

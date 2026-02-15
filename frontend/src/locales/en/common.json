@@ -36,6 +36,11 @@
     "failed": "Failed",
     "please_try_again": "Please try again"
   },
+  "wakeUp": {
+    "title": "System is waking up",
+    "subtitle": "This may take up to a minute",
+    "ready": "Ready!"
+  },
   "navigation": {
     "explore": "Explore",
     "favorites": "Favorites",
