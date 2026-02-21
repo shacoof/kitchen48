@@ -10,6 +10,7 @@ export { RecipePlayPage } from './pages/RecipePlayPage';
 export { CreateRecipePage } from './pages/CreateRecipePage';
 export { MyRecipesPage } from './pages/MyRecipesPage';
 export { ExplorePage } from './pages/ExplorePage';
+export { FavoritesPage } from './pages/FavoritesPage';
 
 // Components
 export { RecipeCard } from './components/RecipeCard';

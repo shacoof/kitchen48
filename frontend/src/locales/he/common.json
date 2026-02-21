@@ -38,6 +38,8 @@
   },
   "navigation": {
     "explore": "חקור",
+    "favorites": "מועדפים",
+    "create": "צור",
     "recipes": "מתכונים",
     "chefs": "שפים",
     "community": "קהילה",

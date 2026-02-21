@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useLocation } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useAuth } from '../../context/AuthContext'
 import { UserAvatar } from '../common/UserAvatar'
@@ -10,6 +10,7 @@ export default function Header() {
   const { t: tc } = useTranslation('common')
   const [menuOpen, setMenuOpen] = useState(false)
   const [mobileNavOpen, setMobileNavOpen] = useState(false)
+  const location = useLocation()
 
   // Close menus when clicking outside
   useEffect(() => {
@@ -22,11 +23,19 @@ export default function Header() {
     return () => document.removeEventListener('click', handleClickOutside)
   }, [menuOpen, mobileNavOpen])
 
+  // Close mobile nav on route change
+  useEffect(() => {
+    setMobileNavOpen(false)
+  }, [location.pathname])
+
   const displayName = user?.firstName || user?.email?.split('@')[0] || 'User'
+
+  const isActive = (path: string) => location.pathname === path
 
   return (
     <header className="sticky top-0 z-50 bg-primary border-b border-slate-700/50 shadow-xl">
       <div className="max-w-7xl mx-auto px-4 md:px-6 h-16 md:h-20 flex items-center justify-between">
+        {/* LEFT: Logo + Mobile hamburger */}
         <div className="flex items-center gap-2 h-full py-1">
           {/* Hamburger menu button (mobile only) */}
           <button
@@ -40,36 +49,74 @@ export default function Header() {
               {mobileNavOpen ? 'close' : 'menu'}
             </span>
           </button>
-          <img
-            alt="Kitchen48 Logo"
-            className="h-full w-auto object-contain"
-            src="/kitchen48-logo-tight.jpg"
-          />
+          <Link to="/">
+            <img
+              alt="Kitchen48 Logo"
+              className="h-full w-auto object-contain"
+              src="/kitchen48-logo-tight.jpg"
+            />
+          </Link>
         </div>
 
-        <nav className="hidden md:flex items-center gap-8">
-          <Link to="/explore" className="text-white/90 hover:text-white transition-colors font-medium">
-            {tc('navigation.explore')}
+        {/* CENTER: Icon navigation (desktop) */}
+        <nav className="hidden md:flex items-center gap-2">
+          {/* Explore - always visible */}
+          <Link
+            to="/explore"
+            className={`group relative flex items-center justify-center w-12 h-12 rounded-full transition-colors ${
+              isActive('/explore')
+                ? 'bg-accent-orange text-white'
+                : 'text-white/80 hover:text-white hover:bg-white/10'
+            }`}
+          >
+            <span className="material-symbols-outlined text-[24px]">search</span>
+            <span className="absolute top-full mt-2 px-2 py-1 bg-gray-900 text-white text-xs rounded whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+              {tc('navigation.explore')}
+            </span>
           </Link>
-          <Link to={isAuthenticated ? '/recipes' : '#'} className="text-white/90 hover:text-white transition-colors font-medium">
-            {tc('navigation.recipes')}
-          </Link>
-          <a className="text-white/90 hover:text-white transition-colors font-medium" href="#">
-            {tc('navigation.chefs')}
-          </a>
+
+          {/* Favorites - auth only */}
+          {isAuthenticated && (
+            <Link
+              to="/favorites"
+              className={`group relative flex items-center justify-center w-12 h-12 rounded-full transition-colors ${
+                isActive('/favorites')
+                  ? 'bg-accent-orange text-white'
+                  : 'text-white/80 hover:text-white hover:bg-white/10'
+              }`}
+            >
+              <span
+                className="material-symbols-outlined text-[24px]"
+                style={isActive('/favorites') ? { fontVariationSettings: "'FILL' 1" } : undefined}
+              >
+                favorite
+              </span>
+              <span className="absolute top-full mt-2 px-2 py-1 bg-gray-900 text-white text-xs rounded whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+                {tc('navigation.favorites')}
+              </span>
+            </Link>
+          )}
+
+          {/* Create - auth only */}
+          {isAuthenticated && (
+            <Link
+              to="/recipes/new"
+              className={`group relative flex items-center justify-center w-12 h-12 rounded-full transition-colors ${
+                isActive('/recipes/new')
+                  ? 'bg-accent-orange text-white'
+                  : 'text-white/80 hover:text-white hover:bg-white/10'
+              }`}
+            >
+              <span className="material-symbols-outlined text-[24px]">add</span>
+              <span className="absolute top-full mt-2 px-2 py-1 bg-gray-900 text-white text-xs rounded whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+                {tc('navigation.create')}
+              </span>
+            </Link>
+          )}
         </nav>
 
-        <div className="flex items-center gap-6">
-          <div className="relative group hidden lg:block">
-            <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-400">
-              <span className="material-symbols-outlined text-[20px]">search</span>
-            </span>
-            <input
-              className="bg-primary/50 border border-slate-500/50 rounded-full py-2 pl-10 pr-4 w-64 text-sm text-white focus:outline-none focus:ring-2 focus:ring-accent-orange transition-all placeholder:text-slate-400"
-              placeholder={t('header.search_placeholder')}
-              type="text"
-            />
-          </div>
+        {/* RIGHT: Auth */}
+        <div className="flex items-center">
           {isAuthenticated ? (
             <div className="relative">
               <button
@@ -84,7 +131,7 @@ export default function Header() {
                   name={displayName}
                   size="sm"
                 />
-                <span>{displayName}</span>
+                <span className="hidden sm:inline">{displayName}</span>
                 <span className="material-symbols-outlined text-[18px]">
                   {menuOpen ? 'expand_less' : 'expand_more'}
                 </span>
@@ -141,27 +188,37 @@ export default function Header() {
           <Link
             to="/explore"
             onClick={() => setMobileNavOpen(false)}
-            className="block px-3 py-3 text-white/90 hover:bg-slate-700/50 rounded-lg transition-colors font-medium flex items-center gap-3"
+            className={`block px-3 py-3 rounded-lg transition-colors font-medium flex items-center gap-3 ${
+              isActive('/explore') ? 'bg-accent-orange text-white' : 'text-white/90 hover:bg-slate-700/50'
+            }`}
           >
-            <span className="material-symbols-outlined text-[20px] text-white/60">explore</span>
+            <span className="material-symbols-outlined text-[20px]">search</span>
             {tc('navigation.explore')}
           </Link>
-          <Link
-            to={isAuthenticated ? '/recipes' : '#'}
-            onClick={() => setMobileNavOpen(false)}
-            className="block px-3 py-3 text-white/90 hover:bg-slate-700/50 rounded-lg transition-colors font-medium flex items-center gap-3"
-          >
-            <span className="material-symbols-outlined text-[20px] text-white/60">menu_book</span>
-            {tc('navigation.recipes')}
-          </Link>
-          <a
-            href="#"
-            onClick={() => setMobileNavOpen(false)}
-            className="block px-3 py-3 text-white/90 hover:bg-slate-700/50 rounded-lg transition-colors font-medium flex items-center gap-3"
-          >
-            <span className="material-symbols-outlined text-[20px] text-white/60">person</span>
-            {tc('navigation.chefs')}
-          </a>
+          {isAuthenticated && (
+            <>
+              <Link
+                to="/favorites"
+                onClick={() => setMobileNavOpen(false)}
+                className={`block px-3 py-3 rounded-lg transition-colors font-medium flex items-center gap-3 ${
+                  isActive('/favorites') ? 'bg-accent-orange text-white' : 'text-white/90 hover:bg-slate-700/50'
+                }`}
+              >
+                <span className="material-symbols-outlined text-[20px]">favorite</span>
+                {tc('navigation.favorites')}
+              </Link>
+              <Link
+                to="/recipes/new"
+                onClick={() => setMobileNavOpen(false)}
+                className={`block px-3 py-3 rounded-lg transition-colors font-medium flex items-center gap-3 ${
+                  isActive('/recipes/new') ? 'bg-accent-orange text-white' : 'text-white/90 hover:bg-slate-700/50'
+                }`}
+              >
+                <span className="material-symbols-outlined text-[20px]">add</span>
+                {tc('navigation.create')}
+              </Link>
+            </>
+          )}
         </nav>
       )}
     </header>

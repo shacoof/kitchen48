@@ -8,7 +8,7 @@ import { VerifyEmailPage } from './modules/auth/pages/VerifyEmailPage';
 import { AuthCallbackPage } from './modules/auth/pages/AuthCallbackPage';
 import { UserProfilePage } from './modules/users/pages/UserProfilePage';
 import { EditProfilePage } from './modules/users/pages/EditProfilePage';
-import { RecipePage, RecipeStepPage, RecipePlayPage, CreateRecipePage, MyRecipesPage, ExplorePage } from './modules/recipes';
+import { RecipePage, RecipeStepPage, RecipePlayPage, CreateRecipePage, MyRecipesPage, ExplorePage, FavoritesPage } from './modules/recipes';
 import { getSubdomain } from './utils/subdomain';
 
 function App() {
@@ -37,6 +37,7 @@ function App() {
           <Route path="/auth/callback" element={<AuthCallbackPage />} />
           <Route path="/profile/edit" element={<EditProfilePage />} />
           <Route path="/explore" element={<ExplorePage />} />
+          <Route path="/favorites" element={<FavoritesPage />} />
           {/* Recipe routes - must come before profile catch-all */}
           <Route path="/recipes" element={<MyRecipesPage />} />
           <Route path="/recipes/new" element={<CreateRecipePage />} />
