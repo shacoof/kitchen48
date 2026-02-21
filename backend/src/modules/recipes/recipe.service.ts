@@ -712,6 +712,50 @@ class RecipeService {
   }
 
   /**
+   * Get all saved (bookmarked) recipes for a user
+   */
+  async getSavedRecipes(userId: string): Promise<RecipeListItem[]> {
+    const savedRecipes = await prisma.savedRecipe.findMany({
+      where: { userId },
+      orderBy: { savedAt: 'desc' },
+      select: {
+        recipe: {
+          select: {
+            id: true,
+            title: true,
+            slug: true,
+            description: true,
+            imageUrl: true,
+            prepTime: true,
+            cookTime: true,
+            isPublished: true,
+            createdAt: true,
+            author: {
+              select: {
+                id: true,
+                nickname: true,
+                firstName: true,
+                lastName: true,
+                profilePicture: true,
+              },
+            },
+            dietaryTags: {
+              select: { tag: true },
+            },
+            heroImage: { select: mediaAssetSelect },
+            introVideo: { select: mediaAssetSelect },
+            _count: {
+              select: { steps: true },
+            },
+          },
+        },
+      },
+    });
+
+    return savedRecipes.map((sr) => sr.recipe) as RecipeListItem[];
+  }
+
+  /**
    * Duplicate a recipe for the current user
    */
   async duplicateRecipe(recipeId: string, newAuthorId: string): Promise<Recipe> {
