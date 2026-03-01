@@ -50,6 +50,20 @@ router.get('/', async (req: Request, res: Response) => {
 });
 
 /**
+ * GET /api/recipes/saved
+ * Get current user's saved (bookmarked) recipes (auth required)
+ */
+router.get('/saved', requireAuth, async (req: Request, res: Response) => {
+  try {
+    const recipes = await recipeService.getSavedRecipes(req.userId!);
+    res.json({ recipes });
+  } catch (error) {
+    logger.error(`Error fetching saved recipes: ${error instanceof Error ? error.message : String(error)}`);
+    res.status(500).json({ error: 'Failed to fetch saved recipes' });
+  }
+});
+
+/**
  * GET /api/recipes/search-ingredients
  * Search master ingredients for autocomplete
  */

@@ -1,4 +1,12 @@
 {
+  "favorites": {
+    "title": "My Favorites",
+    "subtitle": "Recipes you've saved for later",
+    "search_placeholder": "Search favorites...",
+    "empty_title": "No favorites yet",
+    "empty_subtitle": "Browse recipes and tap the bookmark icon to save them here.",
+    "explore_button": "Explore Recipes"
+  },
   "explore": {
     "title": "Explore Recipes",
     "subtitle": "Discover delicious recipes from our community",

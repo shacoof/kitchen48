@@ -38,6 +38,8 @@
   },
   "navigation": {
     "explore": "Explore",
+    "favorites": "Favorites",
+    "create": "Create",
     "recipes": "Recipes",
     "chefs": "Chefs",
     "community": "Community",

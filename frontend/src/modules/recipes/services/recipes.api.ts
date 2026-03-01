@@ -337,6 +337,13 @@ class RecipesApi {
   }
 
   /**
+   * Get current user's saved (favorite) recipes
+   */
+  async getSavedRecipes(): Promise<{ recipes: RecipeListItem[] } & ApiResponse> {
+    return this.request<{ recipes: RecipeListItem[] }>('/recipes/saved');
+  }
+
+  /**
    * Bookmark a recipe
    */
   async saveRecipe(recipeId: string): Promise<ApiResponse> {
