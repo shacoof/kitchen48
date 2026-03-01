@@ -36,6 +36,11 @@
     "failed": "נכשל",
     "please_try_again": "אנא נסה שוב"
   },
+  "wakeUp": {
+    "title": "המערכת מתעוררת",
+    "subtitle": "זה יכול לקחת עד דקה",
+    "ready": "!מוכן"
+  },
   "navigation": {
     "explore": "חקור",
     "favorites": "מועדפים",

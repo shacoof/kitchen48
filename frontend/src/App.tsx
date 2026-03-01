@@ -1,3 +1,4 @@
+import { useState, useEffect, useCallback } from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import LandingPage from './components/LandingPage';
@@ -10,9 +11,41 @@ import { UserProfilePage } from './modules/users/pages/UserProfilePage';
 import { EditProfilePage } from './modules/users/pages/EditProfilePage';
 import { RecipePage, RecipeStepPage, RecipePlayPage, CreateRecipePage, MyRecipesPage, ExplorePage, FavoritesPage } from './modules/recipes';
 import { getSubdomain } from './utils/subdomain';
+import { WakeUpScreen } from './components/WakeUpScreen';
 
 function App() {
   const subdomain = getSubdomain();
+  const [backendReady, setBackendReady] = useState<boolean | null>(null);
+
+  const checkHealth = useCallback(async () => {
+    try {
+      const res = await fetch('/api/health', { signal: AbortSignal.timeout(3000) });
+      if (res.ok) {
+        const data = await res.json();
+        if (data.status === 'ok') {
+          setBackendReady(true);
+          return;
+        }
+      }
+      setBackendReady(false);
+    } catch {
+      setBackendReady(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    checkHealth();
+  }, [checkHealth]);
+
+  // Show wake-up screen while backend is cold starting
+  if (backendReady === false) {
+    return <WakeUpScreen onReady={() => setBackendReady(true)} />;
+  }
+
+  // Initial check in progress — render nothing briefly
+  if (backendReady === null) {
+    return null;
+  }
 
   // Admin portal - separate routing
   if (subdomain === 'admin') {
