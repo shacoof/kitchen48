@@ -60,7 +60,12 @@ export default function WhatsHot() {
           return (
             <TrendingCard
               key={recipe.id}
-              imageUrl={recipe.imageUrl}
+              imageUrl={
+                (recipe.heroImage?.status === 'ready' ? recipe.heroImage.url : null)
+                || recipe.imageUrl
+                || (recipe.introVideo?.status === 'ready' ? recipe.introVideo.thumbnailUrl : null)
+                || null
+              }
               title={recipe.title}
               tags={tags}
               stepCount={recipe._count.steps}

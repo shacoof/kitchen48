@@ -67,7 +67,12 @@ export default function YourRecipes() {
         {recipes.map((recipe) => (
           <RecipeCard
             key={recipe.id}
-            imageUrl={recipe.imageUrl}
+            imageUrl={
+              (recipe.heroImage?.status === 'ready' ? recipe.heroImage.url : null)
+              || recipe.imageUrl
+              || (recipe.introVideo?.status === 'ready' ? recipe.introVideo.thumbnailUrl : null)
+              || null
+            }
             title={recipe.title}
             description={recipe.description}
             prepTime={recipe.prepTime}
