@@ -46,6 +46,11 @@ APP_SERVICE="kitchen48-app"
 SKIP_DB=false
 ENV_FILE=""
 
+# Deploy tracking
+DEPLOY_START_TIME=$(date +%s)
+DEPLOY_ERRORS=()
+DEPLOY_NOTIFY_EMAIL="shacoof@gmail.com"
+
 # ============================================================================
 # Helper Functions
 # ============================================================================
@@ -827,22 +832,196 @@ print_summary() {
 }
 
 # ============================================================================
+# Send Deploy Notification Email
+# ============================================================================
+
+send_deploy_email() {
+    local status="$1"  # "SUCCESS" or "FAILURE"
+    local error_msg="${2:-}"
+
+    # Get email credentials from loaded env
+    local smtp_host="${EMAIL_SERVER_HOST:-smtp.gmail.com}"
+    local smtp_port="${EMAIL_SERVER_PORT:-587}"
+    local smtp_user="${EMAIL_SERVER_USER:-}"
+    local smtp_pass="${EMAIL_SERVER_PASSWORD:-}"
+    local from_addr="${EMAIL_FROM:-$smtp_user}"
+
+    if [[ -z "$smtp_user" || -z "$smtp_pass" ]]; then
+        print_warning "Email credentials not available - skipping deploy notification"
+        return
+    fi
+
+    local deploy_end_time=$(date +%s)
+    local duration=$(( deploy_end_time - DEPLOY_START_TIME ))
+    local minutes=$(( duration / 60 ))
+    local seconds=$(( duration % 60 ))
+    local timestamp=$(date '+%Y-%m-%d %H:%M:%S')
+
+    local subject
+    local body_html
+
+    if [[ "$status" == "SUCCESS" ]]; then
+        subject="Kitchen48 Deploy SUCCESS - ${timestamp}"
+        body_html="$(cat <<EMAILHTML
+<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"></head>
+<body style="font-family: Arial, sans-serif; color: #333; line-height: 1.6;">
+<div style="max-width: 600px; margin: 0 auto;">
+  <div style="background: #16a34a; color: white; padding: 20px; text-align: center;">
+    <h1 style="margin: 0;">Deployment Successful</h1>
+  </div>
+  <div style="padding: 25px; background: #f0fdf4; border: 1px solid #bbf7d0;">
+    <h2 style="color: #16a34a; margin-top: 0;">Kitchen48 deployed successfully</h2>
+    <table style="width: 100%; border-collapse: collapse;">
+      <tr><td style="padding: 8px 0; font-weight: bold;">Project:</td><td>${GCP_PROJECT_ID}</td></tr>
+      <tr><td style="padding: 8px 0; font-weight: bold;">Region:</td><td>${REGION}</td></tr>
+      <tr><td style="padding: 8px 0; font-weight: bold;">Service:</td><td>${APP_SERVICE}</td></tr>
+      <tr><td style="padding: 8px 0; font-weight: bold;">URL:</td><td><a href="${APP_URL:-N/A}">${APP_URL:-N/A}</a></td></tr>
+      <tr><td style="padding: 8px 0; font-weight: bold;">Duration:</td><td>${minutes}m ${seconds}s</td></tr>
+      <tr><td style="padding: 8px 0; font-weight: bold;">Timestamp:</td><td>${timestamp}</td></tr>
+      <tr><td style="padding: 8px 0; font-weight: bold;">Database:</td><td>${CLOUD_SQL_INSTANCE} / ${DB_NAME}</td></tr>
+      <tr><td style="padding: 8px 0; font-weight: bold;">Skip DB:</td><td>${SKIP_DB}</td></tr>
+    </table>
+  </div>
+  <div style="padding: 15px; text-align: center; color: #6b7280; font-size: 13px;">
+    Kitchen48 Deployment Notification
+  </div>
+</div>
+</body>
+</html>
+EMAILHTML
+)"
+    else
+        subject="Kitchen48 Deploy FAILED - ${timestamp}"
+
+        # Build error list HTML
+        local errors_html=""
+        if [[ ${#DEPLOY_ERRORS[@]} -gt 0 ]]; then
+            errors_html="<h3 style='color: #dc2626;'>Errors:</h3><ul>"
+            for err in "${DEPLOY_ERRORS[@]}"; do
+                errors_html+="<li style='padding: 4px 0;'>${err}</li>"
+            done
+            errors_html+="</ul>"
+        fi
+        if [[ -n "$error_msg" ]]; then
+            errors_html+="<div style='background: #fef2f2; border: 1px solid #fecaca; padding: 12px; border-radius: 5px; margin-top: 10px; font-family: monospace; font-size: 13px; white-space: pre-wrap;'>${error_msg}</div>"
+        fi
+
+        body_html="$(cat <<EMAILHTML
+<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"></head>
+<body style="font-family: Arial, sans-serif; color: #333; line-height: 1.6;">
+<div style="max-width: 600px; margin: 0 auto;">
+  <div style="background: #dc2626; color: white; padding: 20px; text-align: center;">
+    <h1 style="margin: 0;">Deployment Failed</h1>
+  </div>
+  <div style="padding: 25px; background: #fef2f2; border: 1px solid #fecaca;">
+    <h2 style="color: #dc2626; margin-top: 0;">Kitchen48 deployment failed</h2>
+    <table style="width: 100%; border-collapse: collapse;">
+      <tr><td style="padding: 8px 0; font-weight: bold;">Project:</td><td>${GCP_PROJECT_ID:-unknown}</td></tr>
+      <tr><td style="padding: 8px 0; font-weight: bold;">Region:</td><td>${REGION}</td></tr>
+      <tr><td style="padding: 8px 0; font-weight: bold;">Service:</td><td>${APP_SERVICE}</td></tr>
+      <tr><td style="padding: 8px 0; font-weight: bold;">Failed after:</td><td>${minutes}m ${seconds}s</td></tr>
+      <tr><td style="padding: 8px 0; font-weight: bold;">Timestamp:</td><td>${timestamp}</td></tr>
+    </table>
+    ${errors_html}
+  </div>
+  <div style="padding: 15px; text-align: center; color: #6b7280; font-size: 13px;">
+    Kitchen48 Deployment Notification
+  </div>
+</div>
+</body>
+</html>
+EMAILHTML
+)"
+    fi
+
+    print_info "Sending deploy notification email to ${DEPLOY_NOTIFY_EMAIL}..."
+
+    python3 - "$smtp_host" "$smtp_port" "$smtp_user" "$smtp_pass" "$from_addr" "$DEPLOY_NOTIFY_EMAIL" "$subject" "$body_html" <<'PYEOF'
+import sys, smtplib
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
+
+host, port, user, password, from_addr, to_addr, subject, body = sys.argv[1:9]
+
+msg = MIMEMultipart("alternative")
+msg["Subject"] = subject
+msg["From"] = from_addr
+msg["To"] = to_addr
+msg.attach(MIMEText(body, "html", "utf-8"))
+
+try:
+    with smtplib.SMTP(host, int(port)) as server:
+        server.starttls()
+        server.login(user, password)
+        server.sendmail(from_addr, to_addr, msg.as_string())
+    print("Email sent successfully")
+except Exception as e:
+    print(f"Failed to send email: {e}", file=sys.stderr)
+    sys.exit(1)
+PYEOF
+
+    if [[ $? -eq 0 ]]; then
+        print_success "Deploy notification email sent to ${DEPLOY_NOTIFY_EMAIL}"
+    else
+        print_warning "Failed to send deploy notification email (deploy itself was ${status})"
+    fi
+}
+
+# ============================================================================
 # Main Execution
 # ============================================================================
 
 main() {
     print_banner
 
+    # Trap errors to send failure email
+    trap 'send_deploy_email "FAILURE" "Script exited unexpectedly at line $LINENO"' ERR
+
+    local failed=false
+    local fail_step=""
+
     check_prerequisites
     validate_local_build
     collect_secrets
     enable_apis
-    setup_cloud_sql
-    setup_secrets
-    deploy_app
-    run_migrations
-    test_deployment
-    print_summary
+
+    if ! setup_cloud_sql; then
+        DEPLOY_ERRORS+=("Cloud SQL setup failed")
+        failed=true
+        fail_step="Cloud SQL Setup"
+    fi
+
+    if [[ "$failed" == "false" ]]; then
+        setup_secrets
+
+        if ! deploy_app; then
+            DEPLOY_ERRORS+=("Cloud Run deployment failed")
+            failed=true
+            fail_step="Cloud Run Deploy"
+        fi
+    fi
+
+    if [[ "$failed" == "false" ]]; then
+        if ! run_migrations; then
+            DEPLOY_ERRORS+=("Database migrations failed")
+            print_warning "Migrations failed but app is deployed"
+        fi
+
+        test_deployment
+        print_summary
+
+        # Remove error trap before sending success email
+        trap - ERR
+        send_deploy_email "SUCCESS"
+    else
+        trap - ERR
+        send_deploy_email "FAILURE" "Deployment failed during: ${fail_step}"
+        exit 1
+    fi
 }
 
 # Run main function

@@ -52,7 +52,7 @@ export default function Header() {
           <Link to="/">
             <img
               alt="Kitchen48 Logo"
-              className="h-full w-auto object-contain"
+              className="h-10 md:h-12 w-auto object-contain"
               src="/kitchen48-logo-tight.jpg"
             />
           </Link>
