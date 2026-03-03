@@ -161,6 +161,15 @@ All components include fallback placeholders (material icons) when no image is a
 - **Backend changes**: Added `GET /api/users/featured` endpoint, enhanced recipe list response with `prepTime`, `cookTime`, `dietaryTags`, author `profilePicture`
 - **UX**: Loading skeletons while fetching, sections hidden when no data, cards link to real pages
 
+### 2026-03-03: Remove wavy underline from "delicious" in Newsletter heading
+- **Bug**: The word "delicious" in the Newsletter heading had a wavy underline decoration
+- **Fix**: Removed `underline decoration-wavy` Tailwind classes from the span in `Newsletter.tsx`, keeping only `text-accent-green` for color
+
+### 2026-03-03: Fix oversized logo in Header
+- **Bug**: Logo image in the header was not constrained to the header height, appearing massive on screen
+- **Root Cause**: The `<Link>` wrapper around the `<img>` didn't propagate the `h-full` chain from the parent div (which has `h-full py-1`). The `<a>` tag rendered by `<Link>` is inline by default, breaking the height inheritance.
+- **Fix**: Added `className="h-full flex items-center"` to the `<Link>` in `Header.tsx` so the height chain propagates correctly to the image
+
 ### 2026-02-07: Mobile hamburger menu for Header navigation
 - **Bug**: Main nav (Explore, Recipes, Chefs, Community) hidden on mobile (<768px) with no alternative
 - **Fix**: Added hamburger button + mobile nav dropdown in `Header.tsx`. Uses `mobileNavOpen` state, material icons, existing i18n keys.

@@ -49,7 +49,7 @@ export default function Header() {
               {mobileNavOpen ? 'close' : 'menu'}
             </span>
           </button>
-          <Link to="/">
+          <Link to="/" className="h-full flex items-center">
             <img
               alt="Kitchen48 Logo"
               className="h-10 md:h-12 w-auto object-contain"
