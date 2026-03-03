@@ -18,7 +18,7 @@ export default function Newsletter() {
       <h2 className="font-display text-5xl text-white mb-6">
         {t('newsletter.heading', { defaultValue: 'Never miss a <1>delicious</1> beat.' }).split(t('newsletter.delicious')).map((part, i, arr) =>
           i < arr.length - 1 ? (
-            <span key={i}>{part}<span className="text-accent-green underline decoration-wavy">{t('newsletter.delicious')}</span></span>
+            <span key={i}>{part}<span className="text-accent-green">{t('newsletter.delicious')}</span></span>
           ) : (
             <span key={i}>{part}</span>
           )

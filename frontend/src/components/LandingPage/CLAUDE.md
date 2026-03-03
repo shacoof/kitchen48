@@ -154,6 +154,10 @@ Components include fallback placeholders (material icons) when no image is set.
 - **Backend changes**: Added `GET /api/users/featured` endpoint, enhanced recipe list response with `prepTime`, `cookTime`, `dietaryTags`, author `profilePicture`
 - **UX**: Loading skeletons while fetching, sections hidden when no data, cards link to real pages
 
+### 2026-03-03: Remove wavy underline from "delicious" in Newsletter heading
+- **Bug**: The word "delicious" in the Newsletter heading had a wavy underline decoration
+- **Fix**: Removed `underline decoration-wavy` Tailwind classes from the span in `Newsletter.tsx`, keeping only `text-accent-green` for color
+
 ### 2026-02-07: Mobile hamburger menu for Header navigation
 - **Bug**: Main nav (Explore, Recipes, Chefs, Community) hidden on mobile (<768px) with no alternative
 - **Fix**: Added hamburger button + mobile nav dropdown in `Header.tsx`. Uses `mobileNavOpen` state, material icons, existing i18n keys.
