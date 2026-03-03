@@ -118,8 +118,10 @@ Uses Tailwind CSS with custom theme:
 
 ## Image Handling
 
-Recipe and chef images come from the database (`imageUrl`, `profilePicture` fields).
-Components include fallback placeholders (material icons) when no image is set.
+Recipe images use a **media priority** pattern: `heroImage > imageUrl > introVideo thumbnail`.
+The resolved image URL is computed in the parent section components (YourRecipes, WhatsHot) before being passed as the `imageUrl` prop to card components.
+Chef images come from the database (`profilePicture` field).
+All components include fallback placeholders (material icons) when no image is available.
 
 ---
 
@@ -144,6 +146,11 @@ Components include fallback placeholders (material icons) when no image is set.
 - [x] ~~Improve mobile responsiveness~~ (Header mobile nav added 2026-02-07)
 
 ## Fixes Applied
+
+### 2026-03-03: Hero images not showing on landing page
+- **Bug**: RecipeCard and TrendingCard only used the legacy `imageUrl` field, ignoring `heroImage` and `introVideo` from Cloudflare media
+- **Root Cause**: When landing page sections were converted to use real API data (2026-02-08), the media priority pattern (`heroImage > imageUrl > introVideo thumbnail`) was not applied — only `recipe.imageUrl` was passed to card components
+- **Fix**: Compute resolved image URL in YourRecipes.tsx and WhatsHot.tsx using the same media priority pattern as ExplorePage/FavoritesPage, then pass it as the `imageUrl` prop
 
 ### 2026-02-08: Dynamic landing page sections (replaced hardcoded data)
 - **Issue**: YourRecipes, WhatsHot, and MeetOurMasters all used hardcoded placeholder arrays
