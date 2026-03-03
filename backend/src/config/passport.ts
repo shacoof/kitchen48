@@ -7,6 +7,7 @@ import passport from 'passport';
 import { Strategy as GoogleStrategy } from 'passport-google-oauth20';
 import { prisma } from '../core/database/prisma.js';
 import { env } from './env.js';
+import { usersService } from '../modules/users/users.service.js';
 
 export function configurePassport() {
   // Only configure Google OAuth if credentials are provided
@@ -68,11 +69,16 @@ export function configurePassport() {
               });
             } else {
               // Create new user with OAuth account
+              const nickname = await usersService.generateNickname(
+                profile.name?.givenName || null,
+                profile.name?.familyName || null
+              );
               user = await prisma.user.create({
                 data: {
                   email,
                   firstName: profile.name?.givenName,
                   lastName: profile.name?.familyName,
+                  nickname,
                   emailVerified: true, // Google emails are pre-verified
                   oauthAccounts: {
                     create: {

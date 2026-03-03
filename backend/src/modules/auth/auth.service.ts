@@ -11,6 +11,7 @@ import { emailService } from '../../services/email.service.js';
 import { env } from '../../config/env.js';
 import { createLogger } from '../../lib/logger.js';
 import { parameterService } from '../parameters/parameter.service.js';
+import { usersService } from '../users/users.service.js';
 import type { RegisterInput, LoginInput, AuthUser, AuthResponse, JwtPayload, UserType } from './auth.types.js';
 
 const logger = createLogger('AuthService');
@@ -39,6 +40,9 @@ class AuthService {
     const verificationExpires = new Date();
     verificationExpires.setHours(verificationExpires.getHours() + VERIFICATION_TOKEN_EXPIRY_HOURS);
 
+    // Generate unique nickname
+    const nickname = await usersService.generateNickname(input.firstName, input.lastName);
+
     // Create user
     const user = await prisma.user.create({
       data: {
@@ -46,6 +50,7 @@ class AuthService {
         passwordHash,
         firstName: input.firstName,
         lastName: input.lastName,
+        nickname,
         phone: input.phone,
         phoneCountry: input.phoneCountry,
         description: input.description,
