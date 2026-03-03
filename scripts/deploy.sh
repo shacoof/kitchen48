@@ -519,7 +519,7 @@ deploy_app() {
     print_info "Building and deploying combined app..."
     print_info "This builds both frontend and backend into a single container"
 
-    gcloud run deploy "$APP_SERVICE" \
+    if ! gcloud run deploy "$APP_SERVICE" \
         --source "$PROJECT_ROOT" \
         --project="$GCP_PROJECT_ID" \
         --region="$REGION" \
@@ -532,7 +532,12 @@ deploy_app() {
         --cpu=1 \
         --min-instances=0 \
         --max-instances=10 \
-        --quiet
+        --quiet; then
+        print_error "Cloud Run deployment failed! The new revision could not start."
+        print_info "The previous revision is still serving traffic."
+        print_info "Check logs: gcloud run services logs read $APP_SERVICE --region=$REGION --limit=50"
+        return 1
+    fi
 
     # Get app URL
     APP_URL=$(gcloud run services describe "$APP_SERVICE" --project="$GCP_PROJECT_ID" --region="$REGION" --format="value(status.url)")
