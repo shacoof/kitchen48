@@ -36,6 +36,7 @@ const profileSchema = z.object({
   description: z.string().optional().nullable(),
   videoLanguage: z.string().min(1),
   interfaceLanguage: z.string().min(1),
+  measurementSystem: z.string().min(1),
 });
 
 type ProfileFormData = z.infer<typeof profileSchema>;
@@ -45,6 +46,7 @@ export function EditProfilePage() {
   const { t } = useTranslation('profile');
   const { isAuthenticated, isLoading: authLoading, refreshUser } = useAuth();
   const { values: languages } = useListValues({ typeName: 'Languages' });
+  const { values: measurementSystems } = useListValues({ typeName: 'Measurement System' });
   const [profile, setProfile] = useState<FullUserProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -94,6 +96,7 @@ export function EditProfilePage() {
           description: result.data.description || '',
           videoLanguage: result.data.videoLanguage || 'en',
           interfaceLanguage: result.data.interfaceLanguage || 'en',
+          measurementSystem: result.data.measurementSystem || 'metric',
         });
       }
 
@@ -115,6 +118,7 @@ export function EditProfilePage() {
       description: data.description || null,
       videoLanguage: data.videoLanguage,
       interfaceLanguage: data.interfaceLanguage,
+      measurementSystem: data.measurementSystem,
       profilePhotoId,
       introVideoId,
     });
@@ -135,6 +139,7 @@ export function EditProfilePage() {
         description: result.data.description || '',
         videoLanguage: result.data.videoLanguage || 'en',
         interfaceLanguage: result.data.interfaceLanguage || 'en',
+        measurementSystem: result.data.measurementSystem || 'metric',
       });
     }
 
@@ -381,6 +386,24 @@ export function EditProfilePage() {
                 {languages.map((lang) => (
                   <option key={lang.value} value={lang.value}>
                     {lang.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* Measurement System */}
+            <div>
+              <label htmlFor="measurementSystem" className="block text-sm font-medium text-gray-700 mb-1">
+                {t('edit.measurement_system_label')}
+              </label>
+              <select
+                id="measurementSystem"
+                {...register('measurementSystem')}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-accent-orange focus:border-transparent"
+              >
+                {measurementSystems.map((ms) => (
+                  <option key={ms.value} value={ms.value}>
+                    {ms.label}
                   </option>
                 ))}
               </select>
