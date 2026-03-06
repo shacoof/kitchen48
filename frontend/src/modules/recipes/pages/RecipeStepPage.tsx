@@ -19,7 +19,8 @@ import {
   UpdateStepInput,
   MasterIngredient,
 } from '../services/recipes.api';
-import { formatQuantity } from '../../../utils/measurement';
+import { formatQuantity, UNIT_LABELS } from '../../../utils/measurement';
+import { useListValues, getLocalizedLabel } from '../../../hooks/useListValues';
 import { VideoPlayer } from '../../media/components/VideoPlayer';
 import { createLogger } from '../../../lib/logger';
 
@@ -184,7 +185,15 @@ export function RecipeStepPage() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { t } = useTranslation('recipes');
+  const { t, i18n } = useTranslation('recipes');
+
+  // Unit labels from LOV (i18n-aware)
+  const { values: unitOptions } = useListValues({ typeName: 'Measurement Units' });
+  const unitLabels = useMemo(() => {
+    const map: Record<string, string> = {};
+    unitOptions.forEach((u) => { map[u.value] = getLocalizedLabel(u, i18n.language); });
+    return map;
+  }, [unitOptions, i18n.language]);
 
   // Core state
   const [recipe, setRecipe] = useState<Recipe | null>(null);
@@ -813,7 +822,7 @@ export function RecipeStepPage() {
                         <span className="w-1.5 h-1.5 bg-amber-500 rounded-full flex-shrink-0 mt-2" />
                         <span>
                           <span className="font-medium text-amber-800">
-                            {formatQuantity(ing.quantity, ing.unit)}
+                            {formatQuantity(ing.quantity, ing.unit, 1, undefined, unitLabels)}
                           </span>
                           {' '}{ing.name}
                         </span>
@@ -1034,7 +1043,7 @@ export function RecipeStepPage() {
                             >
                               <option value="">—</option>
                               {availableUnits.map((u) => (
-                                <option key={u} value={u}>{u}</option>
+                                <option key={u} value={u}>{unitLabels[u] || UNIT_LABELS[u] || u}</option>
                               ))}
                             </select>
                           </div>

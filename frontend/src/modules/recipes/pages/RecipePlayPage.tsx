@@ -10,6 +10,7 @@ import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { recipesApi, Recipe, Step } from '../services/recipes.api';
 import { formatQuantity } from '../../../utils/measurement';
+import { useListValues, getLocalizedLabel } from '../../../hooks/useListValues';
 import { createLogger } from '../../../lib/logger';
 import { VideoPlayer } from '../../media/components/VideoPlayer';
 
@@ -80,7 +81,15 @@ export function RecipePlayPage() {
     recipeSlug: string;
   }>();
   const navigate = useNavigate();
-  const { t } = useTranslation('recipes');
+  const { t, i18n } = useTranslation('recipes');
+
+  // Unit labels from LOV (i18n-aware)
+  const { values: unitOptions } = useListValues({ typeName: 'Measurement Units' });
+  const unitLabels = useMemo(() => {
+    const map: Record<string, string> = {};
+    unitOptions.forEach((u) => { map[u.value] = getLocalizedLabel(u, i18n.language); });
+    return map;
+  }, [unitOptions, i18n.language]);
 
   // Core state
   const [recipe, setRecipe] = useState<Recipe | null>(null);
@@ -345,7 +354,7 @@ export function RecipePlayPage() {
         case 'ingredients':
           if (activeStep) {
             const ingText = activeStep.ingredients
-              .map((i) => `${formatQuantity(i.quantity, i.unit)} ${i.name}`)
+              .map((i) => `${formatQuantity(i.quantity, i.unit, 1, undefined, unitLabels)} ${i.name}`)
               .join(', ');
             speak(ingText || t('play.no_ingredients'));
           }
@@ -795,7 +804,7 @@ export function RecipePlayPage() {
                   onClick={() => {
                     if (activeStep) {
                       const ingText = activeStep.ingredients
-                        .map((i) => `${formatQuantity(i.quantity, i.unit)} ${i.name}`)
+                        .map((i) => `${formatQuantity(i.quantity, i.unit, 1, undefined, unitLabels)} ${i.name}`)
                         .join(', ');
                       speak(ingText || t('play.no_ingredients'));
                     }
@@ -1010,7 +1019,7 @@ export function RecipePlayPage() {
                                 className="font-bold text-lg transition-all"
                                 style={{ fontSize: `${fontScale * 1.125}rem` }}
                               >
-                                {formatQuantity(ing.quantity, ing.unit)} {ing.name}
+                                {formatQuantity(ing.quantity, ing.unit, 1, undefined, unitLabels)} {ing.name}
                               </p>
                             </div>
                           </li>

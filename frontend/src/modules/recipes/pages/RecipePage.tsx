@@ -12,6 +12,7 @@ import { useAuth } from '../../auth/hooks/useAuth';
 import { recipesApi, Recipe, AggregatedIngredient } from '../services/recipes.api';
 import { UserAvatar } from '../../../components/common/UserAvatar';
 import { formatQuantity } from '../../../utils/measurement';
+import { useListValues, getLocalizedLabel } from '../../../hooks/useListValues';
 import { toMinutes, formatTotalTime } from '../../../utils/time';
 import { VideoPlayer } from '../../media/components/VideoPlayer';
 import { createLogger } from '../../../lib/logger';
@@ -22,7 +23,15 @@ export function RecipePage() {
   const { nickname, recipeSlug } = useParams<{ nickname: string; recipeSlug: string }>();
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { t } = useTranslation('recipes');
+  const { t, i18n } = useTranslation('recipes');
+
+  // Unit labels from LOV (i18n-aware)
+  const { values: unitOptions } = useListValues({ typeName: 'Measurement Units' });
+  const unitLabels = useMemo(() => {
+    const map: Record<string, string> = {};
+    unitOptions.forEach((u) => { map[u.value] = getLocalizedLabel(u, i18n.language); });
+    return map;
+  }, [unitOptions, i18n.language]);
 
   const [recipe, setRecipe] = useState<Recipe | null>(null);
   const [ingredients, setIngredients] = useState<AggregatedIngredient[]>([]);
@@ -407,7 +416,7 @@ export function RecipePage() {
                       <span className="w-1.5 h-1.5 bg-accent-orange rounded-full flex-shrink-0 mt-2" />
                       <div>
                         <span className="font-medium text-gray-900">
-                          {formatQuantity(ing.totalQuantity, ing.unit, servingMultiplier)}
+                          {formatQuantity(ing.totalQuantity, ing.unit, servingMultiplier, undefined, unitLabels)}
                         </span>
                         {' '}
                         <span>{ing.name}</span>
