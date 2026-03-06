@@ -31,6 +31,7 @@ export interface FullUserProfile extends PublicUserProfile {
   userType: 'regular' | 'admin';
   videoLanguage: string;
   interfaceLanguage: string;
+  measurementSystem: string;
   profilePhotoId: string | null;
   introVideoId: string | null;
   createdAt: string;
@@ -46,6 +47,7 @@ export interface UpdateProfileInput {
   description?: string | null;
   videoLanguage?: string;
   interfaceLanguage?: string;
+  measurementSystem?: string;
   profilePhotoId?: string | null;
   introVideoId?: string | null;
 }
