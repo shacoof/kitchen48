@@ -62,7 +62,11 @@ export default function MeetOurMasters() {
             nickname={author.nickname}
             firstName={author.firstName}
             lastName={author.lastName}
-            profilePicture={author.profilePicture}
+            profilePicture={
+              (author.profilePhoto?.status === 'ready' ? author.profilePhoto.url : null)
+              || author.profilePicture
+              || null
+            }
             description={author.description}
             recipeCount={author._count.recipes}
             rotateDirection={index % 2 === 0 ? 'right' : 'left'}

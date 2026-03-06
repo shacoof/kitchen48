@@ -121,6 +121,7 @@ export interface FeaturedAuthor {
   lastName: string | null;
   nickname: string | null;
   profilePicture: string | null;
+  profilePhoto: MediaAssetRef | null;
   description: string | null;
   _count: {
     recipes: number;
