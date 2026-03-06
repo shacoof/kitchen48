@@ -173,6 +173,13 @@ FRONTEND_URL="http://localhost:5173"
 3. `frontend/src/components/WakeUpScreen.tsx` — Full-screen animated "waking up" screen shown during cold starts; polls health endpoint every 4 seconds until backend is ready
 4. `frontend/src/App.tsx` — Gates all app interaction behind a health check; prevents users from clicking Google login before backend is ready
 
+### Fixed: Missing nickname on user creation — Google OAuth and email registration (2026-03-03)
+**Symptom:** Users created via Google OAuth (and email/password registration) had `null` nickname.
+**Root Cause:** Neither `passport.ts` (Google OAuth) nor `auth.service.ts` (email registration) called `usersService.generateNickname()` when creating new users. The nickname generator existed but was never invoked during user creation.
+**Fix:**
+1. `backend/src/config/passport.ts` — Import `usersService`, generate nickname before `prisma.user.create()` for new Google OAuth users
+2. `backend/src/modules/auth/auth.service.ts` — Import `usersService`, generate nickname before `prisma.user.create()` for email/password registration
+
 ---
 
 ## TODOs
