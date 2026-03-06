@@ -223,6 +223,7 @@ class UsersService {
         lastName: true,
         nickname: true,
         profilePicture: true,
+        profilePhoto: { select: mediaAssetSelect },
         description: true,
         _count: {
           select: {
