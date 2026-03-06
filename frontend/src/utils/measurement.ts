@@ -71,6 +71,15 @@ export function getUnitSystem(unit: string): UnitSystem {
   return UNIT_SYSTEMS[unit] || 'universal';
 }
 
+/** Default English labels for measurement units (fallback when LOV data is unavailable) */
+export const UNIT_LABELS: Record<string, string> = {
+  cups: 'cups', tbsp: 'tablespoons', tsp: 'teaspoons',
+  pieces: 'pieces', pinch: 'pinch', cloves: 'cloves',
+  slices: 'slices', whole: 'whole', bunch: 'bunch',
+  g: 'grams', kg: 'kilograms', ml: 'milliliters', l: 'liters',
+  oz: 'ounces', lb: 'pounds', fl_oz: 'fluid ounces',
+};
+
 // ============================================================================
 // Conversion
 // ============================================================================
@@ -121,7 +130,8 @@ export function formatQuantity(
   quantity: number | null,
   unit: string | null,
   servingMultiplier = 1,
-  targetSystem?: 'metric' | 'imperial'
+  targetSystem?: 'metric' | 'imperial',
+  unitLabels?: Record<string, string>
 ): string {
   if (quantity === null) return '';
 
@@ -137,6 +147,10 @@ export function formatQuantity(
     }
   }
 
+  // Resolve full label: custom labels map → default English labels → raw unit code
+  const labels = unitLabels || UNIT_LABELS;
+  const displayLabel = displayUnit ? (labels[displayUnit] || UNIT_LABELS[displayUnit] || displayUnit) : '';
+
   const fractionStr = toFractionDisplay(displayQuantity);
-  return displayUnit ? `${fractionStr} ${displayUnit}` : fractionStr;
+  return displayLabel ? `${fractionStr} ${displayLabel}` : fractionStr;
 }
