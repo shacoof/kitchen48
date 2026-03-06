@@ -201,6 +201,13 @@ export function RecipeStepPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  // Auto-convert units if viewer's measurement system differs from recipe's
+  const targetSystem = useMemo(() => {
+    if (!user?.measurementSystem || !recipe?.measurementSystem) return undefined;
+    if (user.measurementSystem === recipe.measurementSystem) return undefined;
+    return user.measurementSystem as 'metric' | 'imperial';
+  }, [user?.measurementSystem, recipe?.measurementSystem]);
+
   // Mode: view or edit
   const initialMode = searchParams.get('mode') === 'edit' ? 'edit' : 'view';
   const [mode, setMode] = useState<'view' | 'edit'>(initialMode);
@@ -822,7 +829,7 @@ export function RecipeStepPage() {
                         <span className="w-1.5 h-1.5 bg-amber-500 rounded-full flex-shrink-0 mt-2" />
                         <span>
                           <span className="font-medium text-amber-800">
-                            {formatQuantity(ing.quantity, ing.unit, 1, undefined, unitLabels)}
+                            {formatQuantity(ing.quantity, ing.unit, 1, targetSystem, unitLabels)}
                           </span>
                           {' '}{ing.name}
                         </span>

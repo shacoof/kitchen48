@@ -9,6 +9,7 @@ import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../../auth/hooks/useAuth';
 import { recipesApi, CreateRecipeInput, CreateStepInput, MasterIngredient } from '../services/recipes.api';
 import { useListValues } from '../../../hooks/useListValues';
+import { getUnitSystem } from '../../../utils/measurement';
 import { createLogger } from '../../../lib/logger';
 import { toMinutes, formatTotalTime } from '../../../utils/time';
 import { ImageUpload } from '../../media/components/ImageUpload';
@@ -89,8 +90,15 @@ export function CreateRecipePage() {
     return { computedPrepMinutes: prep, computedCookMinutes: cook };
   }, [steps]);
 
-  // LOV: Measurement Units
-  const { values: unitOptions } = useListValues({ typeName: 'Measurement Units' });
+  // LOV: Measurement Units — filtered by user's measurement system preference
+  const { values: allUnitOptions } = useListValues({ typeName: 'Measurement Units' });
+  const unitOptions = useMemo(() => {
+    const userSystem = user?.measurementSystem || 'metric';
+    return allUnitOptions.filter((u) => {
+      const system = getUnitSystem(u.value);
+      return system === 'universal' || system === userSystem;
+    });
+  }, [allUnitOptions, user?.measurementSystem]);
 
   // Ingredient autocomplete state
   const [acResults, setAcResults] = useState<MasterIngredient[]>([]);
@@ -293,6 +301,7 @@ export function CreateRecipePage() {
       heroImageId: heroImageId || null,
       introVideoId: introVideoId || null,
       isPublished,
+      measurementSystem: user?.measurementSystem || 'metric',
       steps: stepsData,
     };
 
