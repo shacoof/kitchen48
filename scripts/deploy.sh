@@ -539,8 +539,11 @@ deploy_app() {
         return 1
     fi
 
-    # Get app URL
+    # Get app URL (prefer custom domain over Cloud Run URL)
     APP_URL=$(gcloud run services describe "$APP_SERVICE" --project="$GCP_PROJECT_ID" --region="$REGION" --format="value(status.url)")
+    if [[ -n "$FRONTEND_DOMAIN" ]]; then
+        APP_URL="https://${FRONTEND_DOMAIN}"
+    fi
     print_success "App deployed: $APP_URL"
 
     # Update FRONTEND_URL if using Cloud Run URL
