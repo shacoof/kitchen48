@@ -29,7 +29,7 @@ export default function YourRecipes() {
   if (loading) {
     return (
       <section>
-        <div className="flex items-end justify-between mb-8">
+        <div className="hidden md:flex items-end justify-between mb-8">
           <div>
             <h2 className="font-display text-3xl font-bold text-white">{t('your_recipes.title')}</h2>
             <p className="text-slate-400 mt-2">{t('your_recipes.subtitle')}</p>
@@ -54,7 +54,7 @@ export default function YourRecipes() {
 
   return (
     <section>
-      <div className="flex items-end justify-between mb-8">
+      <div className="hidden md:flex items-end justify-between mb-8">
         <div>
           <h2 className="font-display text-3xl font-bold text-white">{t('your_recipes.title')}</h2>
           <p className="text-slate-400 mt-2">{t('your_recipes.subtitle')}</p>

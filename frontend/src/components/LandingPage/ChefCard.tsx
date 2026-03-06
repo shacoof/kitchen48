@@ -34,11 +34,11 @@ export default function ChefCard({ nickname, firstName, lastName, profilePicture
           )}
         </div>
       </div>
-      <h4 className="font-bold text-white">{displayName}</h4>
+      <h4 className="hidden md:block font-bold text-white">{displayName}</h4>
       {description ? (
-        <p className="text-xs text-slate-500 uppercase tracking-wider">{description}</p>
+        <p className="hidden md:block text-xs text-slate-500 uppercase tracking-wider">{description}</p>
       ) : (
-        <p className="text-xs text-slate-500 uppercase tracking-wider">{t('meet_our_masters.recipes_count', { count: recipeCount })}</p>
+        <p className="hidden md:block text-xs text-slate-500 uppercase tracking-wider">{t('meet_our_masters.recipes_count', { count: recipeCount })}</p>
       )}
     </Link>
   )

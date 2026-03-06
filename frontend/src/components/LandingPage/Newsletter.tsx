@@ -14,7 +14,7 @@ export default function Newsletter() {
   }
 
   return (
-    <section className="bg-accent-green/10 border border-accent-green/20 rounded-[2.5rem] p-16 text-center">
+    <section className="hidden md:block bg-accent-green/10 border border-accent-green/20 rounded-[2.5rem] p-16 text-center">
       <h2 className="font-display text-5xl text-white mb-6">
         {t('newsletter.heading', { defaultValue: 'Never miss a <1>delicious</1> beat.' }).split(t('newsletter.delicious')).map((part, i, arr) =>
           i < arr.length - 1 ? (

@@ -28,16 +28,16 @@ export default function MeetOurMasters() {
   if (loading) {
     return (
       <section className="bg-primary/40 rounded-[2rem] p-12">
-        <div className="text-center mb-12">
+        <div className="hidden md:block text-center mb-12">
           <h2 className="font-display text-4xl font-bold text-white mb-2">{t('meet_our_masters.title')}</h2>
           <p className="text-slate-400">{t('meet_our_masters.subtitle')}</p>
         </div>
-        <div className="flex flex-wrap justify-center gap-12">
+        <div className="flex flex-wrap justify-center gap-6 md:gap-12">
           {[...Array(4)].map((_, i) => (
             <div key={i} className="text-center animate-pulse">
               <div className="w-32 h-32 rounded-full bg-slate-700 mb-4 mx-auto" />
-              <div className="h-4 bg-slate-700 rounded w-24 mx-auto mb-2" />
-              <div className="h-3 bg-slate-700 rounded w-16 mx-auto" />
+              <div className="hidden md:block h-4 bg-slate-700 rounded w-24 mx-auto mb-2" />
+              <div className="hidden md:block h-3 bg-slate-700 rounded w-16 mx-auto" />
             </div>
           ))}
         </div>
@@ -50,12 +50,12 @@ export default function MeetOurMasters() {
   }
 
   return (
-    <section className="bg-primary/40 rounded-[2rem] p-12">
-      <div className="text-center mb-12">
+    <section className="bg-primary/40 rounded-[2rem] p-6 md:p-12">
+      <div className="hidden md:block text-center mb-12">
         <h2 className="font-display text-4xl font-bold text-white mb-2">{t('meet_our_masters.title')}</h2>
         <p className="text-slate-400">{t('meet_our_masters.subtitle')}</p>
       </div>
-      <div className="flex flex-wrap justify-center gap-12">
+      <div className="flex flex-wrap justify-center gap-6 md:gap-12">
         {authors.map((author, index) => (
           <ChefCard
             key={author.id}
