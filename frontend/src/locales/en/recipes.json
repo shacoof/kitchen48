@@ -192,6 +192,30 @@
     "help_cmd_exit": "Return to recipe details",
     "help_cmd_help": "Show this help and read all commands"
   },
+  "create_choice": {
+    "title": "Create New Recipe",
+    "subtitle": "How would you like to create your recipe?",
+    "from_photos": "From Photos",
+    "from_photos_desc": "Upload photos of a recipe and let AI extract the ingredients and steps automatically.",
+    "type_manually": "Type Manually",
+    "type_manually_desc": "Write your recipe from scratch with full control over every detail."
+  },
+  "smart_upload": {
+    "title": "Create from Photos",
+    "subtitle": "Upload one or more photos of a recipe. Our AI will extract the ingredients, steps, and details automatically.",
+    "drop_hint": "Drop recipe photos here or click to browse",
+    "file_requirements": "Up to {{max}} images, max {{size}} each (JPG, PNG, WebP)",
+    "extract_button": "Extract Recipe",
+    "progress_uploading": "Uploading photos...",
+    "progress_analyzing": "Analyzing recipe photos... This may take a moment.",
+    "progress_done": "Recipe created! Redirecting...",
+    "please_wait": "Please wait while we process your photos.",
+    "review_needed": "Some items need your review:",
+    "error_generic": "Something went wrong. Please try again.",
+    "error_type": "Unsupported file type",
+    "error_size": "File too large (max 10MB)",
+    "error_max_files": "Maximum {{max}} photos allowed"
+  },
   "media": {
     "preparing": "Preparing...",
     "uploading": "Uploading...",
