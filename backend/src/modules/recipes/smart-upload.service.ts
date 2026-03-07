@@ -1,9 +1,9 @@
 /**
  * Smart Upload Service
- * Uses Claude Vision API to extract recipe data from photos
+ * Uses OpenAI Vision API to extract recipe data from photos
  */
 
-import Anthropic from '@anthropic-ai/sdk';
+import OpenAI from 'openai';
 import { env } from '../../config/env.js';
 import { createLogger } from '../../lib/logger.js';
 import { recipeService } from './recipe.service.js';
@@ -50,39 +50,37 @@ Return ONLY valid JSON with this exact structure (no markdown, no code blocks):
 }`;
 
 class SmartUploadService {
-  private client: Anthropic | null = null;
+  private client: OpenAI | null = null;
 
-  private getClient(): Anthropic {
+  private getClient(): OpenAI {
     if (!this.client) {
-      if (!env.ANTHROPIC_API_KEY) {
-        throw new Error('ANTHROPIC_API_KEY is not configured');
+      if (!env.OPENAI_API_KEY) {
+        throw new Error('OPENAI_API_KEY is not configured');
       }
-      this.client = new Anthropic({ apiKey: env.ANTHROPIC_API_KEY });
+      this.client = new OpenAI({ apiKey: env.OPENAI_API_KEY });
     }
     return this.client;
   }
 
   /**
-   * Extract recipe data from uploaded images using Claude Vision API
+   * Extract recipe data from uploaded images using OpenAI Vision API
    */
   async extractFromImages(imageBuffers: Array<{ buffer: Buffer; mimeType: string }>): Promise<ExtractedRecipe> {
     const client = this.getClient();
     const startTime = Date.now();
 
-    // Build image content blocks
-    const imageBlocks: Anthropic.Messages.ImageBlockParam[] = imageBuffers.map((img) => ({
-      type: 'image' as const,
-      source: {
-        type: 'base64' as const,
-        media_type: img.mimeType as 'image/jpeg' | 'image/png' | 'image/gif' | 'image/webp',
-        data: img.buffer.toString('base64'),
+    // Build image content blocks for OpenAI
+    const imageBlocks: OpenAI.Chat.Completions.ChatCompletionContentPart[] = imageBuffers.map((img) => ({
+      type: 'image_url' as const,
+      image_url: {
+        url: `data:${img.mimeType};base64,${img.buffer.toString('base64')}`,
       },
     }));
 
-    logger.debug(`Sending ${imageBlocks.length} image(s) to Claude API for extraction`);
+    logger.debug(`Sending ${imageBlocks.length} image(s) to OpenAI API for extraction`);
 
-    const response = await client.messages.create({
-      model: 'claude-sonnet-4-20250514',
+    const response = await client.chat.completions.create({
+      model: 'gpt-4o',
       max_tokens: 4096,
       messages: [
         {
@@ -95,16 +93,16 @@ class SmartUploadService {
       ],
     });
 
-    logger.timing('Claude API extraction', startTime);
+    logger.timing('OpenAI API extraction', startTime);
 
     // Extract text from response
-    const textBlock = response.content.find((block) => block.type === 'text');
-    if (!textBlock || textBlock.type !== 'text') {
-      throw new Error('No text response from Claude API');
+    const content = response.choices[0]?.message?.content;
+    if (!content) {
+      throw new Error('No text response from OpenAI API');
     }
 
     // Parse JSON response — strip markdown code blocks if present
-    let jsonStr = textBlock.text.trim();
+    let jsonStr = content.trim();
     if (jsonStr.startsWith('```')) {
       jsonStr = jsonStr.replace(/^```(?:json)?\n?/, '').replace(/\n?```$/, '');
     }
@@ -113,7 +111,7 @@ class SmartUploadService {
     try {
       extracted = JSON.parse(jsonStr);
     } catch (parseError) {
-      logger.error(`Failed to parse Claude API response as JSON: ${jsonStr.substring(0, 200)}`);
+      logger.error(`Failed to parse OpenAI API response as JSON: ${jsonStr.substring(0, 200)}`);
       throw new Error('Failed to parse recipe extraction result');
     }
 

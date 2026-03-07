@@ -203,7 +203,7 @@ router.post('/smart-upload', requireAuth, smartUpload.array('images', 5), async 
   } catch (error) {
     logger.error(`Smart upload error: ${error instanceof Error ? error.message : String(error)}`);
 
-    if (error instanceof Error && error.message.includes('ANTHROPIC_API_KEY')) {
+    if (error instanceof Error && error.message.includes('OPENAI_API_KEY')) {
       res.status(503).json({ error: 'AI service is not configured' });
       return;
     }
