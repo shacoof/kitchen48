@@ -40,19 +40,21 @@ interface StepFormData {
   ingredients: IngredientFormData[];
 }
 
-const emptyStep: StepFormData = {
-  instruction: '',
-  prepTime: '',
-  prepTimeUnit: 'MINUTES',
-  waitTime: '',
-  waitTimeUnit: 'MINUTES',
-  videoUrl: '',
-  imageId: null,
-  image: null,
-  videoId: null,
-  video: null,
-  ingredients: [],
-};
+function createEmptyStep(): StepFormData {
+  return {
+    instruction: '',
+    prepTime: '',
+    prepTimeUnit: 'MINUTES',
+    waitTime: '',
+    waitTimeUnit: 'MINUTES',
+    videoUrl: '',
+    imageId: null,
+    image: null,
+    videoId: null,
+    video: null,
+    ingredients: [],
+  };
+}
 
 export function CreateRecipePage() {
   const { id } = useParams<{ id: string }>();
@@ -76,7 +78,7 @@ export function CreateRecipePage() {
   const [introVideoId, setIntroVideoId] = useState<string | null>(null);
   const [introVideo, setIntroVideo] = useState<MediaAssetRef | null>(null);
   const [isPublished, setIsPublished] = useState(false);
-  const [steps, setSteps] = useState<StepFormData[]>([{ ...emptyStep }]);
+  const [steps, setSteps] = useState<StepFormData[]>([createEmptyStep()]);
 
   // Computed recipe-level times from steps
   const { computedPrepMinutes, computedCookMinutes } = useMemo(() => {
@@ -187,7 +189,7 @@ export function CreateRecipePage() {
                     masterIngredientId: i.masterIngredientId || null,
                   })),
                 }))
-              : [{ ...emptyStep }]
+              : [createEmptyStep()]
           );
         }
 
@@ -213,7 +215,7 @@ export function CreateRecipePage() {
   }, [authLoading, user, navigate]);
 
   const addStep = () => {
-    setSteps([...steps, { ...emptyStep }]);
+    setSteps([...steps, createEmptyStep()]);
   };
 
   const removeStep = (index: number) => {
@@ -230,7 +232,10 @@ export function CreateRecipePage() {
 
   const addIngredient = (stepIndex: number) => {
     const newSteps = [...steps];
-    newSteps[stepIndex].ingredients.push({ name: '', quantity: '', unit: '', masterIngredientId: null });
+    newSteps[stepIndex] = {
+      ...newSteps[stepIndex],
+      ingredients: [...newSteps[stepIndex].ingredients, { name: '', quantity: '', unit: '', masterIngredientId: null }],
+    };
     setSteps(newSteps);
   };
 

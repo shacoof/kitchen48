@@ -178,6 +178,11 @@ recipesApi.generateSlug(title)
 - **Root Cause**: `Header.tsx` nav used `hidden md:flex` with no hamburger menu or mobile drawer
 - **Fix**: Added hamburger button (visible below `md` breakpoint) that toggles a mobile nav dropdown with icons for all navigation items. Reuses existing i18n translation keys.
 
+### 2026-03-07: Ingredients copied when adding new recipe step
+- **Bug**: Adding a new step to a recipe would show ingredients from a previous step
+- **Root Cause**: Module-level `emptyStep` constant had `ingredients: []` — a single array instance. `addStep()` used `{ ...emptyStep }` (shallow copy), so all new steps shared the same `ingredients` array reference. Additionally, `addIngredient()` used `.push()` which mutated the shared array directly.
+- **Fix**: Replaced `const emptyStep` with `createEmptyStep()` factory function that returns a fresh object with a new array each time. Fixed `addIngredient()` to use spread instead of `.push()` to avoid mutating state directly.
+
 ---
 
 ## Implementation Date
