@@ -8,6 +8,7 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { useAuth } from '../../auth/hooks/useAuth';
 import { recipesApi, Recipe, Step } from '../services/recipes.api';
 import { formatQuantity } from '../../../utils/measurement';
 import { useListValues, getLocalizedLabel } from '../../../hooks/useListValues';
@@ -81,6 +82,7 @@ export function RecipePlayPage() {
     recipeSlug: string;
   }>();
   const navigate = useNavigate();
+  const { user } = useAuth();
   const { t, i18n } = useTranslation('recipes');
 
   // Unit labels from LOV (i18n-aware)
@@ -96,6 +98,13 @@ export function RecipePlayPage() {
   const [activeStepIdx, setActiveStepIdx] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  // Auto-convert units if viewer's measurement system differs from recipe's
+  const targetSystem = useMemo(() => {
+    if (!user?.measurementSystem || !recipe?.measurementSystem) return undefined;
+    if (user.measurementSystem === recipe.measurementSystem) return undefined;
+    return user.measurementSystem as 'metric' | 'imperial';
+  }, [user?.measurementSystem, recipe?.measurementSystem]);
 
   // Timer state: { stepId: remainingSeconds }
   const [timers, setTimers] = useState<Record<string, number>>({});
@@ -354,7 +363,7 @@ export function RecipePlayPage() {
         case 'ingredients':
           if (activeStep) {
             const ingText = activeStep.ingredients
-              .map((i) => `${formatQuantity(i.quantity, i.unit, 1, undefined, unitLabels)} ${i.name}`)
+              .map((i) => `${formatQuantity(i.quantity, i.unit, 1, targetSystem, unitLabels)} ${i.name}`)
               .join(', ');
             speak(ingText || t('play.no_ingredients'));
           }
@@ -804,7 +813,7 @@ export function RecipePlayPage() {
                   onClick={() => {
                     if (activeStep) {
                       const ingText = activeStep.ingredients
-                        .map((i) => `${formatQuantity(i.quantity, i.unit, 1, undefined, unitLabels)} ${i.name}`)
+                        .map((i) => `${formatQuantity(i.quantity, i.unit, 1, targetSystem, unitLabels)} ${i.name}`)
                         .join(', ');
                       speak(ingText || t('play.no_ingredients'));
                     }
@@ -1019,7 +1028,7 @@ export function RecipePlayPage() {
                                 className="font-bold text-lg transition-all"
                                 style={{ fontSize: `${fontScale * 1.125}rem` }}
                               >
-                                {formatQuantity(ing.quantity, ing.unit, 1, undefined, unitLabels)} {ing.name}
+                                {formatQuantity(ing.quantity, ing.unit, 1, targetSystem, unitLabels)} {ing.name}
                               </p>
                             </div>
                           </li>

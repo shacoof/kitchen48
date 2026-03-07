@@ -44,6 +44,13 @@ export function RecipePage() {
   // Is current user the recipe author?
   const isAuthor = user && recipe && user.id === recipe.authorId;
 
+  // Auto-convert units if viewer's measurement system differs from recipe's
+  const targetSystem = useMemo(() => {
+    if (!user?.measurementSystem || !recipe?.measurementSystem) return undefined;
+    if (user.measurementSystem === recipe.measurementSystem) return undefined;
+    return user.measurementSystem as 'metric' | 'imperial';
+  }, [user?.measurementSystem, recipe?.measurementSystem]);
+
   // Serving multiplier relative to original
   const servingMultiplier = useMemo(() => {
     if (!recipe?.servings || servingCount === 0) return 1;
@@ -416,7 +423,7 @@ export function RecipePage() {
                       <span className="w-1.5 h-1.5 bg-accent-orange rounded-full flex-shrink-0 mt-2" />
                       <div>
                         <span className="font-medium text-gray-900">
-                          {formatQuantity(ing.totalQuantity, ing.unit, servingMultiplier, undefined, unitLabels)}
+                          {formatQuantity(ing.totalQuantity, ing.unit, servingMultiplier, targetSystem, unitLabels)}
                         </span>
                         {' '}
                         <span>{ing.name}</span>

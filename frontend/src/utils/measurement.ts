@@ -142,7 +142,7 @@ export function formatQuantity(
   if (targetSystem && unit) {
     const converted = convertQuantity(displayQuantity, unit, targetSystem);
     if (converted) {
-      displayQuantity = converted.quantity;
+      displayQuantity = Math.ceil(converted.quantity);
       displayUnit = converted.unit;
     }
   }
