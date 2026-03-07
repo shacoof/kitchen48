@@ -1,0 +1,403 @@
+name,category
+potato,Vegetables
+sweet potato,Vegetables
+carrot,Vegetables
+onion,Vegetables
+red onion,Vegetables
+shallot,Vegetables
+scallion,Vegetables
+leek,Vegetables
+garlic,Vegetables
+celery,Vegetables
+tomato,Vegetables
+cherry tomato,Vegetables
+bell pepper,Vegetables
+red bell pepper,Vegetables
+chili pepper,Vegetables
+jalapeno pepper,Vegetables
+cucumber,Vegetables
+zucchini,Vegetables
+eggplant,Vegetables
+broccoli,Vegetables
+cauliflower,Vegetables
+cabbage,Vegetables
+red cabbage,Vegetables
+brussels sprout,Vegetables
+spinach,Vegetables
+kale,Vegetables
+lettuce,Vegetables
+arugula,Vegetables
+watercress,Vegetables
+swiss chard,Vegetables
+bok choy,Vegetables
+green bean,Vegetables
+snow pea,Vegetables
+sugar snap pea,Vegetables
+corn,Vegetables
+mushroom,Vegetables
+cremini mushroom,Vegetables
+shiitake mushroom,Vegetables
+portobello mushroom,Vegetables
+asparagus,Vegetables
+artichoke,Vegetables
+fennel,Vegetables
+beet,Vegetables
+turnip,Vegetables
+parsnip,Vegetables
+radish,Vegetables
+pumpkin,Vegetables
+butternut squash,Vegetables
+acorn squash,Vegetables
+avocado,Vegetables
+okra,Vegetables
+kohlrabi,Vegetables
+celeriac,Vegetables
+jicama,Vegetables
+endive,Vegetables
+radicchio,Vegetables
+lemon,Fruits
+lime,Fruits
+orange,Fruits
+grapefruit,Fruits
+apple,Fruits
+pear,Fruits
+banana,Fruits
+strawberry,Fruits
+blueberry,Fruits
+raspberry,Fruits
+blackberry,Fruits
+cranberry,Fruits
+grape,Fruits
+mango,Fruits
+pineapple,Fruits
+peach,Fruits
+nectarine,Fruits
+plum,Fruits
+apricot,Fruits
+cherry,Fruits
+fig,Fruits
+date,Fruits
+pomegranate,Fruits
+watermelon,Fruits
+cantaloupe,Fruits
+kiwi,Fruits
+passion fruit,Fruits
+coconut,Fruits
+raisin,Fruits
+dried cranberry,Fruits
+dried apricot,Fruits
+prune,Fruits
+basil,Fresh Herbs
+parsley,Fresh Herbs
+cilantro,Fresh Herbs
+dill,Fresh Herbs
+mint,Fresh Herbs
+rosemary,Fresh Herbs
+thyme,Fresh Herbs
+sage,Fresh Herbs
+oregano,Fresh Herbs
+tarragon,Fresh Herbs
+chive,Fresh Herbs
+lemongrass,Fresh Herbs
+bay leaf,Fresh Herbs
+ginger,Fresh Herbs
+salt,Spices & Seasonings
+fine sea salt,Spices & Seasonings
+black pepper,Spices & Seasonings
+white pepper,Spices & Seasonings
+cumin,Spices & Seasonings
+coriander,Spices & Seasonings
+turmeric,Spices & Seasonings
+paprika,Spices & Seasonings
+smoked paprika,Spices & Seasonings
+cayenne pepper,Spices & Seasonings
+chili powder,Spices & Seasonings
+chili flakes,Spices & Seasonings
+cinnamon,Spices & Seasonings
+cinnamon stick,Spices & Seasonings
+nutmeg,Spices & Seasonings
+clove,Spices & Seasonings
+cardamom,Spices & Seasonings
+allspice,Spices & Seasonings
+star anise,Spices & Seasonings
+fennel seed,Spices & Seasonings
+mustard seed,Spices & Seasonings
+mustard powder,Spices & Seasonings
+onion powder,Spices & Seasonings
+garlic powder,Spices & Seasonings
+dried oregano,Spices & Seasonings
+dried thyme,Spices & Seasonings
+dried basil,Spices & Seasonings
+dried rosemary,Spices & Seasonings
+dried parsley,Spices & Seasonings
+sumac,Spices & Seasonings
+za'atar,Spices & Seasonings
+curry powder,Spices & Seasonings
+garam masala,Spices & Seasonings
+five spice powder,Spices & Seasonings
+saffron,Spices & Seasonings
+vanilla extract,Spices & Seasonings
+vanilla bean,Spices & Seasonings
+poppy seed,Spices & Seasonings
+sesame seed,Spices & Seasonings
+chicken breast,Meat & Poultry
+chicken thigh,Meat & Poultry
+chicken drumstick,Meat & Poultry
+chicken wing,Meat & Poultry
+whole chicken,Meat & Poultry
+ground chicken,Meat & Poultry
+turkey breast,Meat & Poultry
+ground turkey,Meat & Poultry
+duck breast,Meat & Poultry
+beef steak,Meat & Poultry
+beef chuck,Meat & Poultry
+beef brisket,Meat & Poultry
+beef short rib,Meat & Poultry
+ground beef,Meat & Poultry
+beef sirloin,Meat & Poultry
+beef tenderloin,Meat & Poultry
+veal cutlet,Meat & Poultry
+lamb chop,Meat & Poultry
+lamb shoulder,Meat & Poultry
+ground lamb,Meat & Poultry
+lamb shank,Meat & Poultry
+pork chop,Meat & Poultry
+pork tenderloin,Meat & Poultry
+pork shoulder,Meat & Poultry
+pork belly,Meat & Poultry
+ground pork,Meat & Poultry
+pork sausage,Meat & Poultry
+bacon,Meat & Poultry
+pancetta,Meat & Poultry
+prosciutto,Meat & Poultry
+chorizo,Meat & Poultry
+salami,Meat & Poultry
+ham,Meat & Poultry
+salmon fillet,Seafood
+tuna steak,Seafood
+cod fillet,Seafood
+sea bass fillet,Seafood
+halibut fillet,Seafood
+tilapia fillet,Seafood
+trout fillet,Seafood
+shrimp,Seafood
+prawn,Seafood
+scallop,Seafood
+mussel,Seafood
+clam,Seafood
+squid,Seafood
+octopus,Seafood
+crab meat,Seafood
+lobster,Seafood
+anchovy,Seafood
+sardine,Seafood
+canned tuna,Seafood
+smoked salmon,Seafood
+milk,Dairy & Eggs
+whole milk,Dairy & Eggs
+heavy cream,Dairy & Eggs
+sour cream,Dairy & Eggs
+buttermilk,Dairy & Eggs
+yogurt,Dairy & Eggs
+greek yogurt,Dairy & Eggs
+butter,Dairy & Eggs
+unsalted butter,Dairy & Eggs
+cream cheese,Dairy & Eggs
+mascarpone,Dairy & Eggs
+ricotta,Dairy & Eggs
+cottage cheese,Dairy & Eggs
+egg,Dairy & Eggs
+egg yolk,Dairy & Eggs
+egg white,Dairy & Eggs
+whipped cream,Dairy & Eggs
+condensed milk,Dairy & Eggs
+evaporated milk,Dairy & Eggs
+coconut milk,Dairy & Eggs
+coconut cream,Dairy & Eggs
+parmesan,Cheese
+cheddar,Cheese
+mozzarella,Cheese
+gruyere,Cheese
+gouda,Cheese
+brie,Cheese
+feta,Cheese
+goat cheese,Cheese
+blue cheese,Cheese
+pecorino,Cheese
+halloumi,Cheese
+provolone,Cheese
+swiss cheese,Cheese
+monterey jack,Cheese
+olive oil,Oils & Fats
+extra virgin olive oil,Oils & Fats
+vegetable oil,Oils & Fats
+canola oil,Oils & Fats
+sunflower oil,Oils & Fats
+coconut oil,Oils & Fats
+sesame oil,Oils & Fats
+avocado oil,Oils & Fats
+peanut oil,Oils & Fats
+ghee,Oils & Fats
+lard,Oils & Fats
+cooking spray,Oils & Fats
+white vinegar,Vinegars & Acids
+red wine vinegar,Vinegars & Acids
+white wine vinegar,Vinegars & Acids
+apple cider vinegar,Vinegars & Acids
+balsamic vinegar,Vinegars & Acids
+rice vinegar,Vinegars & Acids
+sherry vinegar,Vinegars & Acids
+lemon juice,Vinegars & Acids
+lime juice,Vinegars & Acids
+soy sauce,Condiments & Sauces
+fish sauce,Condiments & Sauces
+oyster sauce,Condiments & Sauces
+hoisin sauce,Condiments & Sauces
+sriracha,Condiments & Sauces
+hot sauce,Condiments & Sauces
+tabasco,Condiments & Sauces
+worcestershire sauce,Condiments & Sauces
+ketchup,Condiments & Sauces
+mustard,Condiments & Sauces
+dijon mustard,Condiments & Sauces
+whole grain mustard,Condiments & Sauces
+mayonnaise,Condiments & Sauces
+tahini,Condiments & Sauces
+harissa,Condiments & Sauces
+miso paste,Condiments & Sauces
+tomato paste,Condiments & Sauces
+tomato sauce,Condiments & Sauces
+tomato puree,Condiments & Sauces
+marinara sauce,Condiments & Sauces
+pesto,Condiments & Sauces
+barbecue sauce,Condiments & Sauces
+teriyaki sauce,Condiments & Sauces
+sweet chili sauce,Condiments & Sauces
+salsa,Condiments & Sauces
+sambal oelek,Condiments & Sauces
+chutney,Condiments & Sauces
+capers,Condiments & Sauces
+olive,Condiments & Sauces
+pickle,Condiments & Sauces
+cornichon,Condiments & Sauces
+rice,Grains & Pasta
+basmati rice,Grains & Pasta
+jasmine rice,Grains & Pasta
+arborio rice,Grains & Pasta
+brown rice,Grains & Pasta
+wild rice,Grains & Pasta
+spaghetti,Grains & Pasta
+penne,Grains & Pasta
+fettuccine,Grains & Pasta
+linguine,Grains & Pasta
+rigatoni,Grains & Pasta
+fusilli,Grains & Pasta
+orzo,Grains & Pasta
+lasagna sheet,Grains & Pasta
+egg noodle,Grains & Pasta
+rice noodle,Grains & Pasta
+udon noodle,Grains & Pasta
+soba noodle,Grains & Pasta
+couscous,Grains & Pasta
+quinoa,Grains & Pasta
+bulgur,Grains & Pasta
+polenta,Grains & Pasta
+oats,Grains & Pasta
+rolled oats,Grains & Pasta
+barley,Grains & Pasta
+farro,Grains & Pasta
+breadcrumb,Grains & Pasta
+panko breadcrumb,Grains & Pasta
+tortilla,Grains & Pasta
+pita bread,Grains & Pasta
+lentil,Legumes & Beans
+red lentil,Legumes & Beans
+green lentil,Legumes & Beans
+chickpea,Legumes & Beans
+black bean,Legumes & Beans
+kidney bean,Legumes & Beans
+white bean,Legumes & Beans
+cannellini bean,Legumes & Beans
+navy bean,Legumes & Beans
+pinto bean,Legumes & Beans
+lima bean,Legumes & Beans
+edamame,Legumes & Beans
+split pea,Legumes & Beans
+almond,Nuts & Seeds
+walnut,Nuts & Seeds
+pecan,Nuts & Seeds
+cashew,Nuts & Seeds
+pistachio,Nuts & Seeds
+pine nut,Nuts & Seeds
+peanut,Nuts & Seeds
+hazelnut,Nuts & Seeds
+macadamia,Nuts & Seeds
+chestnut,Nuts & Seeds
+sunflower seed,Nuts & Seeds
+pumpkin seed,Nuts & Seeds
+flax seed,Nuts & Seeds
+chia seed,Nuts & Seeds
+hemp seed,Nuts & Seeds
+almond butter,Nuts & Seeds
+peanut butter,Nuts & Seeds
+all purpose flour,Baking
+self raising flour,Baking
+bread flour,Baking
+whole wheat flour,Baking
+cake flour,Baking
+cornstarch,Baking
+baking powder,Baking
+baking soda,Baking
+active dry yeast,Baking
+instant yeast,Baking
+gelatin,Baking
+cocoa powder,Baking
+dark chocolate,Baking
+milk chocolate,Baking
+white chocolate,Baking
+chocolate chip,Baking
+white sugar,Sweeteners
+brown sugar,Sweeteners
+powdered sugar,Sweeteners
+honey,Sweeteners
+maple syrup,Sweeteners
+agave nectar,Sweeteners
+molasses,Sweeteners
+corn syrup,Sweeteners
+stevia,Sweeteners
+canned diced tomato,Canned & Preserved
+canned whole tomato,Canned & Preserved
+canned crushed tomato,Canned & Preserved
+sun-dried tomato,Canned & Preserved
+canned chickpea,Canned & Preserved
+canned black bean,Canned & Preserved
+canned corn,Canned & Preserved
+canned coconut milk,Canned & Preserved
+roasted red pepper,Canned & Preserved
+artichoke heart,Canned & Preserved
+bamboo shoot,Canned & Preserved
+water chestnut,Canned & Preserved
+chicken broth,Liquids & Stocks
+beef broth,Liquids & Stocks
+vegetable broth,Liquids & Stocks
+white wine,Liquids & Stocks
+red wine,Liquids & Stocks
+dry sherry,Liquids & Stocks
+marsala wine,Liquids & Stocks
+mirin,Liquids & Stocks
+sake,Liquids & Stocks
+beer,Liquids & Stocks
+water,Liquids & Stocks
+tofu,Plant-Based & Other
+tempeh,Plant-Based & Other
+seitan,Plant-Based & Other
+nutritional yeast,Plant-Based & Other
+nori,Plant-Based & Other
+wakame,Plant-Based & Other
+tortilla chip,Snacks & Misc
+wonton wrapper,Snacks & Misc
+spring roll wrapper,Snacks & Misc
+phyllo dough,Snacks & Misc
+puff pastry,Snacks & Misc
+pie crust,Snacks & Misc
+dumpling wrapper,Snacks & Misc
