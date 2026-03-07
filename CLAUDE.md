@@ -9,6 +9,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - **Prisma ORM** for type-safe database access
 - Schema: `backend/prisma/schema.prisma`
 - Local port: **5433** (to avoid conflicts with other projects)
+- **Production DB access**: See [`docs/prod-db-connection.md`](docs/prod-db-connection.md) for Cloud SQL proxy setup, connection details, and query tools (`scripts/prod-db.sh`)
 
 ### Database Commands
 
