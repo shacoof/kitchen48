@@ -32,8 +32,9 @@ const envSchema = z.object({
   // Frontend URL (for email links)
   FRONTEND_URL: z.string().url().default('http://localhost:5173'),
 
-  // OpenAI (Vision API for smart recipe upload)
+  // AI Vision (smart recipe upload) — provider controlled via db parameter
   OPENAI_API_KEY: z.string().optional(),
+  GEMINI_API_KEY: z.string().optional(),
 
   // Cloudflare Media (Stream + Images)
   CF_ACCOUNT_ID: z.string().optional(),

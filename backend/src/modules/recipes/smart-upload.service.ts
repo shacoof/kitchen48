@@ -1,16 +1,21 @@
 /**
  * Smart Upload Service
- * Uses OpenAI Vision API to extract recipe data from photos
+ * Uses AI Vision APIs to extract recipe data from photos.
+ * Provider is configurable via the database parameter "ai.vision.provider".
  */
 
 import OpenAI from 'openai';
+import { GoogleGenerativeAI } from '@google/generative-ai';
 import { env } from '../../config/env.js';
 import { createLogger } from '../../lib/logger.js';
+import { parameterService } from '../parameters/parameter.service.js';
 import { recipeService } from './recipe.service.js';
 import type { CreateRecipeInput } from './recipe.types.js';
 import type { ExtractedRecipe, SmartUploadResult } from './smart-upload.types.js';
 
 const logger = createLogger('SmartUploadService');
+
+type AIProvider = 'gemini' | 'openai';
 
 const EXTRACTION_PROMPT = `You are a recipe extraction assistant. Analyze the provided recipe photo(s) and extract all recipe information into structured JSON.
 
@@ -50,26 +55,67 @@ Return ONLY valid JSON with this exact structure (no markdown, no code blocks):
 }`;
 
 class SmartUploadService {
-  private client: OpenAI | null = null;
+  private openaiClient: OpenAI | null = null;
 
-  private getClient(): OpenAI {
-    if (!this.client) {
+  private async getProvider(): Promise<AIProvider> {
+    const value = await parameterService.getSystemValue('ai.vision.provider', 'gemini');
+    const provider = (value || 'gemini').toLowerCase() as AIProvider;
+    if (provider !== 'gemini' && provider !== 'openai') {
+      logger.warning(`Unknown AI provider "${provider}", falling back to gemini`);
+      return 'gemini';
+    }
+    return provider;
+  }
+
+  private getOpenAIClient(): OpenAI {
+    if (!this.openaiClient) {
       if (!env.OPENAI_API_KEY) {
         throw new Error('OPENAI_API_KEY is not configured');
       }
-      this.client = new OpenAI({ apiKey: env.OPENAI_API_KEY });
+      this.openaiClient = new OpenAI({ apiKey: env.OPENAI_API_KEY });
     }
-    return this.client;
+    return this.openaiClient;
   }
 
   /**
-   * Extract recipe data from uploaded images using OpenAI Vision API
+   * Extract using Google Gemini Vision API
    */
-  async extractFromImages(imageBuffers: Array<{ buffer: Buffer; mimeType: string }>): Promise<ExtractedRecipe> {
-    const client = this.getClient();
-    const startTime = Date.now();
+  private async extractWithGemini(imageBuffers: Array<{ buffer: Buffer; mimeType: string }>): Promise<string> {
+    if (!env.GEMINI_API_KEY) {
+      throw new Error('GEMINI_API_KEY is not configured');
+    }
 
-    // Build image content blocks for OpenAI
+    const genAI = new GoogleGenerativeAI(env.GEMINI_API_KEY);
+    const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' });
+
+    const imageParts = imageBuffers.map((img) => ({
+      inlineData: {
+        mimeType: img.mimeType,
+        data: img.buffer.toString('base64'),
+      },
+    }));
+
+    logger.debug(`Sending ${imageParts.length} image(s) to Gemini API for extraction`);
+
+    const result = await model.generateContent([
+      ...imageParts,
+      { text: EXTRACTION_PROMPT },
+    ]);
+
+    const response = result.response;
+    const text = response.text();
+    if (!text) {
+      throw new Error('No text response from Gemini API');
+    }
+    return text;
+  }
+
+  /**
+   * Extract using OpenAI Vision API
+   */
+  private async extractWithOpenAI(imageBuffers: Array<{ buffer: Buffer; mimeType: string }>): Promise<string> {
+    const client = this.getOpenAIClient();
+
     const imageBlocks: OpenAI.Chat.Completions.ChatCompletionContentPart[] = imageBuffers.map((img) => ({
       type: 'image_url' as const,
       image_url: {
@@ -93,16 +139,31 @@ class SmartUploadService {
       ],
     });
 
-    logger.timing('OpenAI API extraction', startTime);
-
-    // Extract text from response
     const content = response.choices[0]?.message?.content;
     if (!content) {
       throw new Error('No text response from OpenAI API');
     }
+    return content;
+  }
+
+  /**
+   * Extract recipe data from uploaded images using the configured AI provider
+   */
+  async extractFromImages(imageBuffers: Array<{ buffer: Buffer; mimeType: string }>): Promise<ExtractedRecipe> {
+    const provider = await this.getProvider();
+    const startTime = Date.now();
+
+    let rawText: string;
+    if (provider === 'openai') {
+      rawText = await this.extractWithOpenAI(imageBuffers);
+    } else {
+      rawText = await this.extractWithGemini(imageBuffers);
+    }
+
+    logger.timing(`${provider} API extraction`, startTime);
 
     // Parse JSON response — strip markdown code blocks if present
-    let jsonStr = content.trim();
+    let jsonStr = rawText.trim();
     if (jsonStr.startsWith('```')) {
       jsonStr = jsonStr.replace(/^```(?:json)?\n?/, '').replace(/\n?```$/, '');
     }
@@ -111,7 +172,7 @@ class SmartUploadService {
     try {
       extracted = JSON.parse(jsonStr);
     } catch (parseError) {
-      logger.error(`Failed to parse OpenAI API response as JSON: ${jsonStr.substring(0, 200)}`);
+      logger.error(`Failed to parse ${provider} API response as JSON: ${jsonStr.substring(0, 200)}`);
       throw new Error('Failed to parse recipe extraction result');
     }
 
@@ -126,7 +187,7 @@ class SmartUploadService {
       extracted.warnings.push('No steps could be extracted from the images');
     }
 
-    logger.debug(`Extracted recipe: "${extracted.title}" with ${extracted.steps.length} steps`);
+    logger.debug(`Extracted recipe: "${extracted.title}" with ${extracted.steps.length} steps (provider: ${provider})`);
     return extracted;
   }
 
