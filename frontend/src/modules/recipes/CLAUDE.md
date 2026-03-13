@@ -183,6 +183,11 @@ recipesApi.generateSlug(title)
 - **Root Cause**: Module-level `emptyStep` constant had `ingredients: []` — a single array instance. `addStep()` used `{ ...emptyStep }` (shallow copy), so all new steps shared the same `ingredients` array reference. Additionally, `addIngredient()` used `.push()` which mutated the shared array directly.
 - **Fix**: Replaced `const emptyStep` with `createEmptyStep()` factory function that returns a fresh object with a new array each time. Fixed `addIngredient()` to use spread instead of `.push()` to avoid mutating state directly.
 
+### 2026-03-13: Ingredient name field too small on mobile
+- **Bug**: On mobile, the ingredient name input field was squeezed too narrow (< 15 characters) making it hard to type/read
+- **Root Cause**: CreateRecipePage ingredient row used `flex` without `flex-wrap`, so the name field got squeezed after fixed-width quantity and unit fields. RecipeStepPage used `min-w-[140px]` (pixel-based) instead of character-based threshold.
+- **Fix**: Added `flex-wrap` to CreateRecipePage ingredient row container. Set `min-w-[15ch]` on the ingredient name field in both CreateRecipePage and RecipeStepPage, so the field wraps to a new line (full width) when available space is less than 15 characters.
+
 ---
 
 ## Implementation Date
