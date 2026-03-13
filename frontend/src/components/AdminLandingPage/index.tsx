@@ -10,6 +10,7 @@ import UsersPage from './UsersPage';
 import IngredientsPage from './IngredientsPage';
 import StatisticsPage from './StatisticsPage';
 import { ListTypeManagement } from '../../modules/list-types/components/ListTypeManagement';
+import VoiceCommandsPage from './VoiceCommandsPage';
 
 export default function AdminLandingPage() {
   const { isAuthenticated, isAdmin, isLoading } = useAuth();
@@ -43,6 +44,8 @@ export default function AdminLandingPage() {
         return <StatisticsPage />;
       case 'list-values':
         return <ListTypeManagement />;
+      case 'voice-commands':
+        return <VoiceCommandsPage />;
       case 'dashboard':
       default:
         return <Dashboard />;

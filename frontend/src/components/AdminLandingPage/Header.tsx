@@ -1,7 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../context/AuthContext';
 
-export type AdminPage = 'dashboard' | 'parameters' | 'users' | 'ingredients' | 'statistics' | 'list-values';
+export type AdminPage = 'dashboard' | 'parameters' | 'users' | 'ingredients' | 'statistics' | 'list-values' | 'voice-commands';
 
 interface HeaderProps {
   currentPage?: AdminPage;
@@ -18,6 +18,7 @@ export default function Header({ currentPage = 'dashboard', onNavigate }: Header
     { id: 'ingredients', label: t('header.ingredients') },
     { id: 'statistics', label: t('header.statistics') },
     { id: 'list-values', label: t('header.list_values') },
+    { id: 'voice-commands', label: t('header.voice_commands') },
     { id: 'parameters', label: t('header.parameters') },
   ];
 

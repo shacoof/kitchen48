@@ -84,6 +84,9 @@ async function loadApplication() {
   const { mediaRouter } = await import('./modules/media/media.routes.js');
   console.log('[STARTUP] media routes imported');
 
+  const voiceCommandsRoutes = (await import('./modules/voice-commands/voice-commands.routes.js')).default;
+  console.log('[STARTUP] voice-commands routes imported');
+
   const path = (await import('path')).default;
   console.log('[STARTUP] path module imported');
 
@@ -119,6 +122,7 @@ async function loadApplication() {
   app.use('/api/list-values', listValuesPublicRouter);
   app.use('/api/recipes', recipeRoutes);
   app.use('/api/media', mediaRouter);
+  app.use('/api/voice-commands', voiceCommandsRoutes);
   console.log('[STARTUP] Routes configured');
 
   // Mark server as ready
