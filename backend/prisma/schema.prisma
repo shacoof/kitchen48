@@ -349,6 +349,38 @@ model ListValueTranslation {
 }
 
 // ============================================================================
+// Voice Commands (Play Mode)
+// ============================================================================
+
+model VoiceCommand {
+  id        String   @id @default(cuid())
+  command   String   @unique // Action key: "next", "previous", "describe", etc.
+  keywords  String[] // Trigger words in all languages: ["next", "הבא"]
+  icon      String? // Material Symbol icon name: "skip_next"
+  sortOrder Int      @default(0) @map("sort_order")
+  isActive  Boolean  @default(true) @map("is_active")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  translations VoiceCommandTranslation[]
+
+  @@map("voice_commands")
+}
+
+model VoiceCommandTranslation {
+  id             String @id @default(cuid())
+  voiceCommandId String @map("voice_command_id")
+  language       String // ISO 639-1: "en", "he"
+  displayKeyword String @map("display_keyword") // Shown in help overlay: "\"Next\""
+  description    String // Help text: "Go to the next step"
+
+  voiceCommand VoiceCommand @relation(fields: [voiceCommandId], references: [id], onDelete: Cascade)
+
+  @@unique([voiceCommandId, language])
+  @@map("voice_command_translations")
+}
+
+// ============================================================================
 // Deployment & Migration Tracking
 // ============================================================================
 
