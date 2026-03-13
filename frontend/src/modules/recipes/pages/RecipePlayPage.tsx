@@ -45,8 +45,19 @@ function formatTimer(seconds: number): string {
   return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
 }
 
-// Voice command keyword matching (English + Hebrew)
-const VOICE_COMMANDS: Record<string, string[]> = {
+// Voice command types from API
+interface VoiceCommandFromAPI {
+  id: string;
+  command: string;
+  keywords: string[];
+  icon: string | null;
+  sortOrder: number;
+  isActive: boolean;
+  translations: { language: string; displayKeyword: string; description: string }[];
+}
+
+// Fallback voice commands (used if API is unavailable)
+const FALLBACK_VOICE_COMMANDS: Record<string, string[]> = {
   next: ['next', 'הבא'],
   previous: ['previous', 'back', 'הקודם', 'אחורה'],
   describe: ['read instructions', 'read step', 'describe', 'read', 'קרא הוראות', 'תקריא', 'קרא'],
@@ -64,9 +75,17 @@ const VOICE_COMMANDS: Record<string, string[]> = {
   help: ['help', 'עזרה'],
 };
 
-function matchVoiceCommand(transcript: string): string | null {
+function buildVoiceCommandsMap(apiCommands: VoiceCommandFromAPI[]): Record<string, string[]> {
+  const map: Record<string, string[]> = {};
+  for (const cmd of apiCommands) {
+    map[cmd.command] = cmd.keywords;
+  }
+  return map;
+}
+
+function matchVoiceCommand(transcript: string, commandsMap: Record<string, string[]>): string | null {
   const lower = transcript.toLowerCase().trim();
-  for (const [cmd, keywords] of Object.entries(VOICE_COMMANDS)) {
+  for (const [cmd, keywords] of Object.entries(commandsMap)) {
     if (keywords.some((kw) => lower.includes(kw))) return cmd;
   }
   return null;
@@ -115,6 +134,13 @@ export function RecipePlayPage() {
   // Ingredient checklist: { stepId: Set<ingredientId> }
   const [checkedIngredients, setCheckedIngredients] = useState<Record<string, Set<string>>>({});
 
+  // Voice commands from DB
+  const [voiceCommandsFromAPI, setVoiceCommandsFromAPI] = useState<VoiceCommandFromAPI[]>([]);
+  const voiceCommandsMap = useMemo(() => {
+    if (voiceCommandsFromAPI.length > 0) return buildVoiceCommandsMap(voiceCommandsFromAPI);
+    return FALLBACK_VOICE_COMMANDS;
+  }, [voiceCommandsFromAPI]);
+
   // Voice control
   const [voiceEnabled, setVoiceEnabled] = useState(false);
   const [recognizedCommand, setRecognizedCommand] = useState('');
@@ -137,6 +163,10 @@ export function RecipePlayPage() {
 
   // Ref for latest voice command handler (avoids stale closures)
   const voiceHandlerRef = useRef<(cmd: string) => void>(() => {});
+
+  // Ref for voice commands map (avoids stale closures in speech recognition)
+  const voiceCommandsMapRef = useRef(voiceCommandsMap);
+  useEffect(() => { voiceCommandsMapRef.current = voiceCommandsMap; }, [voiceCommandsMap]);
 
   // Touch swipe tracking
   const touchStartX = useRef<number | null>(null);
@@ -176,6 +206,27 @@ export function RecipePlayPage() {
 
     fetchRecipe();
   }, [nickname, recipeSlug]);
+
+  // ──────────────────────────────────────────────────────────────────────
+  // Fetch Voice Commands from DB
+  // ──────────────────────────────────────────────────────────────────────
+
+  useEffect(() => {
+    const fetchVoiceCommands = async () => {
+      try {
+        const response = await fetch(`/api/voice-commands?lang=${i18n.language}`);
+        if (response.ok) {
+          const result = await response.json();
+          if (result.data?.length > 0) {
+            setVoiceCommandsFromAPI(result.data);
+          }
+        }
+      } catch {
+        logger.warning('Failed to fetch voice commands from API, using fallback');
+      }
+    };
+    fetchVoiceCommands();
+  }, [i18n.language]);
 
   // ──────────────────────────────────────────────────────────────────────
   // Screen Wake Lock
@@ -399,27 +450,32 @@ export function RecipePlayPage() {
           break;
         case 'help': {
           setShowHelp(true);
-          const helpText = [
-            `${t('play.help_cmd_read_instructions')}`,
-            `${t('play.help_cmd_read_ingredients')}`,
-            `${t('play.help_cmd_stop')}`,
-            `${t('play.help_cmd_next')}`,
-            `${t('play.help_cmd_previous')}`,
-            `${t('play.help_cmd_louder')}`,
-            `${t('play.help_cmd_quieter')}`,
-            `${t('play.help_cmd_bigger')}`,
-            `${t('play.help_cmd_smaller')}`,
-            `${t('play.help_cmd_timer')}`,
-            `${t('play.help_cmd_restart')}`,
-            `${t('play.help_cmd_exit')}`,
-            `${t('play.help_cmd_help')}`,
-          ].join('. ');
+          const helpText = voiceCommandsFromAPI.length > 0
+            ? voiceCommandsFromAPI
+                .filter((c) => c.translations.length > 0)
+                .map((c) => c.translations[0].description)
+                .join('. ')
+            : [
+                t('play.help_cmd_read_instructions'),
+                t('play.help_cmd_read_ingredients'),
+                t('play.help_cmd_stop'),
+                t('play.help_cmd_next'),
+                t('play.help_cmd_previous'),
+                t('play.help_cmd_louder'),
+                t('play.help_cmd_quieter'),
+                t('play.help_cmd_bigger'),
+                t('play.help_cmd_smaller'),
+                t('play.help_cmd_timer'),
+                t('play.help_cmd_restart'),
+                t('play.help_cmd_exit'),
+                t('play.help_cmd_help'),
+              ].join('. ');
           speak(helpText);
           break;
         }
       }
     };
-  }, [activeStepIdx, activeStep, timers, volume, goToStep, speak, stopSpeaking, startTimer, t, navigate, nickname, recipeSlug]);
+  }, [activeStepIdx, activeStep, timers, volume, goToStep, speak, stopSpeaking, startTimer, t, navigate, nickname, recipeSlug, voiceCommandsFromAPI]);
 
   // ──────────────────────────────────────────────────────────────────────
   // Voice Control (Web Speech API)
@@ -456,7 +512,7 @@ export function RecipePlayPage() {
         voiceRetryCountRef.current = 0; // successful result resets retry counter
         const transcript = last[0].transcript;
         logger.debug(`Voice recognized: ${transcript}`);
-        const cmd = matchVoiceCommand(transcript);
+        const cmd = matchVoiceCommand(transcript, voiceCommandsMapRef.current);
         if (cmd) {
           setRecognizedCommand(cmd);
           voiceHandlerRef.current(cmd);
@@ -1067,29 +1123,42 @@ export function RecipePlayPage() {
                 </button>
               </div>
               <ul className="space-y-3">
-                {[
-                  { icon: 'record_voice_over', cmd: t('play.help_kw_read_instructions'), desc: t('play.help_cmd_read_instructions') },
-                  { icon: 'shopping_basket', cmd: t('play.help_kw_read_ingredients'), desc: t('play.help_cmd_read_ingredients') },
-                  { icon: 'stop_circle', cmd: t('play.help_kw_stop'), desc: t('play.help_cmd_stop') },
-                  { icon: 'skip_next', cmd: t('play.help_kw_next'), desc: t('play.help_cmd_next') },
-                  { icon: 'skip_previous', cmd: t('play.help_kw_previous'), desc: t('play.help_cmd_previous') },
-                  { icon: 'volume_up', cmd: t('play.help_kw_louder'), desc: t('play.help_cmd_louder') },
-                  { icon: 'volume_down', cmd: t('play.help_kw_quieter'), desc: t('play.help_cmd_quieter') },
-                  { icon: 'text_increase', cmd: t('play.help_kw_bigger'), desc: t('play.help_cmd_bigger') },
-                  { icon: 'text_decrease', cmd: t('play.help_kw_smaller'), desc: t('play.help_cmd_smaller') },
-                  { icon: 'timer', cmd: t('play.help_kw_timer'), desc: t('play.help_cmd_timer') },
-                  { icon: 'replay', cmd: t('play.help_kw_restart'), desc: t('play.help_cmd_restart') },
-                  { icon: 'logout', cmd: t('play.help_kw_exit'), desc: t('play.help_cmd_exit') },
-                  { icon: 'help', cmd: t('play.help_kw_help'), desc: t('play.help_cmd_help') },
-                ].map((item) => (
-                  <li key={item.cmd} className="flex items-start gap-3">
-                    <span className="material-symbols-outlined text-[#13ec5b] text-lg flex-shrink-0 mt-0.5">{item.icon}</span>
-                    <div>
-                      <span className="font-bold text-white text-sm">{item.cmd}</span>
-                      <p className="text-white/50 text-xs">{item.desc}</p>
-                    </div>
-                  </li>
-                ))}
+                {voiceCommandsFromAPI.length > 0
+                  ? voiceCommandsFromAPI
+                      .filter((c) => c.translations.length > 0)
+                      .map((c) => (
+                        <li key={c.id} className="flex items-start gap-3">
+                          <span className="material-symbols-outlined text-[#13ec5b] text-lg flex-shrink-0 mt-0.5">{c.icon || 'mic'}</span>
+                          <div>
+                            <span className="font-bold text-white text-sm">{c.translations[0].displayKeyword}</span>
+                            <p className="text-white/50 text-xs">{c.translations[0].description}</p>
+                          </div>
+                        </li>
+                      ))
+                  : [
+                      { icon: 'record_voice_over', cmd: t('play.help_kw_read_instructions'), desc: t('play.help_cmd_read_instructions') },
+                      { icon: 'shopping_basket', cmd: t('play.help_kw_read_ingredients'), desc: t('play.help_cmd_read_ingredients') },
+                      { icon: 'stop_circle', cmd: t('play.help_kw_stop'), desc: t('play.help_cmd_stop') },
+                      { icon: 'skip_next', cmd: t('play.help_kw_next'), desc: t('play.help_cmd_next') },
+                      { icon: 'skip_previous', cmd: t('play.help_kw_previous'), desc: t('play.help_cmd_previous') },
+                      { icon: 'volume_up', cmd: t('play.help_kw_louder'), desc: t('play.help_cmd_louder') },
+                      { icon: 'volume_down', cmd: t('play.help_kw_quieter'), desc: t('play.help_cmd_quieter') },
+                      { icon: 'text_increase', cmd: t('play.help_kw_bigger'), desc: t('play.help_cmd_bigger') },
+                      { icon: 'text_decrease', cmd: t('play.help_kw_smaller'), desc: t('play.help_cmd_smaller') },
+                      { icon: 'timer', cmd: t('play.help_kw_timer'), desc: t('play.help_cmd_timer') },
+                      { icon: 'replay', cmd: t('play.help_kw_restart'), desc: t('play.help_cmd_restart') },
+                      { icon: 'logout', cmd: t('play.help_kw_exit'), desc: t('play.help_cmd_exit') },
+                      { icon: 'help', cmd: t('play.help_kw_help'), desc: t('play.help_cmd_help') },
+                    ].map((item) => (
+                      <li key={item.cmd} className="flex items-start gap-3">
+                        <span className="material-symbols-outlined text-[#13ec5b] text-lg flex-shrink-0 mt-0.5">{item.icon}</span>
+                        <div>
+                          <span className="font-bold text-white text-sm">{item.cmd}</span>
+                          <p className="text-white/50 text-xs">{item.desc}</p>
+                        </div>
+                      </li>
+                    ))
+                }
               </ul>
               <p className="mt-6 text-xs text-white/30 text-center">{t('play.help_hint')}</p>
             </div>
