@@ -3,7 +3,7 @@
  * Edit own profile page at /profile/edit
  */
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -49,9 +49,12 @@ export function EditProfilePage() {
   const { values: measurementSystems } = useListValues({ typeName: 'Measurement System' });
   const [profile, setProfile] = useState<FullUserProfile | null>(null);
   const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+  const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
+  const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const statusTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const initialLoadRef = useRef(true);
 
   // Media state
   const [profilePhotoId, setProfilePhotoId] = useState<string | null>(null);
@@ -59,8 +62,10 @@ export function EditProfilePage() {
 
   const {
     register,
-    handleSubmit,
     reset,
+    watch,
+    trigger,
+    getValues,
     formState: { errors, isDirty },
   } = useForm<ProfileFormData>({
     resolver: zodResolver(profileSchema),
@@ -106,10 +111,9 @@ export function EditProfilePage() {
     fetchProfile();
   }, [isAuthenticated, reset, t]);
 
-  const onSubmit = async (data: ProfileFormData) => {
-    setSaving(true);
+  const doAutoSave = useCallback(async (data: ProfileFormData) => {
+    setSaveStatus('saving');
     setError(null);
-    setSuccess(null);
 
     const result = await usersApi.updateProfile({
       nickname: data.nickname || undefined,
@@ -126,12 +130,13 @@ export function EditProfilePage() {
     if (result.error) {
       logger.error(`Failed to update profile: ${result.error}`);
       setError(result.error);
+      setSaveStatus('error');
     } else if (result.data) {
       setProfile(result.data);
-      setSuccess(t('edit.success_message'));
-      // Refresh auth context to update header
+      setSaveStatus('saved');
+      if (statusTimerRef.current) clearTimeout(statusTimerRef.current);
+      statusTimerRef.current = setTimeout(() => setSaveStatus('idle'), 2000);
       await refreshUser();
-      // Reset form with new data
       reset({
         nickname: result.data.nickname || '',
         firstName: result.data.firstName || '',
@@ -143,8 +148,40 @@ export function EditProfilePage() {
       });
     }
 
-    setSaving(false);
-  };
+  }, [profilePhotoId, introVideoId, refreshUser, reset]);
+
+  // Watch all form fields for auto-save
+  const watchedFields = watch();
+
+  useEffect(() => {
+    // Skip auto-save on initial load
+    if (initialLoadRef.current) {
+      initialLoadRef.current = false;
+      return;
+    }
+    if (!isDirty || !profile) return;
+
+    if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
+    saveTimerRef.current = setTimeout(async () => {
+      const isValid = await trigger();
+      if (isValid) {
+        const data = getValues();
+        doAutoSave(data);
+      }
+    }, 1000);
+
+    return () => {
+      if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
+    };
+  }, [watchedFields, isDirty, profile, trigger, getValues, doAutoSave]);
+
+  // Cleanup timers
+  useEffect(() => {
+    return () => {
+      if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
+      if (statusTimerRef.current) clearTimeout(statusTimerRef.current);
+    };
+  }, []);
 
   const handlePhotoUploadComplete = useCallback(async (asset: MediaAsset) => {
     logger.debug(`Profile photo uploaded: ${asset.id}`);
@@ -285,7 +322,7 @@ export function EditProfilePage() {
           </div>
 
           {/* Profile Form */}
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+          <div className="space-y-6">
             {/* Nickname */}
             <div>
               <label htmlFor="nickname" className="block text-sm font-medium text-gray-700 mb-1">
@@ -409,23 +446,19 @@ export function EditProfilePage() {
               </select>
             </div>
 
-            {/* Submit Button */}
-            <div className="flex justify-end gap-4">
-              <Link
-                to="/"
-                className="px-6 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400"
-              >
-                {t('edit.cancel_button')}
-              </Link>
-              <button
-                type="submit"
-                disabled={saving || !isDirty}
-                className="px-6 py-2 bg-accent-orange text-white rounded-lg hover:bg-opacity-90 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {saving ? t('edit.saving') : t('edit.save_button')}
-              </button>
+            {/* Auto-save status */}
+            <div className="flex justify-end items-center h-8">
+              {saveStatus === 'saving' && (
+                <span className="text-sm text-gray-400">{t('edit.saving')}</span>
+              )}
+              {saveStatus === 'saved' && (
+                <span className="text-sm text-green-500">{t('edit.changes_saved', 'All changes saved')}</span>
+              )}
+              {saveStatus === 'error' && (
+                <span className="text-sm text-red-500">{t('edit.save_error', 'Error saving changes')}</span>
+              )}
             </div>
-          </form>
+          </div>
         </div>
       </main>
     </div>
