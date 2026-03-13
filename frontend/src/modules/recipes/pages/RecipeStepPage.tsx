@@ -1056,7 +1056,7 @@ export function RecipeStepPage() {
                           </div>
 
                           {/* Ingredient name with autocomplete */}
-                          <div className="flex-1 min-w-[140px] relative">
+                          <div className="flex-1 min-w-[15ch] relative">
                             <label className="block text-xs text-gray-500 mb-0.5">{t('steps.ingredient_name')}</label>
                             <input
                               type="text"

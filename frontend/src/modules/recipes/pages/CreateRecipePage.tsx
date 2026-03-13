@@ -775,7 +775,7 @@ export function CreateRecipePage() {
                               acResults.length > 0;
 
                             return (
-                              <div key={ingIndex} className="flex gap-2 items-start">
+                              <div key={ingIndex} className="flex flex-wrap gap-2 items-start">
                                 <input
                                   type="text"
                                   inputMode="decimal"
@@ -800,7 +800,7 @@ export function CreateRecipePage() {
                                     </option>
                                   ))}
                                 </select>
-                                <div className="flex-1 relative">
+                                <div className="flex-1 min-w-[15ch] relative">
                                   <input
                                     type="text"
                                     value={ing.name}
