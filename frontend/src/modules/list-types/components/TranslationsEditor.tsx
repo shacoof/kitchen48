@@ -5,7 +5,7 @@
  * Allows adding/editing/removing translations per language.
  */
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { authApi } from '../../auth/services/auth.api';
 import { useListValues } from '../../../hooks/useListValues';
 import { createLogger } from '../../../lib/logger';
@@ -29,10 +29,12 @@ interface TranslationsEditorProps {
 export function TranslationsEditor({ listTypeId, valueId, valueName, onClose }: TranslationsEditorProps) {
   const [translations, setTranslations] = useState<Translation[]>([]);
   const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [editRows, setEditRows] = useState<Record<string, { label: string; description: string }>>({});
   const [newLang, setNewLang] = useState('');
+  const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
+  const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const statusTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const { values: languages } = useListValues({ typeName: 'Languages' });
 
@@ -75,15 +77,15 @@ export function TranslationsEditor({ listTypeId, valueId, valueName, onClose }: 
     loadTranslations();
   }, [loadTranslations]);
 
-  const handleSaveAll = async () => {
+  const doSaveAll = useCallback(async (rows: Record<string, { label: string; description: string }>) => {
     try {
-      setSaving(true);
+      setSaveStatus('saving');
       setError(null);
 
       const token = authApi.getToken();
       if (!token) throw new Error('Not authenticated');
 
-      const translationsPayload = Object.entries(editRows)
+      const translationsPayload = Object.entries(rows)
         .filter(([, val]) => val.label.trim() !== '')
         .map(([lang, val]) => ({
           language: lang,
@@ -105,14 +107,29 @@ export function TranslationsEditor({ listTypeId, valueId, valueName, onClose }: 
         throw new Error(data.error || 'Failed to save translations');
       }
 
-      await loadTranslations();
+      setSaveStatus('saved');
+      if (statusTimerRef.current) clearTimeout(statusTimerRef.current);
+      statusTimerRef.current = setTimeout(() => setSaveStatus('idle'), 2000);
     } catch (err) {
       logger.error(`Failed to save translations: ${err}`);
       setError(err instanceof Error ? err.message : 'Failed to save translations');
-    } finally {
-      setSaving(false);
+      setSaveStatus('error');
     }
-  };
+  }, [listTypeId, valueId]);
+
+  const scheduleAutoSave = useCallback((rows: Record<string, { label: string; description: string }>) => {
+    if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
+    saveTimerRef.current = setTimeout(() => {
+      doSaveAll(rows);
+    }, 800);
+  }, [doSaveAll]);
+
+  useEffect(() => {
+    return () => {
+      if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
+      if (statusTimerRef.current) clearTimeout(statusTimerRef.current);
+    };
+  }, []);
 
   const handleDeleteTranslation = async (language: string) => {
     try {
@@ -218,12 +235,14 @@ export function TranslationsEditor({ listTypeId, valueId, valueName, onClose }: 
                           <input
                             type="text"
                             value={val.label}
-                            onChange={(e) =>
-                              setEditRows({
+                            onChange={(e) => {
+                              const updated = {
                                 ...editRows,
                                 [lang]: { ...val, label: e.target.value },
-                              })
-                            }
+                              };
+                              setEditRows(updated);
+                              scheduleAutoSave(updated);
+                            }}
                             className="w-full px-2 py-1 border border-gray-300 rounded text-sm"
                             placeholder="Translated label"
                           />
@@ -232,12 +251,14 @@ export function TranslationsEditor({ listTypeId, valueId, valueName, onClose }: 
                           <input
                             type="text"
                             value={val.description}
-                            onChange={(e) =>
-                              setEditRows({
+                            onChange={(e) => {
+                              const updated = {
                                 ...editRows,
                                 [lang]: { ...val, description: e.target.value },
-                              })
-                            }
+                              };
+                              setEditRows(updated);
+                              scheduleAutoSave(updated);
+                            }}
                             className="w-full px-2 py-1 border border-gray-300 rounded text-sm"
                             placeholder="Translated description (optional)"
                           />
@@ -289,19 +310,17 @@ export function TranslationsEditor({ listTypeId, valueId, valueName, onClose }: 
         </div>
 
         {/* Footer */}
-        <div className="px-6 py-4 border-t border-gray-200 flex justify-end gap-2">
+        <div className="px-6 py-4 border-t border-gray-200 flex justify-between items-center">
+          <div className="text-sm">
+            {saveStatus === 'saving' && <span className="text-gray-400">Saving...</span>}
+            {saveStatus === 'saved' && <span className="text-green-500">All changes saved</span>}
+            {saveStatus === 'error' && <span className="text-red-500">Error saving</span>}
+          </div>
           <button
             onClick={onClose}
             className="px-4 py-2 text-sm border border-gray-300 rounded hover:bg-gray-50"
           >
-            Cancel
-          </button>
-          <button
-            onClick={handleSaveAll}
-            disabled={saving}
-            className="px-4 py-2 text-sm bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50"
-          >
-            {saving ? 'Saving...' : 'Save All'}
+            Close
           </button>
         </div>
       </div>

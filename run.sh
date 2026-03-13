@@ -1,17 +1,21 @@
 #!/bin/bash
+# Run script for worktree: fix/auto-save-remove-buttons
 WORKTREE_DIR="$(cd "$(dirname "$0")" && pwd)"
 MAIN_REPO="$(cd "$WORKTREE_DIR" && git worktree list | head -1 | awk '{print $1}')"
 cd "$WORKTREE_DIR"
 
+# Load backend environment variables
 if [ -f backend/.env ]; then
   export $(grep -v '^#' backend/.env | grep -v '^$' | xargs)
 fi
 
+# Install dependencies if needed
 if [ ! -d node_modules ]; then
   echo "Installing dependencies..."
   npm install
 fi
 
+# Start database from main repo (shared container)
 CONTAINER_NAME="kitchen48-postgres"
 if docker ps --format '{{.Names}}' | grep -q "^${CONTAINER_NAME}$"; then
   echo "Database already running"
@@ -25,8 +29,10 @@ else
   echo "Database is ready"
 fi
 
+# Kill any existing dev server ports
 fuser -k 3000/tcp 5173/tcp 5174/tcp 5175/tcp 5176/tcp 2>/dev/null || true
 
+# Start frontend and backend directly
 npm run dev:frontend &
 npm run dev:backend &
 

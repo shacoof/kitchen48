@@ -5,9 +5,12 @@
  * Admin-only component for managing dropdown options.
  */
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { authApi } from '../../auth/services/auth.api';
 import { TranslationsEditor } from './TranslationsEditor';
+import { createLogger } from '../../../lib/logger';
+
+const logger = createLogger('ListValuesGrid');
 
 interface ListValue {
   id: string;
@@ -32,6 +35,9 @@ export function ListValuesGrid({ listTypeId }: ListValuesGridProps) {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editForm, setEditForm] = useState<Partial<ListValue>>({});
   const [translatingValue, setTranslatingValue] = useState<{ id: string; label: string } | null>(null);
+  const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
+  const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const statusTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const loadValues = useCallback(async () => {
     if (!listTypeId) {
@@ -126,22 +132,20 @@ export function ListValuesGrid({ listTypeId }: ListValuesGridProps) {
     });
   };
 
-  const handleSave = async () => {
-    if (!editingId || !listTypeId) return;
-
+  const doSave = useCallback(async (idToSave: string, formData: Partial<ListValue>) => {
+    if (!listTypeId) return;
+    setSaveStatus('saving');
     try {
       const token = authApi.getToken();
-      if (!token) {
-        throw new Error('Not authenticated');
-      }
+      if (!token) throw new Error('Not authenticated');
 
-      const response = await fetch(`/api/list-types/${listTypeId}/values/${editingId}`, {
+      const response = await fetch(`/api/list-types/${listTypeId}/values/${idToSave}`, {
         method: 'PUT',
         headers: {
           Authorization: `Bearer ${token}`,
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(editForm),
+        body: JSON.stringify(formData),
       });
 
       if (!response.ok) {
@@ -149,19 +153,32 @@ export function ListValuesGrid({ listTypeId }: ListValuesGridProps) {
         throw new Error(errorData.error || 'Failed to update');
       }
 
-      setEditingId(null);
-      setEditForm({});
+      setSaveStatus('saved');
+      if (statusTimerRef.current) clearTimeout(statusTimerRef.current);
+      statusTimerRef.current = setTimeout(() => setSaveStatus('idle'), 2000);
       loadValues();
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Failed to update list value';
-      alert(message);
+      logger.error(message);
+      setSaveStatus('error');
     }
-  };
+  }, [listTypeId, loadValues]);
 
-  const handleCancel = () => {
-    setEditingId(null);
-    setEditForm({});
-  };
+  const scheduleAutoSave = useCallback((formData: Partial<ListValue>) => {
+    if (!editingId) return;
+    if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
+    const idToSave = editingId;
+    saveTimerRef.current = setTimeout(() => {
+      doSave(idToSave, formData);
+    }, 800);
+  }, [editingId, doSave]);
+
+  useEffect(() => {
+    return () => {
+      if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
+      if (statusTimerRef.current) clearTimeout(statusTimerRef.current);
+    };
+  }, []);
 
   const handleDelete = async (valueId: string) => {
     if (!listTypeId) return;
@@ -282,7 +299,11 @@ export function ListValuesGrid({ listTypeId }: ListValuesGridProps) {
                     <input
                       type="text"
                       value={editForm.value || ''}
-                      onChange={(e) => setEditForm({ ...editForm, value: e.target.value })}
+                      onChange={(e) => {
+                        const updated = { ...editForm, value: e.target.value };
+                        setEditForm(updated);
+                        scheduleAutoSave(updated);
+                      }}
                       className="w-full px-2 py-1 border border-gray-300 rounded text-sm font-mono"
                     />
                   ) : (
@@ -294,7 +315,11 @@ export function ListValuesGrid({ listTypeId }: ListValuesGridProps) {
                     <input
                       type="text"
                       value={editForm.label || ''}
-                      onChange={(e) => setEditForm({ ...editForm, label: e.target.value })}
+                      onChange={(e) => {
+                        const updated = { ...editForm, label: e.target.value };
+                        setEditForm(updated);
+                        scheduleAutoSave(updated);
+                      }}
                       className="w-full px-2 py-1 border border-gray-300 rounded text-sm"
                     />
                   ) : (
@@ -306,7 +331,11 @@ export function ListValuesGrid({ listTypeId }: ListValuesGridProps) {
                     <input
                       type="text"
                       value={editForm.description || ''}
-                      onChange={(e) => setEditForm({ ...editForm, description: e.target.value })}
+                      onChange={(e) => {
+                        const updated = { ...editForm, description: e.target.value };
+                        setEditForm(updated);
+                        scheduleAutoSave(updated);
+                      }}
                       className="w-full px-2 py-1 border border-gray-300 rounded text-sm"
                     />
                   ) : (
@@ -318,7 +347,11 @@ export function ListValuesGrid({ listTypeId }: ListValuesGridProps) {
                     <input
                       type="number"
                       value={editForm.sortOrder || 0}
-                      onChange={(e) => setEditForm({ ...editForm, sortOrder: parseInt(e.target.value) || 0 })}
+                      onChange={(e) => {
+                        const updated = { ...editForm, sortOrder: parseInt(e.target.value) || 0 };
+                        setEditForm(updated);
+                        scheduleAutoSave(updated);
+                      }}
                       className="w-16 px-2 py-1 border border-gray-300 rounded text-sm text-center"
                     />
                   ) : (
@@ -330,7 +363,11 @@ export function ListValuesGrid({ listTypeId }: ListValuesGridProps) {
                     <input
                       type="checkbox"
                       checked={editForm.isActive || false}
-                      onChange={(e) => setEditForm({ ...editForm, isActive: e.target.checked })}
+                      onChange={(e) => {
+                        const updated = { ...editForm, isActive: e.target.checked };
+                        setEditForm(updated);
+                        scheduleAutoSave(updated);
+                      }}
                       className="h-4 w-4 text-blue-600"
                     />
                   ) : (
@@ -349,39 +386,44 @@ export function ListValuesGrid({ listTypeId }: ListValuesGridProps) {
                   </button>
                 </td>
                 <td className="px-4 py-3 text-center">
-                  {editingId === value.id ? (
-                    <div className="flex justify-center gap-1">
+                  <div className="flex justify-center items-center gap-1">
+                    {editingId === value.id && saveStatus === 'saving' && (
+                      <span className="text-xs text-gray-400">Saving...</span>
+                    )}
+                    {editingId === value.id && saveStatus === 'saved' && (
+                      <span className="text-xs text-green-500">Saved</span>
+                    )}
+                    {editingId === value.id && saveStatus === 'error' && (
+                      <span className="text-xs text-red-500">Error</span>
+                    )}
+                    {editingId !== value.id && (
+                      <>
+                        <button
+                          onClick={() => handleEdit(value)}
+                          className="px-2 py-1 text-xs border border-gray-300 rounded hover:bg-gray-50"
+                          title="Edit"
+                        >
+                          ✏️
+                        </button>
+                        <button
+                          onClick={() => handleDelete(value.id)}
+                          className="px-2 py-1 text-xs border border-red-300 text-red-600 rounded hover:bg-red-50"
+                          title="Delete"
+                        >
+                          🗑️
+                        </button>
+                      </>
+                    )}
+                    {editingId === value.id && (
                       <button
-                        onClick={handleSave}
-                        className="px-2 py-1 text-xs bg-green-600 text-white rounded hover:bg-green-700"
-                      >
-                        Save
-                      </button>
-                      <button
-                        onClick={handleCancel}
+                        onClick={() => { setEditingId(null); setEditForm({}); setSaveStatus('idle'); }}
                         className="px-2 py-1 text-xs border border-gray-300 rounded hover:bg-gray-50"
+                        title="Done editing"
                       >
-                        Cancel
+                        ✓
                       </button>
-                    </div>
-                  ) : (
-                    <div className="flex justify-center gap-1">
-                      <button
-                        onClick={() => handleEdit(value)}
-                        className="px-2 py-1 text-xs border border-gray-300 rounded hover:bg-gray-50"
-                        title="Edit"
-                      >
-                        ✏️
-                      </button>
-                      <button
-                        onClick={() => handleDelete(value.id)}
-                        className="px-2 py-1 text-xs border border-red-300 text-red-600 rounded hover:bg-red-50"
-                        title="Delete"
-                      >
-                        🗑️
-                      </button>
-                    </div>
-                  )}
+                    )}
+                  </div>
                 </td>
               </tr>
             ))}

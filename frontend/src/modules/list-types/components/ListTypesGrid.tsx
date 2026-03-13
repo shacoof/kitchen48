@@ -5,8 +5,11 @@
  * Admin-only component for managing dropdown categories.
  */
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { authApi } from '../../auth/services/auth.api';
+import { createLogger } from '../../../lib/logger';
+
+const logger = createLogger('ListTypesGrid');
 
 interface ListType {
   id: string;
@@ -31,6 +34,9 @@ export function ListTypesGrid({ onListTypeSelect }: ListTypesGridProps) {
   const [error, setError] = useState<string | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editForm, setEditForm] = useState<Partial<ListType>>({});
+  const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
+  const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const statusTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const loadListTypes = useCallback(async () => {
     try {
@@ -124,22 +130,19 @@ export function ListTypesGrid({ onListTypeSelect }: ListTypesGridProps) {
     });
   };
 
-  const handleSave = async () => {
-    if (!editingId) return;
-
+  const doSave = useCallback(async (idToSave: string, formData: Partial<ListType>) => {
+    setSaveStatus('saving');
     try {
       const token = authApi.getToken();
-      if (!token) {
-        throw new Error('Not authenticated');
-      }
+      if (!token) throw new Error('Not authenticated');
 
-      const response = await fetch(`/api/list-types/${editingId}`, {
+      const response = await fetch(`/api/list-types/${idToSave}`, {
         method: 'PUT',
         headers: {
           Authorization: `Bearer ${token}`,
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(editForm),
+        body: JSON.stringify(formData),
       });
 
       if (!response.ok) {
@@ -147,19 +150,33 @@ export function ListTypesGrid({ onListTypeSelect }: ListTypesGridProps) {
         throw new Error(errorData.error || 'Failed to update');
       }
 
-      setEditingId(null);
-      setEditForm({});
+      setSaveStatus('saved');
+      if (statusTimerRef.current) clearTimeout(statusTimerRef.current);
+      statusTimerRef.current = setTimeout(() => setSaveStatus('idle'), 2000);
       loadListTypes();
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Failed to update list type';
-      alert(message);
+      logger.error(message);
+      setSaveStatus('error');
     }
-  };
+  }, [loadListTypes]);
 
-  const handleCancel = () => {
-    setEditingId(null);
-    setEditForm({});
-  };
+  const scheduleAutoSave = useCallback((formData: Partial<ListType>) => {
+    if (!editingId) return;
+    if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
+    const idToSave = editingId;
+    saveTimerRef.current = setTimeout(() => {
+      doSave(idToSave, formData);
+    }, 800);
+  }, [editingId, doSave]);
+
+  // Cleanup timers on unmount
+  useEffect(() => {
+    return () => {
+      if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
+      if (statusTimerRef.current) clearTimeout(statusTimerRef.current);
+    };
+  }, []);
 
   const handleDelete = async (id: string) => {
     if (!confirm('Are you sure you want to delete this list type? All associated values will also be deleted.')) {
@@ -285,7 +302,11 @@ export function ListTypesGrid({ onListTypeSelect }: ListTypesGridProps) {
                     <input
                       type="text"
                       value={editForm.name || ''}
-                      onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
+                      onChange={(e) => {
+                        const updated = { ...editForm, name: e.target.value };
+                        setEditForm(updated);
+                        scheduleAutoSave(updated);
+                      }}
                       className="w-full px-2 py-1 border border-gray-300 rounded text-sm"
                     />
                   ) : (
@@ -297,7 +318,11 @@ export function ListTypesGrid({ onListTypeSelect }: ListTypesGridProps) {
                     <input
                       type="text"
                       value={editForm.description || ''}
-                      onChange={(e) => setEditForm({ ...editForm, description: e.target.value })}
+                      onChange={(e) => {
+                        const updated = { ...editForm, description: e.target.value };
+                        setEditForm(updated);
+                        scheduleAutoSave(updated);
+                      }}
                       className="w-full px-2 py-1 border border-gray-300 rounded text-sm"
                     />
                   ) : (
@@ -309,7 +334,11 @@ export function ListTypesGrid({ onListTypeSelect }: ListTypesGridProps) {
                     <input
                       type="checkbox"
                       checked={editForm.isActive || false}
-                      onChange={(e) => setEditForm({ ...editForm, isActive: e.target.checked })}
+                      onChange={(e) => {
+                        const updated = { ...editForm, isActive: e.target.checked };
+                        setEditForm(updated);
+                        scheduleAutoSave(updated);
+                      }}
                       className="h-4 w-4 text-blue-600"
                     />
                   ) : (
@@ -322,39 +351,44 @@ export function ListTypesGrid({ onListTypeSelect }: ListTypesGridProps) {
                   <span className="text-sm text-gray-600">{listType._count.values}</span>
                 </td>
                 <td className="px-4 py-3 text-center">
-                  {editingId === listType.id ? (
-                    <div className="flex justify-center gap-1">
+                  <div className="flex justify-center items-center gap-1">
+                    {editingId === listType.id && saveStatus === 'saving' && (
+                      <span className="text-xs text-gray-400">Saving...</span>
+                    )}
+                    {editingId === listType.id && saveStatus === 'saved' && (
+                      <span className="text-xs text-green-500">Saved</span>
+                    )}
+                    {editingId === listType.id && saveStatus === 'error' && (
+                      <span className="text-xs text-red-500">Error</span>
+                    )}
+                    {editingId !== listType.id && (
+                      <>
+                        <button
+                          onClick={() => handleEdit(listType)}
+                          className="px-2 py-1 text-xs border border-gray-300 rounded hover:bg-gray-50"
+                          title="Edit"
+                        >
+                          ✏️
+                        </button>
+                        <button
+                          onClick={() => handleDelete(listType.id)}
+                          className="px-2 py-1 text-xs border border-red-300 text-red-600 rounded hover:bg-red-50"
+                          title="Delete"
+                        >
+                          🗑️
+                        </button>
+                      </>
+                    )}
+                    {editingId === listType.id && (
                       <button
-                        onClick={handleSave}
-                        className="px-2 py-1 text-xs bg-green-600 text-white rounded hover:bg-green-700"
-                      >
-                        Save
-                      </button>
-                      <button
-                        onClick={handleCancel}
+                        onClick={() => { setEditingId(null); setEditForm({}); setSaveStatus('idle'); }}
                         className="px-2 py-1 text-xs border border-gray-300 rounded hover:bg-gray-50"
+                        title="Done editing"
                       >
-                        Cancel
+                        ✓
                       </button>
-                    </div>
-                  ) : (
-                    <div className="flex justify-center gap-1">
-                      <button
-                        onClick={() => handleEdit(listType)}
-                        className="px-2 py-1 text-xs border border-gray-300 rounded hover:bg-gray-50"
-                        title="Edit"
-                      >
-                        ✏️
-                      </button>
-                      <button
-                        onClick={() => handleDelete(listType.id)}
-                        className="px-2 py-1 text-xs border border-red-300 text-red-600 rounded hover:bg-red-50"
-                        title="Delete"
-                      >
-                        🗑️
-                      </button>
-                    </div>
-                  )}
+                    )}
+                  </div>
                 </td>
               </tr>
             ))}

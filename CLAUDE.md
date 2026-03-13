@@ -462,6 +462,96 @@ Kitchen48 must work well on **all three form factors**. Every feature, screen, a
 
 ---
 
+## Auto-Save Pattern - MANDATORY
+
+Kitchen48 uses **auto-save everywhere**. Users should never need to click a Save or Cancel button to persist their changes. Every edit is saved automatically.
+
+### Core Principles
+
+1. **No Save buttons** — Changes are persisted automatically on edit
+2. **No Cancel buttons** — Users navigate away instead of canceling; changes are already saved
+3. **Status indicator** — Show auto-save status: "Saving..." → "All changes saved" (fades after 2s) → "Error saving"
+4. **Create buttons are OK** — Creating a new entity (e.g., "Create Recipe") still uses an explicit button, since this is a creation action, not a save
+
+### Implementation Pattern
+
+```typescript
+// 1. Add state and refs
+const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
+const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+const statusTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+// 2. Auto-save function
+const doAutoSave = useCallback(async (data) => {
+  setSaveStatus('saving');
+  try {
+    await apiCall(data);
+    setSaveStatus('saved');
+    if (statusTimerRef.current) clearTimeout(statusTimerRef.current);
+    statusTimerRef.current = setTimeout(() => setSaveStatus('idle'), 2000);
+  } catch {
+    setSaveStatus('error');
+  }
+}, []);
+
+// 3. Schedule auto-save on change (debounced)
+const scheduleAutoSave = useCallback((data) => {
+  if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
+  saveTimerRef.current = setTimeout(() => doAutoSave(data), DEBOUNCE_MS);
+}, [doAutoSave]);
+
+// 4. Trigger on field change
+onChange={(e) => {
+  const updated = { ...form, field: e.target.value };
+  setForm(updated);
+  scheduleAutoSave(updated);
+}}
+```
+
+### Recommended Debounce Intervals
+
+| Context | Debounce | Rationale |
+|---------|----------|-----------|
+| Text inputs (forms) | 1000ms | Allow natural typing |
+| Complex forms (recipes with steps) | 1500ms | Avoid excessive API calls for nested data |
+| Admin grids (inline edit) | 800ms | Quick feedback for simple fields |
+| Dropdowns / checkboxes | 800ms | Discrete changes, save quickly |
+
+### Status Indicator UI
+
+```tsx
+{saveStatus === 'saving' && <span className="text-sm text-gray-400">Saving...</span>}
+{saveStatus === 'saved' && <span className="text-sm text-green-500">All changes saved</span>}
+{saveStatus === 'error' && <span className="text-sm text-red-500">Error saving</span>}
+```
+
+### Auto-Save Checklist for New Features
+
+**MANDATORY — Include in every implementation plan:**
+
+- [ ] **No Save/Cancel buttons**: Editing forms auto-save, no explicit save action
+- [ ] **Create actions explicit**: New entity creation still uses a button
+- [ ] **Debounce configured**: Appropriate debounce interval for the context
+- [ ] **Status indicator shown**: Users can see when their changes are being saved
+- [ ] **Initial load guarded**: Auto-save does NOT fire during initial data load
+- [ ] **Timer cleanup**: All debounce timers cleaned up on unmount
+- [ ] **Error handling**: Failed saves show error status, don't silently fail
+
+### Components Already Using Auto-Save
+
+| Component | Pattern |
+|-----------|---------|
+| EditProfilePage | react-hook-form `watch()` + debounced save |
+| CreateRecipePage (edit mode) | `useEffect` watching state + debounced save |
+| ListTypesGrid | Inline edit + debounced save on change |
+| ListValuesGrid | Inline edit + debounced save on change |
+| TranslationsEditor | Debounced save on any translation change |
+| IngredientsGrid (Tabulator) | `cellEdited` event → immediate save |
+| ParametersGrid (Tabulator) | `cellEdited` event → immediate save |
+| UsersGrid (Tabulator) | `cellEdited` event → immediate save |
+
+---
+
 ## Application URLs
 
 ### Development (Local)

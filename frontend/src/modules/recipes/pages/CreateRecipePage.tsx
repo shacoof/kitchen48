@@ -66,6 +66,10 @@ export function CreateRecipePage() {
   const [loading, setLoading] = useState(isEdit);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
+  const autoSaveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const statusTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const initialLoadDoneRef = useRef(false);
 
   // Form state
   const [title, setTitle] = useState('');
@@ -202,6 +206,8 @@ export function CreateRecipePage() {
         }
 
         setLoading(false);
+        // Mark initial load complete so auto-save can start
+        setTimeout(() => { initialLoadDoneRef.current = true; }, 100);
       };
 
       fetchRecipe();
@@ -214,6 +220,13 @@ export function CreateRecipePage() {
       setSlug(recipesApi.generateSlug(title));
     }
   }, [title, isEdit]);
+
+  // For create mode, mark initial load done immediately
+  useEffect(() => {
+    if (!isEdit) {
+      initialLoadDoneRef.current = true;
+    }
+  }, [isEdit]);
 
   // Redirect if not authenticated
   useEffect(() => {
@@ -269,12 +282,7 @@ export function CreateRecipePage() {
     setSteps(newSteps);
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError(null);
-    setSaving(true);
-
-    // Build steps data
+  const buildRecipeData = useCallback((): CreateRecipeInput => {
     const stepsData: CreateStepInput[] = steps.map((s, index) => ({
       instruction: s.instruction,
       order: index,
@@ -296,7 +304,7 @@ export function CreateRecipePage() {
         })),
     }));
 
-    const recipeData: CreateRecipeInput = {
+    return {
       title,
       slug,
       description: description || null,
@@ -309,28 +317,76 @@ export function CreateRecipePage() {
       measurementSystem: user?.measurementSystem || 'metric',
       steps: stepsData,
     };
+  }, [title, slug, description, servings, imageUrl, videoUrl, heroImageId, introVideoId, isPublished, steps, user?.measurementSystem]);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError(null);
+    setSaving(true);
+
+    const recipeData = buildRecipeData();
 
     try {
-      let result;
-      if (isEdit && id) {
-        result = await recipesApi.updateRecipe(id, recipeData);
-      } else {
-        result = await recipesApi.createRecipe(recipeData);
-      }
+      const result = await recipesApi.createRecipe(recipeData);
 
       if (result.error) {
         setError(result.error);
       } else if (result.recipe) {
-        // Navigate to the recipe page
         navigate(`/${user?.nickname}/${result.recipe.slug}`);
       }
     } catch (err) {
-      logger.error(`Error saving recipe: ${err}`);
-      setError('Failed to save recipe');
+      logger.error(`Error creating recipe: ${err}`);
+      setError('Failed to create recipe');
     }
 
     setSaving(false);
   };
+
+  // Auto-save for edit mode
+  const doAutoSave = useCallback(async () => {
+    if (!isEdit || !id) return;
+    setSaveStatus('saving');
+    setError(null);
+
+    const recipeData = buildRecipeData();
+
+    try {
+      const result = await recipesApi.updateRecipe(id, recipeData);
+      if (result.error) {
+        setError(result.error);
+        setSaveStatus('error');
+      } else {
+        setSaveStatus('saved');
+        if (statusTimerRef.current) clearTimeout(statusTimerRef.current);
+        statusTimerRef.current = setTimeout(() => setSaveStatus('idle'), 2000);
+      }
+    } catch (err) {
+      logger.error(`Auto-save error: ${err}`);
+      setSaveStatus('error');
+    }
+  }, [isEdit, id, buildRecipeData]);
+
+  // Watch all form fields and auto-save in edit mode
+  useEffect(() => {
+    if (!isEdit || !initialLoadDoneRef.current) return;
+
+    if (autoSaveTimerRef.current) clearTimeout(autoSaveTimerRef.current);
+    autoSaveTimerRef.current = setTimeout(() => {
+      doAutoSave();
+    }, 1500);
+
+    return () => {
+      if (autoSaveTimerRef.current) clearTimeout(autoSaveTimerRef.current);
+    };
+  }, [title, slug, description, servings, heroImageId, introVideoId, isPublished, steps, isEdit, doAutoSave]);
+
+  // Cleanup timers
+  useEffect(() => {
+    return () => {
+      if (autoSaveTimerRef.current) clearTimeout(autoSaveTimerRef.current);
+      if (statusTimerRef.current) clearTimeout(statusTimerRef.current);
+    };
+  }, []);
 
   if (authLoading || loading) {
     return (
@@ -826,22 +882,29 @@ export function CreateRecipePage() {
             </div>
           </section>
 
-          {/* Submit */}
+          {/* Submit / Auto-save status */}
           <div className="flex items-center justify-end gap-4">
-            <button
-              type="button"
-              onClick={() => navigate(-1)}
-              className="px-6 py-2 text-gray-600 hover:text-gray-800"
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              disabled={saving}
-              className="px-6 py-2 bg-accent-orange text-white rounded-lg hover:bg-opacity-90 disabled:opacity-50"
-            >
-              {saving ? 'Saving...' : isEdit ? 'Update Recipe' : 'Create Recipe'}
-            </button>
+            {isEdit ? (
+              <div className="flex items-center h-10">
+                {saveStatus === 'saving' && (
+                  <span className="text-sm text-gray-400">Saving...</span>
+                )}
+                {saveStatus === 'saved' && (
+                  <span className="text-sm text-green-500">All changes saved</span>
+                )}
+                {saveStatus === 'error' && (
+                  <span className="text-sm text-red-500">Error saving</span>
+                )}
+              </div>
+            ) : (
+              <button
+                type="submit"
+                disabled={saving}
+                className="px-6 py-2 bg-accent-orange text-white rounded-lg hover:bg-opacity-90 disabled:opacity-50"
+              >
+                {saving ? 'Creating...' : 'Create Recipe'}
+              </button>
+            )}
           </div>
         </form>
       </main>
