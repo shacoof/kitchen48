@@ -49,6 +49,9 @@ RUN apk add --no-cache nginx supervisor
 
 WORKDIR /app
 
+# Copy docs (runtime config files like recipe-scraping.md)
+COPY docs/ ./docs/
+
 # Copy backend
 COPY --from=backend-builder /app/backend/dist ./backend/dist
 COPY --from=backend-builder /app/backend/node_modules ./backend/node_modules
