@@ -816,26 +816,36 @@ export function RecipePlayPage() {
               <span className="material-symbols-outlined text-white/60">close</span>
             </button>
 
-            {/* Mic on/off toggle */}
-            <button
-              onClick={toggleVoice}
-              className="relative flex items-center justify-center flex-shrink-0"
-              style={{ minWidth: '44px', minHeight: '44px' }}
-            >
-              {voiceEnabled && (
-                <span className="absolute inline-flex h-8 w-8 animate-ping rounded-full bg-[#4CAF50] opacity-20" />
-              )}
-              <div
-                className={`p-2 rounded-full relative z-10 ${voiceEnabled ? 'bg-[#4CAF50]' : 'bg-white/20'}`}
+            {/* Mic on/off toggle + Help button */}
+            <div className="flex items-center gap-1 flex-shrink-0">
+              <button
+                onClick={toggleVoice}
+                className="relative flex items-center justify-center"
+                style={{ minWidth: '44px', minHeight: '44px' }}
               >
-                <span
-                  className="material-symbols-outlined text-white text-xl"
-                  style={{ fontVariationSettings: "'FILL' 1" }}
+                {voiceEnabled && (
+                  <span className="absolute inline-flex h-8 w-8 animate-ping rounded-full bg-[#4CAF50] opacity-20" />
+                )}
+                <div
+                  className={`p-2 rounded-full relative z-10 ${voiceEnabled ? 'bg-[#4CAF50]' : 'bg-white/20'}`}
                 >
-                  {voiceEnabled ? 'mic' : 'mic_off'}
-                </span>
-              </div>
-            </button>
+                  <span
+                    className="material-symbols-outlined text-white text-xl"
+                    style={{ fontVariationSettings: "'FILL' 1" }}
+                  >
+                    {voiceEnabled ? 'mic' : 'mic_off'}
+                  </span>
+                </div>
+              </button>
+              <button
+                onClick={() => setShowHelp((v) => !v)}
+                className="p-2 rounded-full border border-white/10 hover:border-white/30 hover:bg-white/5 transition-colors"
+                title={t('play.help_title')}
+                style={{ minWidth: '44px', minHeight: '44px' }}
+              >
+                <span className="material-symbols-outlined text-white/60 text-xl">help</span>
+              </button>
+            </div>
 
             {/* Previous */}
             <button
@@ -915,15 +925,6 @@ export function RecipePlayPage() {
               <span className="material-symbols-outlined">arrow_forward</span>
             </button>
 
-            {/* Help button */}
-            <button
-              onClick={() => setShowHelp((v) => !v)}
-              className="p-2 rounded-full border border-white/10 hover:border-white/30 hover:bg-white/5 transition-colors flex-shrink-0"
-              title={t('play.help_title')}
-              style={{ minWidth: '44px', minHeight: '44px' }}
-            >
-              <span className="material-symbols-outlined text-white/60 text-xl">help</span>
-            </button>
           </div>
         </div>
 
