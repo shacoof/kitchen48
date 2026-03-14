@@ -143,7 +143,7 @@ export function RecipePlayPage() {
 
   // Voice control
   const [voiceEnabled, setVoiceEnabled] = useState(false);
-  const [recognizedCommand, setRecognizedCommand] = useState('');
+  const [, setRecognizedCommand] = useState('');
   const recognitionRef = useRef<SpeechRecognitionType | null>(null);
 
   // Volume level
@@ -804,240 +804,126 @@ export function RecipePlayPage() {
 
       {/* ── Main Content ── */}
       <main className="flex-1 flex flex-col relative bg-[#0c1a11]">
-        {/* ── Top Navigation + Voice Control Bar (Fixed) ── */}
-        <div className="border-b border-white/10 bg-[#0c1a11]/80 backdrop-blur-md flex-shrink-0 z-10">
-          {/* Row 1: Navigation (Prev / Progress / Next) */}
-          <div className="px-3 sm:px-4 md:px-6 pt-3 sm:pt-4 md:pt-6 pb-2 md:pb-3">
-            <div className="max-w-6xl mx-auto flex justify-between items-center">
-              {/* Exit button (mobile) */}
-              <button
-                onClick={() => navigate(`/${nickname}/${recipeSlug}`)}
-                className="md:hidden p-2 rounded-full hover:bg-white/10 transition-colors flex-shrink-0"
-                title={t('play.exit')}
-              >
-                <span className="material-symbols-outlined text-white/60">close</span>
-              </button>
+        {/* ── Top Navigation Bar (Fixed, Single Row) ── */}
+        <div className="px-3 sm:px-4 md:px-6 py-3 sm:py-4 md:py-5 border-b border-white/10 bg-[#0c1a11]/80 backdrop-blur-md flex-shrink-0 z-10">
+          <div className="max-w-6xl mx-auto flex justify-between items-center gap-2">
+            {/* Exit button (mobile) */}
+            <button
+              onClick={() => navigate(`/${nickname}/${recipeSlug}`)}
+              className="md:hidden p-2 rounded-full hover:bg-white/10 transition-colors flex-shrink-0"
+              title={t('play.exit')}
+            >
+              <span className="material-symbols-outlined text-white/60">close</span>
+            </button>
 
-              {/* Previous */}
-              <button
-                onClick={() => goToStep(activeStepIdx - 1)}
-                disabled={activeStepIdx === 0}
-                className={`flex items-center gap-2 px-5 sm:px-6 md:px-8 py-3 md:py-4 rounded-full font-bold transition-all ${
-                  activeStepIdx === 0
-                    ? 'text-white/20 cursor-not-allowed'
-                    : 'text-white/70 bg-white/10 hover:bg-white/20'
-                }`}
-                style={{ minHeight: '48px' }}
+            {/* Mic on/off toggle */}
+            <button
+              onClick={toggleVoice}
+              className="relative flex items-center justify-center flex-shrink-0"
+              style={{ minWidth: '44px', minHeight: '44px' }}
+            >
+              {voiceEnabled && (
+                <span className="absolute inline-flex h-8 w-8 animate-ping rounded-full bg-[#4CAF50] opacity-20" />
+              )}
+              <div
+                className={`p-2 rounded-full relative z-10 ${voiceEnabled ? 'bg-[#4CAF50]' : 'bg-white/20'}`}
               >
-                <span className="material-symbols-outlined">arrow_back</span>
-                <span className="hidden sm:inline">{t('steps.previous')}</span>
-              </button>
-
-              {/* Center: Timer + Volume (desktop/tablet) */}
-              <div className="hidden md:flex items-center gap-6 md:gap-8">
-                {stepHasTimer && (
-                  <div className="flex flex-col items-center">
-                    <span className="text-[10px] uppercase font-bold text-white/40">
-                      {t('play.timer')}
-                    </span>
-                    <span className="text-xl font-mono font-bold text-[#13ec5b]">
-                      {stepTimerSeconds !== undefined
-                        ? formatTimer(stepTimerSeconds)
-                        : formatTimer(stepTimerTotal)}
-                    </span>
-                  </div>
-                )}
-                {activeTimerCount > 0 && (
-                  <>
-                    <div className="h-8 w-px bg-white/10" />
-                    <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-[#13ec5b]/20 text-[#13ec5b] text-xs rounded-full font-bold">
-                      <span className="material-symbols-outlined text-sm">timer</span>
-                      {activeTimerCount} {t('play.active_timers')}
-                    </span>
-                  </>
-                )}
-                <div className="h-8 w-px bg-white/10" />
-                <button
-                  onClick={() => setVolume((v) => (v > 0 ? 0 : 1.0))}
-                  className="w-12 h-12 rounded-full border border-white/20 flex items-center justify-center hover:bg-white/5 transition-all"
-                  style={{ minWidth: '48px', minHeight: '48px' }}
+                <span
+                  className="material-symbols-outlined text-white text-xl"
+                  style={{ fontVariationSettings: "'FILL' 1" }}
                 >
-                  <span className="material-symbols-outlined">
-                    {volume > 0 ? 'volume_up' : 'volume_off'}
-                  </span>
-                </button>
-              </div>
-
-              {/* Mobile progress indicator */}
-              <div className="md:hidden flex flex-col items-center">
-                <span className="text-[10px] uppercase font-bold text-white/40">
-                  {activeStepIdx + 1}/{steps.length}
+                  {voiceEnabled ? 'mic' : 'mic_off'}
                 </span>
-                <div className="w-16 h-1.5 bg-white/10 rounded-full overflow-hidden mt-1">
-                  <div
-                    className="h-full bg-[#13ec5b] transition-all"
-                    style={{ width: `${progress}%` }}
-                  />
-                </div>
               </div>
+            </button>
 
-              {/* Next */}
-              <button
-                onClick={() => goToStep(activeStepIdx + 1)}
-                disabled={activeStepIdx === steps.length - 1}
-                className={`flex items-center gap-2 px-6 sm:px-8 md:px-10 py-3 md:py-4 rounded-full font-bold transition-all ${
-                  activeStepIdx === steps.length - 1
-                    ? 'bg-white/10 text-white/20 cursor-not-allowed'
-                    : 'bg-[#13ec5b] text-[#102216] hover:scale-105 active:scale-95 shadow-xl shadow-[#13ec5b]/20'
-                }`}
-                style={{ minHeight: '48px' }}
-              >
-                <span className="hidden sm:inline">{t('steps.next')}</span>
-                <span className="material-symbols-outlined">arrow_forward</span>
-              </button>
-            </div>
-          </div>
+            {/* Previous */}
+            <button
+              onClick={() => goToStep(activeStepIdx - 1)}
+              disabled={activeStepIdx === 0}
+              className={`flex items-center gap-2 px-4 sm:px-6 md:px-8 py-3 md:py-4 rounded-full font-bold transition-all ${
+                activeStepIdx === 0
+                  ? 'text-white/20 cursor-not-allowed'
+                  : 'text-white/70 bg-white/10 hover:bg-white/20'
+              }`}
+              style={{ minHeight: '48px' }}
+            >
+              <span className="material-symbols-outlined">arrow_back</span>
+              <span className="hidden sm:inline">{t('steps.previous')}</span>
+            </button>
 
-          {/* Row 2: Voice Controls */}
-          <div className="px-3 sm:px-4 md:px-6 pb-3 sm:pb-4 md:pb-4 border-t border-white/5">
-            <div className="max-w-6xl mx-auto flex items-center justify-between gap-4">
-              <div className="flex items-center gap-3 md:gap-4 min-w-0">
-                <button
-                  onClick={toggleVoice}
-                  className="relative flex items-center justify-center flex-shrink-0"
-                  style={{ minWidth: '40px', minHeight: '40px' }}
-                >
-                  {voiceEnabled && (
-                    <span className="absolute inline-flex h-8 w-8 animate-ping rounded-full bg-[#4CAF50] opacity-20" />
-                  )}
-                  <div
-                    className={`p-2 rounded-full relative z-10 ${voiceEnabled ? 'bg-[#4CAF50]' : 'bg-white/20'}`}
-                  >
-                    <span
-                      className="material-symbols-outlined text-white text-xl"
-                      style={{ fontVariationSettings: "'FILL' 1" }}
-                    >
-                      {voiceEnabled ? 'mic' : 'mic_off'}
-                    </span>
-                  </div>
-                </button>
-                <div className="flex flex-col min-w-0">
-                  <span
-                    className={`text-[10px] uppercase font-bold tracking-widest ${voiceEnabled ? 'text-[#4CAF50]' : 'text-white/40'}`}
-                  >
-                    {voiceEnabled ? t('play.voice_active') : t('play.voice_off')}
+            {/* Center: Timer + Volume (desktop/tablet) */}
+            <div className="hidden md:flex items-center gap-6 md:gap-8">
+              {stepHasTimer && (
+                <div className="flex flex-col items-center">
+                  <span className="text-[10px] uppercase font-bold text-white/40">
+                    {t('play.timer')}
                   </span>
-                  <span className="text-xs text-white/60 font-medium italic leading-tight truncate">
-                    {recognizedCommand
-                      ? t('play.command_recognized', { command: recognizedCommand })
-                      : voiceEnabled
-                        ? t('play.listening')
-                        : t('play.tap_to_enable')}
+                  <span className="text-xl font-mono font-bold text-[#13ec5b]">
+                    {stepTimerSeconds !== undefined
+                      ? formatTimer(stepTimerSeconds)
+                      : formatTimer(stepTimerTotal)}
                   </span>
                 </div>
-              </div>
-
-              {/* Voice command hint buttons (desktop) */}
-              <div className="hidden lg:flex items-center gap-4 xl:gap-6 flex-shrink-0">
-                <button
-                  onClick={() => activeStep && speak(activeStep.instruction)}
-                  className="flex flex-col items-center gap-1 group cursor-pointer"
-                >
-                  <span className="material-symbols-outlined text-[#4CAF50] group-hover:scale-110 transition-transform">
-                    record_voice_over
+              )}
+              {activeTimerCount > 0 && (
+                <>
+                  <div className="h-8 w-px bg-white/10" />
+                  <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-[#13ec5b]/20 text-[#13ec5b] text-xs rounded-full font-bold">
+                    <span className="material-symbols-outlined text-sm">timer</span>
+                    {activeTimerCount} {t('play.active_timers')}
                   </span>
-                  <span className="text-[9px] uppercase font-bold text-white/50">
-                    {t('play.say_read_instructions')}
-                  </span>
-                </button>
-                <button
-                  onClick={() => {
-                    if (activeStep) {
-                      const ingText = activeStep.ingredients
-                        .map((i) => `${formatQuantity(i.quantity, i.unit, 1, targetSystem, unitLabels)} ${i.name}`)
-                        .join(', ');
-                      speak(ingText || t('play.no_ingredients'));
-                    }
-                  }}
-                  className="flex flex-col items-center gap-1 group cursor-pointer"
-                >
-                  <span className="material-symbols-outlined text-[#4CAF50] group-hover:scale-110 transition-transform">
-                    shopping_basket
-                  </span>
-                  <span className="text-[9px] uppercase font-bold text-white/50">
-                    {t('play.say_read_ingredients')}
-                  </span>
-                </button>
-                <button
-                  onClick={stopSpeaking}
-                  className="flex flex-col items-center gap-1 group cursor-pointer"
-                >
-                  <span
-                    className="material-symbols-outlined text-[#4CAF50] group-hover:scale-110 transition-transform"
-                    style={{ fontVariationSettings: "'FILL' 1" }}
-                  >
-                    stop_circle
-                  </span>
-                  <span className="text-[9px] uppercase font-bold text-white/50">
-                    {t('play.say_stop')}
-                  </span>
-                </button>
-                <button
-                  onClick={() => setVolume((v) => Math.min(1.0, v + 0.2))}
-                  className="flex flex-col items-center gap-1 group cursor-pointer"
-                >
-                  <span className="material-symbols-outlined text-[#4CAF50] group-hover:scale-110 transition-transform">
-                    volume_up
-                  </span>
-                  <span className="text-[9px] uppercase font-bold text-white/50">
-                    {t('play.say_louder')}
-                  </span>
-                </button>
-                <button
-                  onClick={() => setVolume((v) => Math.max(0.1, v - 0.2))}
-                  className="flex flex-col items-center gap-1 group cursor-pointer"
-                >
-                  <span className="material-symbols-outlined text-[#4CAF50] group-hover:scale-110 transition-transform">
-                    volume_down
-                  </span>
-                  <span className="text-[9px] uppercase font-bold text-white/50">
-                    {t('play.say_quieter')}
-                  </span>
-                </button>
-                <div className="h-6 w-px bg-white/10" />
-                <button
-                  onClick={() => setFontScale((s) => Math.min(1.6, +(s + 0.1).toFixed(1)))}
-                  className="flex flex-col items-center gap-1 group cursor-pointer"
-                >
-                  <span className="material-symbols-outlined text-[#4CAF50] group-hover:scale-110 transition-transform">
-                    text_increase
-                  </span>
-                  <span className="text-[9px] uppercase font-bold text-white/50">
-                    {t('play.say_bigger')}
-                  </span>
-                </button>
-                <button
-                  onClick={() => setFontScale((s) => Math.max(0.8, +(s - 0.1).toFixed(1)))}
-                  className="flex flex-col items-center gap-1 group cursor-pointer"
-                >
-                  <span className="material-symbols-outlined text-[#4CAF50] group-hover:scale-110 transition-transform">
-                    text_decrease
-                  </span>
-                  <span className="text-[9px] uppercase font-bold text-white/50">
-                    {t('play.say_smaller')}
-                  </span>
-                </button>
-              </div>
-
-              {/* Help button */}
+                </>
+              )}
+              <div className="h-8 w-px bg-white/10" />
               <button
-                onClick={() => setShowHelp((v) => !v)}
-                className="p-2 rounded-full border border-white/10 hover:border-white/30 hover:bg-white/5 transition-colors flex-shrink-0"
-                title={t('play.help_title')}
+                onClick={() => setVolume((v) => (v > 0 ? 0 : 1.0))}
+                className="w-12 h-12 rounded-full border border-white/20 flex items-center justify-center hover:bg-white/5 transition-all"
+                style={{ minWidth: '48px', minHeight: '48px' }}
               >
-                <span className="material-symbols-outlined text-white/60 text-xl">help</span>
+                <span className="material-symbols-outlined">
+                  {volume > 0 ? 'volume_up' : 'volume_off'}
+                </span>
               </button>
             </div>
+
+            {/* Mobile progress indicator */}
+            <div className="md:hidden flex flex-col items-center">
+              <span className="text-[10px] uppercase font-bold text-white/40">
+                {activeStepIdx + 1}/{steps.length}
+              </span>
+              <div className="w-16 h-1.5 bg-white/10 rounded-full overflow-hidden mt-1">
+                <div
+                  className="h-full bg-[#13ec5b] transition-all"
+                  style={{ width: `${progress}%` }}
+                />
+              </div>
+            </div>
+
+            {/* Next */}
+            <button
+              onClick={() => goToStep(activeStepIdx + 1)}
+              disabled={activeStepIdx === steps.length - 1}
+              className={`flex items-center gap-2 px-5 sm:px-8 md:px-10 py-3 md:py-4 rounded-full font-bold transition-all ${
+                activeStepIdx === steps.length - 1
+                  ? 'bg-white/10 text-white/20 cursor-not-allowed'
+                  : 'bg-[#13ec5b] text-[#102216] hover:scale-105 active:scale-95 shadow-xl shadow-[#13ec5b]/20'
+              }`}
+              style={{ minHeight: '48px' }}
+            >
+              <span className="hidden sm:inline">{t('steps.next')}</span>
+              <span className="material-symbols-outlined">arrow_forward</span>
+            </button>
+
+            {/* Help button */}
+            <button
+              onClick={() => setShowHelp((v) => !v)}
+              className="p-2 rounded-full border border-white/10 hover:border-white/30 hover:bg-white/5 transition-colors flex-shrink-0"
+              title={t('play.help_title')}
+              style={{ minWidth: '44px', minHeight: '44px' }}
+            >
+              <span className="material-symbols-outlined text-white/60 text-xl">help</span>
+            </button>
           </div>
         </div>
 
