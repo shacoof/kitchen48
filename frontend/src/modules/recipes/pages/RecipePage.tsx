@@ -187,7 +187,7 @@ export function RecipePage() {
     .join(' ') || 'Kitchen48 Chef';
 
   return (
-    <div className="min-h-screen bg-background-light pb-24 md:pb-8">
+    <div className="min-h-screen bg-background-light pt-16 md:pt-0 pb-8">
       {/* Header */}
       <header className="bg-primary text-white py-4 px-6">
         <div className="max-w-5xl mx-auto flex items-center justify-between">
@@ -561,8 +561,8 @@ export function RecipePage() {
         </div>
       </main>
 
-      {/* Mobile Sticky Bottom Action Bar */}
-      <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t shadow-lg z-40">
+      {/* Mobile Sticky Top Action Bar */}
+      <div className="md:hidden fixed top-0 left-0 right-0 bg-white border-b shadow-lg z-40">
         <div className="flex items-center justify-between px-4 py-3">
           <button
             onClick={() => navigate(`/${nickname}/${recipeSlug}/play`)}

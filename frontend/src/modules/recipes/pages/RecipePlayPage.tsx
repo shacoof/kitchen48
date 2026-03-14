@@ -804,6 +804,89 @@ export function RecipePlayPage() {
 
       {/* ── Main Content ── */}
       <main className="flex-1 flex flex-col relative bg-[#0c1a11]">
+        {/* ── Top Navigation Bar (Fixed) ── */}
+        <div className="p-3 sm:p-4 md:p-6 border-b border-white/10 bg-[#0c1a11]/80 backdrop-blur-md flex-shrink-0 z-10">
+          <div className="max-w-6xl mx-auto flex justify-between items-center">
+            {/* Previous */}
+            <button
+              onClick={() => goToStep(activeStepIdx - 1)}
+              disabled={activeStepIdx === 0}
+              className={`flex items-center gap-2 px-5 sm:px-6 md:px-8 py-3 md:py-4 rounded-full font-bold transition-all ${
+                activeStepIdx === 0
+                  ? 'text-white/20 cursor-not-allowed'
+                  : 'text-white/70 bg-white/10 hover:bg-white/20'
+              }`}
+              style={{ minHeight: '48px' }}
+            >
+              <span className="material-symbols-outlined">arrow_back</span>
+              <span className="hidden sm:inline">{t('steps.previous')}</span>
+            </button>
+
+            {/* Center: Timer + Volume (desktop/tablet) */}
+            <div className="hidden md:flex items-center gap-6 md:gap-8">
+              {stepHasTimer && (
+                <div className="flex flex-col items-center">
+                  <span className="text-[10px] uppercase font-bold text-white/40">
+                    {t('play.timer')}
+                  </span>
+                  <span className="text-xl font-mono font-bold text-[#13ec5b]">
+                    {stepTimerSeconds !== undefined
+                      ? formatTimer(stepTimerSeconds)
+                      : formatTimer(stepTimerTotal)}
+                  </span>
+                </div>
+              )}
+              {activeTimerCount > 0 && (
+                <>
+                  <div className="h-8 w-px bg-white/10" />
+                  <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-[#13ec5b]/20 text-[#13ec5b] text-xs rounded-full font-bold">
+                    <span className="material-symbols-outlined text-sm">timer</span>
+                    {activeTimerCount} {t('play.active_timers')}
+                  </span>
+                </>
+              )}
+              <div className="h-8 w-px bg-white/10" />
+              <button
+                onClick={() => setVolume((v) => (v > 0 ? 0 : 1.0))}
+                className="w-12 h-12 rounded-full border border-white/20 flex items-center justify-center hover:bg-white/5 transition-all"
+                style={{ minWidth: '48px', minHeight: '48px' }}
+              >
+                <span className="material-symbols-outlined">
+                  {volume > 0 ? 'volume_up' : 'volume_off'}
+                </span>
+              </button>
+            </div>
+
+            {/* Mobile progress indicator */}
+            <div className="md:hidden flex flex-col items-center">
+              <span className="text-[10px] uppercase font-bold text-white/40">
+                {activeStepIdx + 1}/{steps.length}
+              </span>
+              <div className="w-16 h-1.5 bg-white/10 rounded-full overflow-hidden mt-1">
+                <div
+                  className="h-full bg-[#13ec5b] transition-all"
+                  style={{ width: `${progress}%` }}
+                />
+              </div>
+            </div>
+
+            {/* Next */}
+            <button
+              onClick={() => goToStep(activeStepIdx + 1)}
+              disabled={activeStepIdx === steps.length - 1}
+              className={`flex items-center gap-2 px-6 sm:px-8 md:px-10 py-3 md:py-4 rounded-full font-bold transition-all ${
+                activeStepIdx === steps.length - 1
+                  ? 'bg-white/10 text-white/20 cursor-not-allowed'
+                  : 'bg-[#13ec5b] text-[#102216] hover:scale-105 active:scale-95 shadow-xl shadow-[#13ec5b]/20'
+              }`}
+              style={{ minHeight: '48px' }}
+            >
+              <span className="hidden sm:inline">{t('steps.next')}</span>
+              <span className="material-symbols-outlined">arrow_forward</span>
+            </button>
+          </div>
+        </div>
+
         <div className="flex-1 overflow-y-auto">
           <div className="p-4 sm:p-6 lg:p-10 max-w-6xl mx-auto w-full">
             {/* Voice Control Bar */}
@@ -1165,88 +1248,6 @@ export function RecipePlayPage() {
           </div>
         )}
 
-        {/* ── Bottom Navigation Bar (Sticky) ── */}
-        <div className="p-3 sm:p-4 md:p-6 border-t border-white/10 bg-[#0c1a11]/80 backdrop-blur-md flex-shrink-0">
-          <div className="max-w-6xl mx-auto flex justify-between items-center">
-            {/* Previous */}
-            <button
-              onClick={() => goToStep(activeStepIdx - 1)}
-              disabled={activeStepIdx === 0}
-              className={`flex items-center gap-2 px-5 sm:px-6 md:px-8 py-3 md:py-4 rounded-full font-bold transition-all ${
-                activeStepIdx === 0
-                  ? 'text-white/20 cursor-not-allowed'
-                  : 'text-white/70 bg-white/10 hover:bg-white/20'
-              }`}
-              style={{ minHeight: '48px' }}
-            >
-              <span className="material-symbols-outlined">arrow_back</span>
-              <span className="hidden sm:inline">{t('steps.previous')}</span>
-            </button>
-
-            {/* Center: Timer + Volume (desktop/tablet) */}
-            <div className="hidden md:flex items-center gap-6 md:gap-8">
-              {stepHasTimer && (
-                <div className="flex flex-col items-center">
-                  <span className="text-[10px] uppercase font-bold text-white/40">
-                    {t('play.timer')}
-                  </span>
-                  <span className="text-xl font-mono font-bold text-[#13ec5b]">
-                    {stepTimerSeconds !== undefined
-                      ? formatTimer(stepTimerSeconds)
-                      : formatTimer(stepTimerTotal)}
-                  </span>
-                </div>
-              )}
-              {activeTimerCount > 0 && (
-                <>
-                  <div className="h-8 w-px bg-white/10" />
-                  <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-[#13ec5b]/20 text-[#13ec5b] text-xs rounded-full font-bold">
-                    <span className="material-symbols-outlined text-sm">timer</span>
-                    {activeTimerCount} {t('play.active_timers')}
-                  </span>
-                </>
-              )}
-              <div className="h-8 w-px bg-white/10" />
-              <button
-                onClick={() => setVolume((v) => (v > 0 ? 0 : 1.0))}
-                className="w-12 h-12 rounded-full border border-white/20 flex items-center justify-center hover:bg-white/5 transition-all"
-                style={{ minWidth: '48px', minHeight: '48px' }}
-              >
-                <span className="material-symbols-outlined">
-                  {volume > 0 ? 'volume_up' : 'volume_off'}
-                </span>
-              </button>
-            </div>
-
-            {/* Mobile progress indicator */}
-            <div className="md:hidden flex flex-col items-center">
-              <span className="text-[10px] uppercase font-bold text-white/40">
-                {activeStepIdx + 1}/{steps.length}
-              </span>
-              <div className="w-16 h-1.5 bg-white/10 rounded-full overflow-hidden mt-1">
-                <div
-                  className="h-full bg-[#13ec5b] transition-all"
-                  style={{ width: `${progress}%` }}
-                />
-              </div>
-            </div>
-
-            {/* Next */}
-            <button
-              onClick={() => goToStep(activeStepIdx + 1)}
-              disabled={activeStepIdx === steps.length - 1}
-              className={`flex items-center gap-2 px-6 sm:px-8 md:px-10 py-3 md:py-4 rounded-full font-bold transition-all ${
-                activeStepIdx === steps.length - 1
-                  ? 'bg-white/10 text-white/20 cursor-not-allowed'
-                  : 'bg-[#13ec5b] text-[#102216] hover:scale-105 active:scale-95 shadow-xl shadow-[#13ec5b]/20'
-              }`}
-              style={{ minHeight: '48px' }}
-            >
-              <span className="hidden sm:inline">{t('steps.next')}</span>
-              <span className="material-symbols-outlined">arrow_forward</span>
-            </button>
-          </div>
-        </div>
       </main>
     </div>
   );
