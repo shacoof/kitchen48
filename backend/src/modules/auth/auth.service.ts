@@ -82,6 +82,7 @@ class AuthService {
     // Find user
     const user = await prisma.user.findUnique({
       where: { email: input.email.toLowerCase() },
+      include: { alarmSound: { select: { id: true } } },
     });
 
     if (!user) {
@@ -196,6 +197,9 @@ class AuthService {
   async getUserById(userId: string): Promise<AuthUser | null> {
     const user = await prisma.user.findUnique({
       where: { id: userId },
+      include: {
+        alarmSound: { select: { id: true } },
+      },
     });
 
     if (!user) {
@@ -243,6 +247,7 @@ class AuthService {
     videoLanguage: string;
     interfaceLanguage: string;
     measurementSystem: string;
+    alarmSound?: { id: string } | null;
   }): AuthUser {
     return {
       id: user.id,
@@ -256,6 +261,7 @@ class AuthService {
       videoLanguage: user.videoLanguage,
       interfaceLanguage: user.interfaceLanguage,
       measurementSystem: user.measurementSystem,
+      hasAlarmSound: !!user.alarmSound,
     };
   }
 }

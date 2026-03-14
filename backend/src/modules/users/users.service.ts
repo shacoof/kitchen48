@@ -204,6 +204,61 @@ class UsersService {
   }
 
   // ============================================================================
+  // Alarm Sound Methods
+  // ============================================================================
+
+  /**
+   * Check if user has a custom alarm sound
+   */
+  async hasAlarmSound(userId: string): Promise<boolean> {
+    const count = await prisma.userAlarmSound.count({ where: { userId } });
+    return count > 0;
+  }
+
+  /**
+   * Upload/replace alarm sound for a user
+   */
+  async uploadAlarmSound(
+    userId: string,
+    data: Buffer,
+    mimeType: string,
+    fileName: string | null,
+    fileSize: number
+  ): Promise<void> {
+    await prisma.userAlarmSound.upsert({
+      where: { userId },
+      update: { data, mimeType, fileName, fileSize },
+      create: { userId, data, mimeType, fileName, fileSize },
+    });
+    logger.debug(`Alarm sound uploaded for user ${userId} (${fileSize} bytes)`);
+  }
+
+  /**
+   * Get alarm sound binary for a user
+   */
+  async getAlarmSound(userId: string): Promise<{ data: Buffer; mimeType: string } | null> {
+    const sound = await prisma.userAlarmSound.findUnique({
+      where: { userId },
+      select: { data: true, mimeType: true },
+    });
+    if (!sound) return null;
+    return { data: Buffer.from(sound.data), mimeType: sound.mimeType };
+  }
+
+  /**
+   * Delete alarm sound for a user
+   */
+  async deleteAlarmSound(userId: string): Promise<boolean> {
+    try {
+      await prisma.userAlarmSound.delete({ where: { userId } });
+      logger.debug(`Alarm sound deleted for user ${userId}`);
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
+  // ============================================================================
   // Public Discovery Methods
   // ============================================================================
 

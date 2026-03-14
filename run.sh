@@ -1,5 +1,5 @@
 #!/bin/bash
-# Run script for worktree: fix/auto-save-remove-buttons
+# Run script for worktree: feature/timer-alarm-sound
 WORKTREE_DIR="$(cd "$(dirname "$0")" && pwd)"
 MAIN_REPO="$(cd "$WORKTREE_DIR" && git worktree list | head -1 | awk '{print $1}')"
 cd "$WORKTREE_DIR"
@@ -32,7 +32,7 @@ fi
 # Kill any existing dev server ports
 fuser -k 3000/tcp 5173/tcp 5174/tcp 5175/tcp 5176/tcp 2>/dev/null || true
 
-# Start frontend and backend directly
+# Start frontend and backend directly (skip npm run dev to avoid re-triggering db:start)
 npm run dev:frontend &
 npm run dev:backend &
 

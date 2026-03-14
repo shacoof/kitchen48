@@ -161,6 +161,13 @@ export function RecipePlayPage() {
   // Audio context for timer chime
   const audioCtxRef = useRef<AudioContext | null>(null);
 
+  // Alarm state: tracks which step timers are currently ringing
+  const [alarmingSteps, setAlarmingSteps] = useState<Set<string>>(new Set());
+  const alarmIntervalsRef = useRef<Record<string, ReturnType<typeof setInterval>>>({});
+  const alarmTimeoutsRef = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
+  const alarmDurationRef = useRef(10); // default 10s, updated from DB
+  const customAlarmAudioRef = useRef<HTMLAudioElement | null>(null);
+
   // Ref for latest voice command handler (avoids stale closures)
   const voiceHandlerRef = useRef<(cmd: string) => void>(() => {});
 
@@ -229,6 +236,51 @@ export function RecipePlayPage() {
   }, [i18n.language]);
 
   // ──────────────────────────────────────────────────────────────────────
+  // Fetch Alarm Duration Parameter
+  // ──────────────────────────────────────────────────────────────────────
+
+  useEffect(() => {
+    const fetchAlarmDuration = async () => {
+      try {
+        const token = localStorage.getItem('auth_token');
+        if (!token) return;
+        const response = await fetch('/api/parameters/value?key=system.timer.alarmDurationSeconds', {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (response.ok) {
+          const result = await response.json();
+          const parsed = parseInt(result.value, 10);
+          if (!isNaN(parsed) && parsed > 0) {
+            alarmDurationRef.current = parsed;
+          }
+        }
+      } catch {
+        logger.warning('Failed to fetch alarm duration parameter, using default');
+      }
+    };
+    fetchAlarmDuration();
+  }, []);
+
+  // ──────────────────────────────────────────────────────────────────────
+  // Preload Custom Alarm Sound
+  // ──────────────────────────────────────────────────────────────────────
+
+  useEffect(() => {
+    if (user?.hasAlarmSound) {
+      const audio = new Audio(`/api/users/${user.id}/alarm-sound`);
+      audio.preload = 'auto';
+      audio.load();
+      customAlarmAudioRef.current = audio;
+    }
+    return () => {
+      if (customAlarmAudioRef.current) {
+        customAlarmAudioRef.current.pause();
+        customAlarmAudioRef.current = null;
+      }
+    };
+  }, [user?.hasAlarmSound, user?.id]);
+
+  // ──────────────────────────────────────────────────────────────────────
   // Screen Wake Lock
   // ──────────────────────────────────────────────────────────────────────
 
@@ -259,7 +311,7 @@ export function RecipePlayPage() {
   }, []);
 
   // ──────────────────────────────────────────────────────────────────────
-  // Timer Chime
+  // Timer Chime (single beep)
   // ──────────────────────────────────────────────────────────────────────
 
   const playTimerChime = useCallback(() => {
@@ -284,11 +336,77 @@ export function RecipePlayPage() {
   }, [volume]);
 
   // ──────────────────────────────────────────────────────────────────────
-  // Timer Tick
+  // Alarm: repeating chime when timer reaches zero
   // ──────────────────────────────────────────────────────────────────────
 
   const playChimeRef = useRef(playTimerChime);
   playChimeRef.current = playTimerChime;
+
+  const startAlarm = useCallback((stepId: string) => {
+    // Don't start a second alarm for the same step
+    if (alarmIntervalsRef.current[stepId]) return;
+
+    if (customAlarmAudioRef.current) {
+      // Use custom alarm sound — loop it
+      const audio = customAlarmAudioRef.current;
+      audio.loop = true;
+      audio.currentTime = 0;
+      audio.volume = Math.min(volume, 1.0);
+      audio.play().catch((err) => logger.warning(`Custom alarm play failed: ${err}`));
+      // Use a dummy interval to keep the step in alarmIntervalsRef (for cleanup)
+      alarmIntervalsRef.current[stepId] = setInterval(() => {}, 60000);
+    } else {
+      // Fall back to synthesized chime — play immediately then repeat
+      playChimeRef.current();
+      alarmIntervalsRef.current[stepId] = setInterval(() => {
+        playChimeRef.current();
+      }, 1500);
+    }
+
+    // Auto-stop after configured duration
+    alarmTimeoutsRef.current[stepId] = setTimeout(() => {
+      dismissAlarm(stepId);
+    }, alarmDurationRef.current * 1000);
+
+    setAlarmingSteps((prev) => new Set(prev).add(stepId));
+  }, [volume]);
+
+  const dismissAlarm = useCallback((stepId: string) => {
+    if (alarmIntervalsRef.current[stepId]) {
+      clearInterval(alarmIntervalsRef.current[stepId]);
+      delete alarmIntervalsRef.current[stepId];
+    }
+    if (alarmTimeoutsRef.current[stepId]) {
+      clearTimeout(alarmTimeoutsRef.current[stepId]);
+      delete alarmTimeoutsRef.current[stepId];
+    }
+    // Stop custom audio if playing
+    if (customAlarmAudioRef.current) {
+      customAlarmAudioRef.current.pause();
+      customAlarmAudioRef.current.loop = false;
+      customAlarmAudioRef.current.currentTime = 0;
+    }
+    setAlarmingSteps((prev) => {
+      const next = new Set(prev);
+      next.delete(stepId);
+      return next;
+    });
+  }, []);
+
+  // Cleanup all alarms on unmount
+  useEffect(() => {
+    return () => {
+      Object.values(alarmIntervalsRef.current).forEach(clearInterval);
+      Object.values(alarmTimeoutsRef.current).forEach(clearTimeout);
+    };
+  }, []);
+
+  // ──────────────────────────────────────────────────────────────────────
+  // Timer Tick
+  // ──────────────────────────────────────────────────────────────────────
+
+  const startAlarmRef = useRef(startAlarm);
+  startAlarmRef.current = startAlarm;
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -299,7 +417,7 @@ export function RecipePlayPage() {
         for (const [key, val] of Object.entries(prev)) {
           const newVal = Math.max(0, val - 1);
           if (val > 0 && newVal === 0) {
-            playChimeRef.current();
+            startAlarmRef.current(key);
           }
           next[key] = newVal;
         }
@@ -314,18 +432,21 @@ export function RecipePlayPage() {
   // ──────────────────────────────────────────────────────────────────────
 
   const startTimer = useCallback((stepId: string, step: Step) => {
+    // Dismiss any active alarm for this step when (re)starting
+    dismissAlarm(stepId);
     const secs = toSeconds(step.waitTime, step.waitTimeUnit);
     if (secs <= 0) return;
     setTimers((prev) => ({ ...prev, [stepId]: secs }));
-  }, []);
+  }, [dismissAlarm]);
 
   const stopTimer = useCallback((stepId: string) => {
+    dismissAlarm(stepId);
     setTimers((prev) => {
       const next = { ...prev };
       delete next[stepId];
       return next;
     });
-  }, []);
+  }, [dismissAlarm]);
 
   const activeTimerCount = useMemo(
     () => Object.values(timers).filter((r) => r > 0).length,
@@ -984,14 +1105,21 @@ export function RecipePlayPage() {
 
                 {/* Inline Timer Widget */}
                 {stepHasTimer && (
-                  <div className="mt-6 md:mt-8 p-4 md:p-6 bg-white/5 border border-white/10 rounded-xl">
+                  <div className={`mt-6 md:mt-8 p-4 md:p-6 bg-white/5 border rounded-xl transition-colors ${activeStep && alarmingSteps.has(activeStep.id) ? 'border-orange-400/60 bg-orange-500/10' : 'border-white/10'}`}>
                     <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                      <div>
+                      <div
+                        className={activeStep && alarmingSteps.has(activeStep.id) ? 'cursor-pointer' : ''}
+                        onClick={() => {
+                          if (activeStep && alarmingSteps.has(activeStep.id)) {
+                            dismissAlarm(activeStep.id);
+                          }
+                        }}
+                      >
                         <h3 className="text-sm font-bold uppercase tracking-wider text-white/40 mb-1 flex items-center gap-2">
                           <span className="material-symbols-outlined text-base">timer</span>
                           {t('play.timer')}
                         </h3>
-                        <p className="text-4xl md:text-5xl font-mono font-bold text-[#13ec5b]">
+                        <p className={`text-4xl md:text-5xl font-mono font-bold ${activeStep && alarmingSteps.has(activeStep.id) ? 'text-orange-400 animate-pulse' : 'text-[#13ec5b]'}`}>
                           {stepTimerSeconds !== undefined
                             ? formatTimer(stepTimerSeconds)
                             : formatTimer(stepTimerTotal)}
@@ -999,6 +1127,9 @@ export function RecipePlayPage() {
                         {stepTimerSeconds === 0 && (
                           <p className="text-orange-400 font-semibold mt-2 animate-pulse text-lg">
                             {t('steps.timer_done')}
+                            {activeStep && alarmingSteps.has(activeStep.id) && (
+                              <span className="ml-2 text-sm text-orange-300">({t('steps.timer_tap_dismiss')})</span>
+                            )}
                           </p>
                         )}
                       </div>

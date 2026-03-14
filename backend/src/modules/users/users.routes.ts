@@ -4,14 +4,30 @@
  */
 
 import { Router } from 'express';
+import multer from 'multer';
 import { usersController } from './users.controller.js';
 import { requireAuth, requireAdmin } from '../auth/auth.middleware.js';
 import { recipeService } from '../recipes/recipe.service.js';
+import { usersService } from './users.service.js';
 import { createLogger } from '../../lib/logger.js';
 
 const logger = createLogger('UsersRoutes');
 
 const router = Router();
+
+// Multer config for alarm sound upload (memory storage, max 2MB, audio only)
+const alarmSoundUpload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 2 * 1024 * 1024, files: 1 },
+  fileFilter: (_req, file, cb) => {
+    const allowed = ['audio/mpeg', 'audio/wav', 'audio/ogg', 'audio/mp4', 'audio/x-m4a', 'audio/mp3', 'audio/wave', 'audio/x-wav'];
+    if (allowed.includes(file.mimetype)) {
+      cb(null, true);
+    } else {
+      cb(new Error('Only audio files are allowed (MP3, WAV, OGG, M4A)'));
+    }
+  },
+});
 
 // ============================================================================
 // Authenticated Routes (own profile) - MUST come before /:nickname
@@ -28,6 +44,71 @@ router.get('/me/profile', requireAuth, usersController.getOwnProfile.bind(usersC
  * Update current user's profile
  */
 router.put('/me/profile', requireAuth, usersController.updateOwnProfile.bind(usersController));
+
+/**
+ * POST /api/users/me/alarm-sound
+ * Upload custom alarm sound (auth required)
+ */
+router.post('/me/alarm-sound', requireAuth, alarmSoundUpload.single('file'), async (req, res) => {
+  try {
+    const file = req.file;
+    if (!file) {
+      res.status(400).json({ error: 'Audio file is required' });
+      return;
+    }
+
+    await usersService.uploadAlarmSound(
+      req.userId!,
+      file.buffer,
+      file.mimetype,
+      file.originalname || null,
+      file.size
+    );
+
+    res.json({ success: true });
+  } catch (error) {
+    logger.error(`Alarm sound upload error: ${error instanceof Error ? error.message : String(error)}`);
+    res.status(500).json({ error: 'Failed to upload alarm sound' });
+  }
+});
+
+/**
+ * DELETE /api/users/me/alarm-sound
+ * Remove custom alarm sound (auth required)
+ */
+router.delete('/me/alarm-sound', requireAuth, async (req, res) => {
+  try {
+    await usersService.deleteAlarmSound(req.userId!);
+    res.status(204).send();
+  } catch (error) {
+    logger.error(`Alarm sound delete error: ${error instanceof Error ? error.message : String(error)}`);
+    res.status(500).json({ error: 'Failed to delete alarm sound' });
+  }
+});
+
+/**
+ * GET /api/users/:userId/alarm-sound
+ * Serve alarm sound binary (public, cached)
+ */
+router.get('/:userId/alarm-sound', async (req, res) => {
+  try {
+    const sound = await usersService.getAlarmSound(req.params.userId);
+    if (!sound) {
+      res.status(404).json({ error: 'No alarm sound found' });
+      return;
+    }
+
+    res.set({
+      'Content-Type': sound.mimeType,
+      'Content-Length': String(sound.data.length),
+      'Cache-Control': 'private, max-age=3600',
+    });
+    res.send(sound.data);
+  } catch (error) {
+    logger.error(`Alarm sound serve error: ${error instanceof Error ? error.message : String(error)}`);
+    res.status(500).json({ error: 'Failed to serve alarm sound' });
+  }
+});
 
 // ============================================================================
 // Public Routes

@@ -131,6 +131,7 @@
     "timer_stop": "עצור",
     "timer_reset": "אפס",
     "timer_done": "הזמן נגמר!",
+    "timer_tap_dismiss": "לחץ להשתקה",
     "no_steps_yet": "עדיין אין שלבים. הוסף את השלב הראשון שלך.",
     "loading": "טוען...",
     "not_found": "שלב לא נמצא",
