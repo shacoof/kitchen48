@@ -172,7 +172,7 @@ class UrlImportService {
       ],
     });
 
-    const textBlock = response.content.find((block) => block.type === 'text');
+    const textBlock = response.content.find((block: { type: string }) => block.type === 'text');
     if (!textBlock || textBlock.type !== 'text') {
       throw new Error('No text response from Claude API');
     }
