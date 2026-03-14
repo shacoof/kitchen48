@@ -9,6 +9,7 @@ import { requireAuth, optionalAuth } from '../auth/auth.middleware.js';
 import { prisma } from '../../core/database/prisma.js';
 import { recipeService } from './recipe.service.js';
 import { smartUploadService } from './smart-upload.service.js';
+import { urlImportService } from './url-import.service.js';
 import {
   createRecipeSchema,
   updateRecipeSchema,
@@ -214,6 +215,61 @@ router.post('/smart-upload', requireAuth, smartUpload.array('images', 5), async 
     }
 
     res.status(500).json({ error: 'Failed to process recipe images' });
+  }
+});
+
+/**
+ * POST /api/recipes/import-from-url
+ * Create a recipe by extracting data from a web page URL (auth required)
+ */
+router.post('/import-from-url', requireAuth, async (req: Request, res: Response) => {
+  try {
+    const { url } = req.body;
+
+    if (!url || typeof url !== 'string') {
+      res.status(400).json({ error: 'A valid URL is required' });
+      return;
+    }
+
+    // Basic URL validation
+    try {
+      new URL(url);
+    } catch {
+      res.status(400).json({ error: 'Invalid URL format' });
+      return;
+    }
+
+    const result = await urlImportService.processUrlImport(req.userId!, url);
+    res.status(201).json(result);
+  } catch (error) {
+    logger.error(`URL import error: ${error instanceof Error ? error.message : String(error)}`);
+
+    if (error instanceof Error && error.message.includes('is not configured')) {
+      res.status(503).json({ error: 'AI service is not configured' });
+      return;
+    }
+
+    if (error instanceof Error && error.message.includes('already have a recipe')) {
+      res.status(409).json({ error: error.message });
+      return;
+    }
+
+    if (error instanceof Error && error.message.includes('Failed to fetch URL')) {
+      res.status(422).json({ error: 'Could not fetch the provided URL. Please check the link and try again.' });
+      return;
+    }
+
+    if (error instanceof Error && error.message.includes('too short or empty')) {
+      res.status(422).json({ error: 'The page does not appear to contain a recipe.' });
+      return;
+    }
+
+    if (error instanceof Error && error.message.includes('recipe-scraping.md')) {
+      res.status(500).json({ error: 'Recipe scraping configuration is missing' });
+      return;
+    }
+
+    res.status(500).json({ error: 'Failed to import recipe from URL' });
   }
 });
 
