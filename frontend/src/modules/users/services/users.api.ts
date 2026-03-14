@@ -166,6 +166,42 @@ class UsersApiService {
       body: formData,
     });
   }
+
+  /**
+   * Upload custom alarm sound (requires auth)
+   */
+  async uploadAlarmSound(file: File): Promise<ApiResponse<{ success: boolean }>> {
+    const formData = new FormData();
+    formData.append('file', file);
+
+    return this.request<{ success: boolean }>('/users/me/alarm-sound', {
+      method: 'POST',
+      body: formData,
+    });
+  }
+
+  /**
+   * Delete custom alarm sound (requires auth)
+   */
+  async deleteAlarmSound(): Promise<ApiResponse<void>> {
+    try {
+      const response = await fetch(`${this.baseUrl}/users/me/alarm-sound`, {
+        method: 'DELETE',
+        headers: {
+          Authorization: `Bearer ${this.token}`,
+        },
+      });
+
+      if (!response.ok) {
+        return { error: 'Failed to delete alarm sound' };
+      }
+
+      return { data: undefined };
+    } catch (error) {
+      logger.error(`Failed to delete alarm sound: ${error}`);
+      return { error: 'Network error' };
+    }
+  }
 }
 
 export const usersApi = new UsersApiService();

@@ -17,6 +17,9 @@ import { useListValues } from '../../../hooks/useListValues';
 import { createLogger } from '../../../lib/logger';
 import type { MediaAsset } from '../../media/services/media.api';
 
+const ALLOWED_AUDIO_TYPES = ['audio/mpeg', 'audio/wav', 'audio/ogg', 'audio/mp4', 'audio/x-m4a', 'audio/mp3', 'audio/wave', 'audio/x-wav'];
+const MAX_AUDIO_SIZE = 2 * 1024 * 1024; // 2MB
+
 const logger = createLogger('EditProfilePage');
 
 // Form validation schema (matches backend)
@@ -44,7 +47,7 @@ type ProfileFormData = z.infer<typeof profileSchema>;
 export function EditProfilePage() {
   const navigate = useNavigate();
   const { t } = useTranslation('profile');
-  const { isAuthenticated, isLoading: authLoading, refreshUser } = useAuth();
+  const { user, isAuthenticated, isLoading: authLoading, refreshUser } = useAuth();
   const { values: languages } = useListValues({ typeName: 'Languages' });
   const { values: measurementSystems } = useListValues({ typeName: 'Measurement System' });
   const [profile, setProfile] = useState<FullUserProfile | null>(null);
@@ -59,6 +62,13 @@ export function EditProfilePage() {
   // Media state
   const [profilePhotoId, setProfilePhotoId] = useState<string | null>(null);
   const [introVideoId, setIntroVideoId] = useState<string | null>(null);
+
+  // Alarm sound state
+  const [hasAlarmSound, setHasAlarmSound] = useState(false);
+  const [alarmSoundUploading, setAlarmSoundUploading] = useState(false);
+  const [alarmSoundPreviewUrl, setAlarmSoundPreviewUrl] = useState<string | null>(null);
+  const alarmAudioRef = useRef<HTMLAudioElement | null>(null);
+  const alarmFileInputRef = useRef<HTMLInputElement | null>(null);
 
   const {
     register,
@@ -93,6 +103,11 @@ export function EditProfilePage() {
         setProfile(result.data);
         setProfilePhotoId(result.data.profilePhotoId || null);
         setIntroVideoId(result.data.introVideoId || null);
+        // Initialize alarm sound state from auth user
+        if (user?.hasAlarmSound) {
+          setHasAlarmSound(true);
+          setAlarmSoundPreviewUrl(`/api/users/${user.id}/alarm-sound`);
+        }
         // Reset form with fetched data
         reset({
           nickname: result.data.nickname || '',
@@ -222,6 +237,72 @@ export function EditProfilePage() {
     }
   }, []);
 
+  const handleAlarmSoundUpload = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Validate format
+    if (!ALLOWED_AUDIO_TYPES.includes(file.type)) {
+      setError(t('edit.alarm_sound_error_format'));
+      return;
+    }
+
+    // Validate size
+    if (file.size > MAX_AUDIO_SIZE) {
+      setError(t('edit.alarm_sound_error_size'));
+      return;
+    }
+
+    setAlarmSoundUploading(true);
+    setError(null);
+
+    const result = await usersApi.uploadAlarmSound(file);
+
+    if (result.error) {
+      logger.error(`Failed to upload alarm sound: ${result.error}`);
+      setError(t('edit.alarm_sound_error_upload'));
+      setAlarmSoundUploading(false);
+      return;
+    }
+
+    setHasAlarmSound(true);
+    // Create a local preview URL for immediate playback
+    setAlarmSoundPreviewUrl(URL.createObjectURL(file));
+    setAlarmSoundUploading(false);
+    setSuccess(t('edit.alarm_sound_updated'));
+    await refreshUser();
+
+    // Clear the file input so the same file can be re-uploaded
+    if (alarmFileInputRef.current) alarmFileInputRef.current.value = '';
+  }, [refreshUser, t]);
+
+  const handleAlarmSoundRemove = useCallback(async () => {
+    // Stop any playing preview
+    if (alarmAudioRef.current) {
+      alarmAudioRef.current.pause();
+      alarmAudioRef.current = null;
+    }
+    if (alarmSoundPreviewUrl?.startsWith('blob:')) {
+      URL.revokeObjectURL(alarmSoundPreviewUrl);
+    }
+
+    await usersApi.deleteAlarmSound();
+    setHasAlarmSound(false);
+    setAlarmSoundPreviewUrl(null);
+    setSuccess(t('edit.alarm_sound_removed'));
+    await refreshUser();
+  }, [alarmSoundPreviewUrl, refreshUser, t]);
+
+  const handleAlarmSoundPlay = useCallback(() => {
+    if (!alarmSoundPreviewUrl) return;
+    if (alarmAudioRef.current) {
+      alarmAudioRef.current.pause();
+    }
+    const audio = new Audio(alarmSoundPreviewUrl);
+    alarmAudioRef.current = audio;
+    audio.play();
+  }, [alarmSoundPreviewUrl]);
+
   if (authLoading || loading) {
     return (
       <div className="min-h-screen bg-background-light flex items-center justify-center">
@@ -319,6 +400,62 @@ export function EditProfilePage() {
               onUploadComplete={handleVideoUploadComplete}
               onRemove={handleVideoRemove}
             />
+          </div>
+
+          {/* Alarm Sound Section */}
+          <div className="mb-8 pb-8 border-b border-gray-100">
+            <h2 className="text-lg font-semibold text-gray-700 mb-2">{t('edit.alarm_sound_label')}</h2>
+            <p className="text-sm text-gray-500 mb-4">{t('edit.alarm_sound_help')}</p>
+
+            {hasAlarmSound ? (
+              <div className="flex items-center gap-3 flex-wrap">
+                <span className="text-sm text-green-600 flex items-center gap-1">
+                  <span className="material-symbols-outlined text-base">check_circle</span>
+                  {t('edit.alarm_sound_custom')}
+                </span>
+                <button
+                  type="button"
+                  onClick={handleAlarmSoundPlay}
+                  className="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-sm font-medium transition-colors flex items-center gap-1"
+                  style={{ minHeight: '44px' }}
+                >
+                  <span className="material-symbols-outlined text-base">play_arrow</span>
+                </button>
+                <label className="px-4 py-2 bg-accent-orange/10 hover:bg-accent-orange/20 text-accent-orange rounded-lg text-sm font-medium cursor-pointer transition-colors" style={{ minHeight: '44px', display: 'inline-flex', alignItems: 'center' }}>
+                  {t('edit.alarm_sound_change')}
+                  <input
+                    ref={alarmFileInputRef}
+                    type="file"
+                    accept="audio/*"
+                    className="hidden"
+                    onChange={handleAlarmSoundUpload}
+                  />
+                </label>
+                <button
+                  type="button"
+                  onClick={handleAlarmSoundRemove}
+                  className="px-4 py-2 bg-red-50 hover:bg-red-100 text-red-600 rounded-lg text-sm font-medium transition-colors"
+                  style={{ minHeight: '44px' }}
+                >
+                  {t('edit.alarm_sound_remove')}
+                </button>
+              </div>
+            ) : (
+              <div className="flex items-center gap-3">
+                <span className="text-sm text-gray-400">{t('edit.alarm_sound_default')}</span>
+                <label className={`px-4 py-2 rounded-lg text-sm font-medium cursor-pointer transition-colors ${alarmSoundUploading ? 'bg-gray-100 text-gray-400 pointer-events-none' : 'bg-accent-orange text-white hover:bg-accent-orange/90'}`} style={{ minHeight: '44px', display: 'inline-flex', alignItems: 'center' }}>
+                  {alarmSoundUploading ? t('edit.alarm_sound_uploading') : t('edit.alarm_sound_upload')}
+                  <input
+                    ref={alarmFileInputRef}
+                    type="file"
+                    accept="audio/*"
+                    className="hidden"
+                    onChange={handleAlarmSoundUpload}
+                    disabled={alarmSoundUploading}
+                  />
+                </label>
+              </div>
+            )}
           </div>
 
           {/* Profile Form */}

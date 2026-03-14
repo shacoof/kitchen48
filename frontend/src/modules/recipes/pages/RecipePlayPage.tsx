@@ -166,6 +166,7 @@ export function RecipePlayPage() {
   const alarmIntervalsRef = useRef<Record<string, ReturnType<typeof setInterval>>>({});
   const alarmTimeoutsRef = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
   const alarmDurationRef = useRef(10); // default 10s, updated from DB
+  const customAlarmAudioRef = useRef<HTMLAudioElement | null>(null);
 
   // Ref for latest voice command handler (avoids stale closures)
   const voiceHandlerRef = useRef<(cmd: string) => void>(() => {});
@@ -261,6 +262,25 @@ export function RecipePlayPage() {
   }, []);
 
   // ──────────────────────────────────────────────────────────────────────
+  // Preload Custom Alarm Sound
+  // ──────────────────────────────────────────────────────────────────────
+
+  useEffect(() => {
+    if (user?.hasAlarmSound) {
+      const audio = new Audio(`/api/users/${user.id}/alarm-sound`);
+      audio.preload = 'auto';
+      audio.load();
+      customAlarmAudioRef.current = audio;
+    }
+    return () => {
+      if (customAlarmAudioRef.current) {
+        customAlarmAudioRef.current.pause();
+        customAlarmAudioRef.current = null;
+      }
+    };
+  }, [user?.hasAlarmSound, user?.id]);
+
+  // ──────────────────────────────────────────────────────────────────────
   // Screen Wake Lock
   // ──────────────────────────────────────────────────────────────────────
 
@@ -326,13 +346,22 @@ export function RecipePlayPage() {
     // Don't start a second alarm for the same step
     if (alarmIntervalsRef.current[stepId]) return;
 
-    // Play first chime immediately
-    playChimeRef.current();
-
-    // Repeat every 1.5s
-    alarmIntervalsRef.current[stepId] = setInterval(() => {
+    if (customAlarmAudioRef.current) {
+      // Use custom alarm sound — loop it
+      const audio = customAlarmAudioRef.current;
+      audio.loop = true;
+      audio.currentTime = 0;
+      audio.volume = Math.min(volume, 1.0);
+      audio.play().catch((err) => logger.warning(`Custom alarm play failed: ${err}`));
+      // Use a dummy interval to keep the step in alarmIntervalsRef (for cleanup)
+      alarmIntervalsRef.current[stepId] = setInterval(() => {}, 60000);
+    } else {
+      // Fall back to synthesized chime — play immediately then repeat
       playChimeRef.current();
-    }, 1500);
+      alarmIntervalsRef.current[stepId] = setInterval(() => {
+        playChimeRef.current();
+      }, 1500);
+    }
 
     // Auto-stop after configured duration
     alarmTimeoutsRef.current[stepId] = setTimeout(() => {
@@ -340,7 +369,7 @@ export function RecipePlayPage() {
     }, alarmDurationRef.current * 1000);
 
     setAlarmingSteps((prev) => new Set(prev).add(stepId));
-  }, []);
+  }, [volume]);
 
   const dismissAlarm = useCallback((stepId: string) => {
     if (alarmIntervalsRef.current[stepId]) {
@@ -350,6 +379,12 @@ export function RecipePlayPage() {
     if (alarmTimeoutsRef.current[stepId]) {
       clearTimeout(alarmTimeoutsRef.current[stepId]);
       delete alarmTimeoutsRef.current[stepId];
+    }
+    // Stop custom audio if playing
+    if (customAlarmAudioRef.current) {
+      customAlarmAudioRef.current.pause();
+      customAlarmAudioRef.current.loop = false;
+      customAlarmAudioRef.current.currentTime = 0;
     }
     setAlarmingSteps((prev) => {
       const next = new Set(prev);

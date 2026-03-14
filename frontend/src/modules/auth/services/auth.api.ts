@@ -19,6 +19,7 @@ export interface AuthUser {
   videoLanguage: string;
   interfaceLanguage: string;
   measurementSystem: string;
+  hasAlarmSound: boolean;
 }
 
 export interface RegisterInput {
