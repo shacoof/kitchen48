@@ -4,9 +4,12 @@
  */
 
 import { Router, Request, Response } from 'express';
+import multer from 'multer';
 import { requireAuth, optionalAuth } from '../auth/auth.middleware.js';
 import { prisma } from '../../core/database/prisma.js';
 import { recipeService } from './recipe.service.js';
+import { smartUploadService } from './smart-upload.service.js';
+import { urlImportService } from './url-import.service.js';
 import {
   createRecipeSchema,
   updateRecipeSchema,
@@ -19,6 +22,19 @@ import { createLogger } from '../../lib/logger.js';
 
 const router = Router();
 const logger = createLogger('RecipeRoutes');
+
+// Multer config for smart upload (memory storage, max 5 images, 10MB each)
+const smartUpload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 10 * 1024 * 1024, files: 5 },
+  fileFilter: (_req, file, cb) => {
+    if (file.mimetype.startsWith('image/')) {
+      cb(null, true);
+    } else {
+      cb(new Error('Only image files are allowed'));
+    }
+  },
+});
 
 /**
  * GET /api/recipes
@@ -162,6 +178,98 @@ router.get('/:id', optionalAuth, async (req: Request, res: Response) => {
   } catch (error) {
     logger.error(`Error fetching recipe: ${error instanceof Error ? error.message : String(error)}`);
     res.status(500).json({ error: 'Failed to fetch recipe' });
+  }
+});
+
+/**
+ * POST /api/recipes/smart-upload
+ * Create a recipe from uploaded photos using AI extraction (auth required)
+ */
+router.post('/smart-upload', requireAuth, smartUpload.array('images', 5), async (req: Request, res: Response) => {
+  try {
+    const files = req.files as Express.Multer.File[] | undefined;
+
+    if (!files || files.length === 0) {
+      res.status(400).json({ error: 'At least one image is required' });
+      return;
+    }
+
+    const imageBuffers = files.map((file) => ({
+      buffer: file.buffer,
+      mimeType: file.mimetype,
+    }));
+
+    const result = await smartUploadService.processUpload(req.userId!, imageBuffers);
+    res.status(201).json(result);
+  } catch (error) {
+    logger.error(`Smart upload error: ${error instanceof Error ? error.message : String(error)}`);
+
+    if (error instanceof Error && error.message.includes('is not configured')) {
+      res.status(503).json({ error: 'AI service is not configured' });
+      return;
+    }
+
+    if (error instanceof Error && error.message.includes('already have a recipe')) {
+      res.status(409).json({ error: error.message });
+      return;
+    }
+
+    res.status(500).json({ error: 'Failed to process recipe images' });
+  }
+});
+
+/**
+ * POST /api/recipes/import-from-url
+ * Create a recipe by extracting data from a web page URL (auth required)
+ */
+router.post('/import-from-url', requireAuth, async (req: Request, res: Response) => {
+  try {
+    const { url } = req.body;
+
+    if (!url || typeof url !== 'string') {
+      res.status(400).json({ error: 'A valid URL is required' });
+      return;
+    }
+
+    // Basic URL validation
+    try {
+      new URL(url);
+    } catch {
+      res.status(400).json({ error: 'Invalid URL format' });
+      return;
+    }
+
+    const result = await urlImportService.processUrlImport(req.userId!, url);
+    res.status(201).json(result);
+  } catch (error) {
+    logger.error(`URL import error: ${error instanceof Error ? error.message : String(error)}`);
+
+    if (error instanceof Error && error.message.includes('is not configured')) {
+      res.status(503).json({ error: 'AI service is not configured' });
+      return;
+    }
+
+    if (error instanceof Error && error.message.includes('already have a recipe')) {
+      res.status(409).json({ error: error.message });
+      return;
+    }
+
+    if (error instanceof Error && error.message.includes('Failed to fetch URL')) {
+      res.status(422).json({ error: 'Could not fetch the provided URL. Please check the link and try again.' });
+      return;
+    }
+
+    if (error instanceof Error && error.message.includes('too short or empty')) {
+      res.status(422).json({ error: 'The page does not appear to contain a recipe.' });
+      return;
+    }
+
+    if (error instanceof Error && error.message.includes('recipe-scraping.md')) {
+      res.status(500).json({ error: 'Recipe scraping configuration is missing' });
+      return;
+    }
+
+    res.status(500).json({ error: 'Failed to import recipe from URL' });
   }
 });
 

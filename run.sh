@@ -1,5 +1,5 @@
 #!/bin/bash
-# Run script for worktree: feature/timer-alarm-sound
+# Run script for worktree
 WORKTREE_DIR="$(cd "$(dirname "$0")" && pwd)"
 MAIN_REPO="$(cd "$WORKTREE_DIR" && git worktree list | head -1 | awk '{print $1}')"
 cd "$WORKTREE_DIR"

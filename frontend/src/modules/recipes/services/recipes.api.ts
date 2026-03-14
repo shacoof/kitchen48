@@ -176,6 +176,14 @@ export interface UpdateStepInput extends Partial<CreateStepInput> {
   id?: string;
 }
 
+export interface SmartUploadResponse {
+  recipe: {
+    id: string;
+    slug: string;
+  };
+  warnings: string[];
+}
+
 export interface RecipeQueryParams {
   page?: number;
   limit?: number;
@@ -423,6 +431,51 @@ class RecipesApi {
    */
   async searchIngredients(query: string): Promise<IngredientsSearchResponse & ApiResponse> {
     return this.request<IngredientsSearchResponse>(`/recipes/search-ingredients?q=${encodeURIComponent(query)}`);
+  }
+
+  /**
+   * Smart upload: extract recipe from photos using AI
+   */
+  async smartUpload(files: File[]): Promise<SmartUploadResponse & ApiResponse> {
+    const token = this.getToken();
+    const formData = new FormData();
+    files.forEach((file) => formData.append('images', file));
+
+    try {
+      const response = await fetch(`${API_BASE}/recipes/smart-upload`, {
+        method: 'POST',
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+        body: formData,
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        return {
+          ...data,
+          success: false,
+          error: data.error || 'Smart upload failed',
+        } as SmartUploadResponse & ApiResponse;
+      }
+
+      return { ...data, success: true } as SmartUploadResponse & ApiResponse;
+    } catch (error) {
+      logger.error(`Smart upload failed: ${error}`);
+      return {
+        success: false,
+        error: 'Network error. Please try again.',
+      } as SmartUploadResponse & ApiResponse;
+    }
+  }
+
+  /**
+   * Import recipe from a URL using AI extraction
+   */
+  async importFromUrl(url: string): Promise<SmartUploadResponse & ApiResponse> {
+    return this.request<SmartUploadResponse>('/recipes/import-from-url', {
+      method: 'POST',
+      body: JSON.stringify({ url }),
+    });
   }
 
   /**

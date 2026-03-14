@@ -154,6 +154,12 @@ Values: `SECONDS`, `MINUTES`, `HOURS`, `DAYS`
 - [ ] Add recipe duplication/fork feature
 - [ ] Add recipe versioning
 
+### URL Import from Web Pages - 2026-03-14
+- `url-import.service.ts` — Fetches recipe URL (WP API first, then direct fetch), sends HTML to Claude API
+- Extraction prompt is loaded at runtime from `docs/recipe-scraping.md` — edit the doc to change behavior, no code changes needed
+- Reuses `smartUploadService.createFromExtraction()` for recipe creation
+- Endpoint: `POST /api/recipes/import-from-url` with `{ url: string }` body
+
 ## Fixes Applied
 
 ### 2026-02-14: Recipe-level prepTime/cookTime are now auto-calculated from steps
