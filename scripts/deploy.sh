@@ -516,6 +516,10 @@ deploy_app() {
         secrets+=",CF_STREAM_WEBHOOK_SECRET=kitchen48-cf-stream-webhook-secret:latest"
     fi
 
+    if gcloud secrets describe "kitchen48-anthropic-api-key" --project="$GCP_PROJECT_ID" &>/dev/null; then
+        secrets+=",ANTHROPIC_API_KEY=kitchen48-anthropic-api-key:latest"
+    fi
+
     print_info "Building and deploying combined app..."
     print_info "This builds both frontend and backend into a single container"
 
