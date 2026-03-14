@@ -197,8 +197,24 @@
     "subtitle": "How would you like to create your recipe?",
     "from_photos": "From Photos",
     "from_photos_desc": "Upload photos of a recipe and let AI extract the ingredients and steps automatically.",
+    "from_url": "From URL",
+    "from_url_desc": "Paste a link to a recipe page and let AI import it automatically.",
     "type_manually": "Type Manually",
     "type_manually_desc": "Write your recipe from scratch with full control over every detail."
+  },
+  "url_import": {
+    "title": "Import from URL",
+    "subtitle": "Paste a link to a recipe page. Our AI will fetch the page and extract the ingredients, steps, and details automatically.",
+    "input_label": "Recipe URL",
+    "input_placeholder": "https://example.com/my-recipe",
+    "import_button": "Import Recipe",
+    "hint": "Works best with recipe blogs. The page should contain a single recipe.",
+    "progress_fetching": "Fetching page...",
+    "progress_analyzing": "Analyzing recipe page... This may take a moment.",
+    "progress_done": "Recipe created! Redirecting...",
+    "please_wait": "Please wait while we import the recipe.",
+    "error_generic": "Something went wrong. Please try again.",
+    "error_invalid_url": "Please enter a valid URL (starting with http:// or https://)"
   },
   "smart_upload": {
     "title": "Create from Photos",

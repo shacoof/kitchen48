@@ -45,7 +45,7 @@ export function RecipeCreateChoicePage() {
           {t('create_choice.subtitle')}
         </p>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {/* From Photos */}
           <Link
             to="/recipes/new/from-photos"
@@ -61,6 +61,24 @@ export function RecipeCreateChoicePage() {
             </h2>
             <p className="text-gray-500 text-sm">
               {t('create_choice.from_photos_desc')}
+            </p>
+          </Link>
+
+          {/* From URL */}
+          <Link
+            to="/recipes/new/from-url"
+            className="group bg-white rounded-xl shadow-md hover:shadow-lg transition-shadow p-8 flex flex-col items-center text-center border-2 border-transparent hover:border-accent-orange"
+          >
+            <div className="w-16 h-16 bg-accent-orange/10 rounded-full flex items-center justify-center mb-4 group-hover:bg-accent-orange/20 transition-colors">
+              <span className="material-symbols-outlined text-3xl text-accent-orange">
+                link
+              </span>
+            </div>
+            <h2 className="text-xl font-semibold text-gray-800 mb-2">
+              {t('create_choice.from_url')}
+            </h2>
+            <p className="text-gray-500 text-sm">
+              {t('create_choice.from_url_desc')}
             </p>
           </Link>
 

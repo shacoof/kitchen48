@@ -469,6 +469,16 @@ class RecipesApi {
   }
 
   /**
+   * Import recipe from a URL using AI extraction
+   */
+  async importFromUrl(url: string): Promise<SmartUploadResponse & ApiResponse> {
+    return this.request<SmartUploadResponse>('/recipes/import-from-url', {
+      method: 'POST',
+      body: JSON.stringify({ url }),
+    });
+  }
+
+  /**
    * Generate a URL-friendly slug from a title
    */
   generateSlug(title: string): string {

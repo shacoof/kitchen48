@@ -10,6 +10,7 @@ export { RecipePlayPage } from './pages/RecipePlayPage';
 export { CreateRecipePage } from './pages/CreateRecipePage';
 export { RecipeCreateChoicePage } from './pages/RecipeCreateChoicePage';
 export { SmartUploadPage } from './pages/SmartUploadPage';
+export { UrlImportPage } from './pages/UrlImportPage';
 export { MyRecipesPage } from './pages/MyRecipesPage';
 export { ExplorePage } from './pages/ExplorePage';
 export { FavoritesPage } from './pages/FavoritesPage';

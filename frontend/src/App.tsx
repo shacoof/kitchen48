@@ -9,7 +9,7 @@ import { VerifyEmailPage } from './modules/auth/pages/VerifyEmailPage';
 import { AuthCallbackPage } from './modules/auth/pages/AuthCallbackPage';
 import { UserProfilePage } from './modules/users/pages/UserProfilePage';
 import { EditProfilePage } from './modules/users/pages/EditProfilePage';
-import { RecipePage, RecipeStepPage, RecipePlayPage, CreateRecipePage, RecipeCreateChoicePage, SmartUploadPage, MyRecipesPage, ExplorePage, FavoritesPage } from './modules/recipes';
+import { RecipePage, RecipeStepPage, RecipePlayPage, CreateRecipePage, RecipeCreateChoicePage, SmartUploadPage, UrlImportPage, MyRecipesPage, ExplorePage, FavoritesPage } from './modules/recipes';
 import { getSubdomain } from './utils/subdomain';
 import { WakeUpScreen } from './components/WakeUpScreen';
 
@@ -76,6 +76,7 @@ function App() {
           <Route path="/recipes/new" element={<RecipeCreateChoicePage />} />
           <Route path="/recipes/new/manual" element={<CreateRecipePage />} />
           <Route path="/recipes/new/from-photos" element={<SmartUploadPage />} />
+          <Route path="/recipes/new/from-url" element={<UrlImportPage />} />
           <Route path="/recipes/:id/edit" element={<CreateRecipePage />} />
           {/* Semantic URL routes - order matters: most specific first */}
           <Route path="/:nickname/:recipeSlug/play" element={<RecipePlayPage />} />
