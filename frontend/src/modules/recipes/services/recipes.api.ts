@@ -78,7 +78,7 @@ export interface Recipe {
   introVideoId: string | null;
   introVideo: MediaAssetRef | null;
   isPublished: boolean;
-  measurementSystem: string | null;
+  measurementSystem: string;
   difficulty: string | null;
   cuisine: string | null;
   mealType: string | null;
@@ -163,7 +163,7 @@ export interface CreateRecipeInput {
   heroImageId?: string | null;
   introVideoId?: string | null;
   isPublished?: boolean;
-  measurementSystem?: string | null;
+  measurementSystem?: string;
   difficulty?: string | null;
   cuisine?: string | null;
   mealType?: string | null;

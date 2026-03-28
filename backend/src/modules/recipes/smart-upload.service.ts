@@ -6,6 +6,8 @@
 import Anthropic from '@anthropic-ai/sdk';
 import { env } from '../../config/env.js';
 import { createLogger } from '../../lib/logger.js';
+import { normalizeRecipeUnits } from '../../lib/measurement.js';
+import { prisma } from '../../core/database/prisma.js';
 import { recipeService } from './recipe.service.js';
 import type { CreateRecipeInput } from './recipe.types.js';
 import type { ExtractedRecipe, SmartUploadResult } from './smart-upload.types.js';
@@ -132,9 +134,28 @@ class SmartUploadService {
   }
 
   /**
-   * Create a recipe from extracted data
+   * Create a recipe from extracted data.
+   * If the extracted measurement system differs from the author's preference,
+   * non-universal ingredient units are converted to the author's preferred system.
    */
   async createFromExtraction(authorId: string, extracted: ExtractedRecipe): Promise<SmartUploadResult> {
+    // Look up the author's measurement system preference
+    const author = await prisma.user.findUnique({
+      where: { id: authorId },
+      select: { measurementSystem: true },
+    });
+    const userSystem = (author?.measurementSystem === 'imperial' ? 'imperial' : 'metric') as 'metric' | 'imperial';
+    const extractedSystem = extracted.measurementSystem || null;
+
+    // If extracted system differs from user's preference, convert non-universal ingredients
+    if (extractedSystem && extractedSystem !== userSystem) {
+      const allIngredients = extracted.steps.flatMap((step) => step.ingredients);
+      const count = normalizeRecipeUnits(allIngredients, userSystem);
+      if (count > 0) {
+        logger.debug(`Converted ${count} ingredient(s) from ${extractedSystem} to ${userSystem}`);
+      }
+    }
+
     // Generate slug from title
     const slug = extracted.title
       .toLowerCase()
@@ -143,13 +164,13 @@ class SmartUploadService {
       .replace(/^-|-$/g, '')
       .substring(0, 80) || 'untitled-recipe';
 
-    // Build CreateRecipeInput from extracted data
+    // Build CreateRecipeInput from extracted data — always use author's preferred system
     const recipeInput: CreateRecipeInput = {
       title: extracted.title || 'Untitled Recipe',
       slug,
       description: extracted.description || null,
       servings: extracted.servings || null,
-      measurementSystem: extracted.measurementSystem || null,
+      measurementSystem: userSystem,
       difficulty: extracted.difficulty || null,
       cuisine: extracted.cuisine || null,
       mealType: extracted.mealType || null,

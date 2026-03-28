@@ -203,8 +203,7 @@ export function RecipeStepPage() {
 
   // Auto-convert units if viewer's measurement system differs from recipe's
   const targetSystem = useMemo(() => {
-    if (!user?.measurementSystem || !recipe?.measurementSystem) return undefined;
-    if (user.measurementSystem === recipe.measurementSystem) return undefined;
+    if (!user?.measurementSystem || user.measurementSystem === recipe?.measurementSystem) return undefined;
     return user.measurementSystem as 'metric' | 'imperial';
   }, [user?.measurementSystem, recipe?.measurementSystem]);
 

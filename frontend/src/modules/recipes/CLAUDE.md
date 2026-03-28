@@ -103,6 +103,35 @@ recipesApi.generateSlug(title)
 
 ---
 
+## Measurement System & Unit Conversion
+
+### Unit Classification (from LOV "Measurement Units")
+
+| System | Units | Behavior |
+|--------|-------|----------|
+| **Universal** | cups, tbsp, tsp, pieces, pinch, cloves, slices, whole, bunch | **Never converted** — these are used across both metric and imperial cultures |
+| **Metric** | g, kg, ml, l | Converted to imperial equivalents when viewer prefers imperial |
+| **Imperial** | oz, lb, fl_oz | Converted to metric equivalents when viewer prefers metric |
+
+**cups/tbsp/tsp are intentionally universal.** They are used globally (including in metric countries for baking) and should NOT be reclassified or converted. This is a deliberate design decision.
+
+### How Conversion Works
+
+- Each recipe stores `measurementSystem` (mandatory, set from author's profile at creation)
+- When a viewer's `measurementSystem` differs from the recipe's, `formatQuantity()` in `utils/measurement.ts` converts non-universal units
+- Universal units always pass through unchanged
+- Conversion logic lives in `frontend/src/utils/measurement.ts` (mirrored in `backend/src/lib/measurement.ts`)
+
+### Recipe Creation Flows
+
+| Flow | measurementSystem source | Unit handling |
+|------|--------------------------|---------------|
+| **Manual** | User's profile preference | Unit dropdown shows universal + user's preferred system only |
+| **Photo upload** | User's profile preference | AI extracts ingredients; if extracted system ≠ user's, backend converts non-universal units before saving |
+| **URL import** | User's profile preference | Same as photo upload — backend normalizes to user's system |
+
+---
+
 ## Styling Conventions
 
 - Uses Tailwind CSS classes

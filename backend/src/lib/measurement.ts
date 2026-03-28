@@ -148,3 +148,41 @@ export function convertQuantity(
     return { quantity: quantity / pair.toImperial, unit: pair.metricUnit };
   }
 }
+
+// ============================================================================
+// Recipe-Level Unit Normalization
+// ============================================================================
+
+export interface NormalizableIngredient {
+  quantity: number | null;
+  unit: string | null;
+}
+
+/**
+ * Normalize all ingredients in a recipe to the target measurement system.
+ *
+ * For each ingredient whose unit is non-universal and belongs to a different
+ * system than `targetSystem`, the quantity and unit are converted in place.
+ * Universal units (cups, tbsp, tsp, pieces, etc.) are never touched.
+ *
+ * Returns the count of ingredients that were converted.
+ */
+export function normalizeRecipeUnits<T extends NormalizableIngredient>(
+  ingredients: T[],
+  targetSystem: 'metric' | 'imperial'
+): number {
+  let converted = 0;
+
+  for (const ing of ingredients) {
+    if (ing.quantity === null || !ing.unit) continue;
+
+    const result = convertQuantity(ing.quantity, ing.unit, targetSystem);
+    if (result) {
+      ing.quantity = Math.round(result.quantity * 100) / 100;
+      ing.unit = result.unit;
+      converted++;
+    }
+  }
+
+  return converted;
+}

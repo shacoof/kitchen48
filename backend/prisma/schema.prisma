@@ -143,7 +143,7 @@ model Recipe {
   updatedAt   DateTime @updatedAt @map("updated_at")
 
   // Measurement & Classification (LOV references stored as string values)
-  measurementSystem String? @map("measurement_system") // "metric" or "imperial" - from author profile at creation
+  measurementSystem String  @default("metric") @map("measurement_system") // "metric" or "imperial" - from author profile at creation; mandatory
   difficulty        String? // LOV value: "easy", "medium", "hard"
   cuisine           String? // LOV value: "italian", "japanese", etc.
   mealType          String? @map("meal_type") // LOV value: "breakfast", "lunch", etc.

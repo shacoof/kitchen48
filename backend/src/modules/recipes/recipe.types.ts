@@ -73,7 +73,7 @@ export const createRecipeSchema = z.object({
   introVideoId: z.preprocess(emptyStringToNull, z.string().optional().nullable()),
   isPublished: z.boolean().optional().default(false),
   // New classification fields
-  measurementSystem: z.preprocess(emptyStringToNull, z.string().optional().nullable()),
+  measurementSystem: z.enum(['metric', 'imperial']).default('metric'),
   difficulty: z.preprocess(emptyStringToNull, z.string().optional().nullable()),
   cuisine: z.preprocess(emptyStringToNull, z.string().optional().nullable()),
   mealType: z.preprocess(emptyStringToNull, z.string().optional().nullable()),
@@ -162,7 +162,7 @@ export interface Recipe {
   introVideoId: string | null;
   introVideo: MediaAssetRef | null;
   isPublished: boolean;
-  measurementSystem: string | null;
+  measurementSystem: string;
   difficulty: string | null;
   cuisine: string | null;
   mealType: string | null;
