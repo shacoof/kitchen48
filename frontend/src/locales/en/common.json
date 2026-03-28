@@ -41,11 +41,6 @@
     "subtitle": "This may take up to a minute",
     "ready": "Ready!"
   },
-  "pwa": {
-    "updateAvailable": "A new version of Kitchen48 is available.",
-    "updateNow": "Update Now",
-    "dismiss": "Later"
-  },
   "navigation": {
     "explore": "Explore",
     "favorites": "Favorites",
