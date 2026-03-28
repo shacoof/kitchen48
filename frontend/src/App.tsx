@@ -12,6 +12,7 @@ import { EditProfilePage } from './modules/users/pages/EditProfilePage';
 import { RecipePage, RecipeStepPage, RecipePlayPage, CreateRecipePage, RecipeCreateChoicePage, SmartUploadPage, UrlImportPage, MyRecipesPage, ExplorePage, FavoritesPage } from './modules/recipes';
 import { getSubdomain } from './utils/subdomain';
 import { WakeUpScreen } from './components/WakeUpScreen';
+import PWAUpdatePrompt from './components/PWAUpdatePrompt';
 
 function App() {
   const subdomain = getSubdomain();
@@ -53,6 +54,7 @@ function App() {
       <BrowserRouter>
         <AuthProvider>
           <AdminLandingPage />
+          <PWAUpdatePrompt />
         </AuthProvider>
       </BrowserRouter>
     );
@@ -85,6 +87,7 @@ function App() {
           {/* User profile by nickname - must be last (catch-all) */}
           <Route path="/:nickname" element={<UserProfilePage />} />
         </Routes>
+        <PWAUpdatePrompt />
       </AuthProvider>
     </BrowserRouter>
   );

@@ -41,6 +41,11 @@
     "subtitle": "זה יכול לקחת עד דקה",
     "ready": "!מוכן"
   },
+  "pwa": {
+    "updateAvailable": "גרסה חדשה של Kitchen48 זמינה.",
+    "updateNow": "עדכן עכשיו",
+    "dismiss": "אחר כך"
+  },
   "navigation": {
     "explore": "חקור",
     "favorites": "מועדפים",
