@@ -10,11 +10,8 @@ echo "  Kitchen48 Mobile App"
 echo "  ===================="
 echo ""
 
-# 1. Ensure ngrok auth token is configured
-if ! grep -q "authtoken" ~/.config/ngrok/ngrok.yml 2>/dev/null; then
-  echo "Setting up ngrok auth token..."
-  npx ngrok config add-authtoken 3CDXMLfy49w5Ms2ftfti1oz4dLq_5WWYSucWRaStXXRWyBJXA
-fi
+# 1. Set ngrok auth token for Expo's @expo/ngrok
+export NGROK_AUTHTOKEN="3CDXMLfy49w5Ms2ftfti1oz4dLq_5WWYSucWRaStXXRWyBJXA"
 
 # 2. Install dependencies if needed
 if [ ! -d node_modules ]; then
