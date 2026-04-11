@@ -1,5 +1,5 @@
 import { View, Text, StyleSheet, Pressable, Image } from 'react-native';
-import type { Recipe } from '../db/recipes.db';
+import type { Recipe } from '../db/recipes-db';
 
 interface Props {
   recipe: Recipe;

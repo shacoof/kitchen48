@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import * as SecureStore from 'expo-secure-store';
 import { I18nManager } from 'react-native';
 import i18n from '../config/i18n';
-import { getSetting, setSetting } from '../db/settings.db';
+import { getSetting, setSetting } from '../db/settings-db';
 import { createLogger } from '../lib/logger';
 import type { MeasurementSystem } from '../lib/measurement';
 

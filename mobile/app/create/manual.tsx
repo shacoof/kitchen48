@@ -9,7 +9,7 @@ import {
   createStep, updateStep, deleteStep,
   createIngredient, updateIngredient, deleteIngredient,
   type RecipeWithSteps, type StepWithIngredients, type StepIngredient,
-} from '../../src/db/recipes.db';
+} from '../../src/db/recipes-db';
 import { useAutoSave } from '../../src/hooks/useAutoSave';
 import { SaveStatus } from '../../src/components/SaveStatus';
 import { createLogger } from '../../src/lib/logger';
