@@ -12,6 +12,8 @@ import {
 } from '../../src/db/recipes-db';
 import { useAutoSave } from '../../src/hooks/useAutoSave';
 import { SaveStatus } from '../../src/components/SaveStatus';
+import { MediaPicker } from '../../src/components/MediaPicker';
+import { saveMedia, deleteMedia } from '../../src/services/media-storage';
 import { createLogger } from '../../src/lib/logger';
 
 const logger = createLogger('ManualCreate');
@@ -22,6 +24,8 @@ interface StepForm {
   instruction: string;
   prepTime: string;
   waitTime: string;
+  imagePath: string | null;
+  videoPath: string | null;
   ingredients: IngredientForm[];
 }
 
@@ -41,6 +45,7 @@ export default function ManualCreateScreen() {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [servings, setServings] = useState('');
+  const [heroImage, setHeroImage] = useState<string | null>(null);
   const [steps, setSteps] = useState<StepForm[]>([]);
 
   const saveFn = useCallback(async (data: { title: string; description: string; servings: string }) => {
@@ -62,6 +67,7 @@ export default function ManualCreateScreen() {
           setTitle(recipe.title);
           setDescription(recipe.description ?? '');
           setServings(recipe.servings?.toString() ?? '');
+          setHeroImage(recipe.heroImagePath);
           setSteps(recipe.steps.map(mapStepToForm));
           setTimeout(() => markLoaded(), 100);
         }
@@ -76,6 +82,8 @@ export default function ManualCreateScreen() {
       instruction: step.instruction ?? '',
       prepTime: step.prepTime?.toString() ?? '',
       waitTime: step.waitTime?.toString() ?? '',
+      imagePath: step.imagePath,
+      videoPath: step.videoPath,
       ingredients: step.ingredients.map(mapIngredientToForm),
     };
   }
@@ -124,7 +132,8 @@ export default function ManualCreateScreen() {
     const order = steps.length + 1;
     const stepId = await createStep({ recipeId, sortOrder: order });
     setSteps((prev) => [...prev, {
-      id: stepId, title: '', instruction: '', prepTime: '', waitTime: '', ingredients: [],
+      id: stepId, title: '', instruction: '', prepTime: '', waitTime: '',
+      imagePath: null, videoPath: null, ingredients: [],
     }]);
   }, [recipeId, steps.length, handleCreate]);
 
@@ -212,6 +221,65 @@ export default function ManualCreateScreen() {
     });
   }, [steps]);
 
+  const handleHeroImage = useCallback(async (uri: string) => {
+    if (!recipeId) return;
+    const saved = await saveMedia(recipeId, uri, `hero-${Date.now()}.jpg`);
+    setHeroImage(saved);
+    await updateRecipe(recipeId, { heroImagePath: saved });
+  }, [recipeId]);
+
+  const handleRemoveHeroImage = useCallback(async () => {
+    if (heroImage) await deleteMedia(heroImage);
+    setHeroImage(null);
+    if (recipeId) await updateRecipe(recipeId, { heroImagePath: null });
+  }, [heroImage, recipeId]);
+
+  const handleStepImage = useCallback(async (stepIndex: number, uri: string) => {
+    const step = steps[stepIndex];
+    if (!step?.id || !recipeId) return;
+    const saved = await saveMedia(recipeId, uri, `step-${stepIndex + 1}-${Date.now()}.jpg`);
+    setSteps((prev) => {
+      const updated = [...prev];
+      updated[stepIndex] = { ...updated[stepIndex], imagePath: saved };
+      return updated;
+    });
+    await updateStep(step.id, { imagePath: saved });
+  }, [steps, recipeId]);
+
+  const handleRemoveStepImage = useCallback(async (stepIndex: number) => {
+    const step = steps[stepIndex];
+    if (step?.imagePath) await deleteMedia(step.imagePath);
+    setSteps((prev) => {
+      const updated = [...prev];
+      updated[stepIndex] = { ...updated[stepIndex], imagePath: null };
+      return updated;
+    });
+    if (step?.id) await updateStep(step.id, { imagePath: null });
+  }, [steps]);
+
+  const handleStepVideo = useCallback(async (stepIndex: number, uri: string) => {
+    const step = steps[stepIndex];
+    if (!step?.id || !recipeId) return;
+    const saved = await saveMedia(recipeId, uri, `step-${stepIndex + 1}-vid-${Date.now()}.mp4`);
+    setSteps((prev) => {
+      const updated = [...prev];
+      updated[stepIndex] = { ...updated[stepIndex], videoPath: saved };
+      return updated;
+    });
+    await updateStep(step.id, { videoPath: saved });
+  }, [steps, recipeId]);
+
+  const handleRemoveStepVideo = useCallback(async (stepIndex: number) => {
+    const step = steps[stepIndex];
+    if (step?.videoPath) await deleteMedia(step.videoPath);
+    setSteps((prev) => {
+      const updated = [...prev];
+      updated[stepIndex] = { ...updated[stepIndex], videoPath: null };
+      return updated;
+    });
+    if (step?.id) await updateStep(step.id, { videoPath: null });
+  }, [steps]);
+
   const handleDone = useCallback(async () => {
     if (!recipeId && title.trim()) {
       await handleCreate();
@@ -253,6 +321,17 @@ export default function ManualCreateScreen() {
         placeholderTextColor="#94a3b8"
         keyboardType="numeric"
       />
+
+      {/* Hero image */}
+      {recipeId ? (
+        <MediaPicker
+          uri={heroImage}
+          type="image"
+          label="Hero Image"
+          onPick={handleHeroImage}
+          onRemove={handleRemoveHeroImage}
+        />
+      ) : null}
 
       {/* Steps */}
       <View style={styles.sectionHeader}>
@@ -306,6 +385,28 @@ export default function ManualCreateScreen() {
                 keyboardType="numeric"
                 placeholder="0"
                 placeholderTextColor="#94a3b8"
+              />
+            </View>
+          </View>
+
+          {/* Step media */}
+          <View style={styles.mediaRow}>
+            <View style={{ flex: 1 }}>
+              <MediaPicker
+                uri={step.imagePath}
+                type="image"
+                label="Step Image"
+                onPick={(uri) => handleStepImage(stepIdx, uri)}
+                onRemove={() => handleRemoveStepImage(stepIdx)}
+              />
+            </View>
+            <View style={{ flex: 1 }}>
+              <MediaPicker
+                uri={step.videoPath}
+                type="video"
+                label="Step Video"
+                onPick={(uri) => handleStepVideo(stepIdx, uri)}
+                onRemove={() => handleRemoveStepVideo(stepIdx)}
               />
             </View>
           </View>
@@ -383,6 +484,7 @@ const styles = StyleSheet.create({
   stepNumber: { fontSize: 15, fontWeight: '700', color: '#334155' },
   deleteText: { fontSize: 13, color: '#ef4444' },
   timeRow: { flexDirection: 'row', gap: 12, marginTop: 8 },
+  mediaRow: { flexDirection: 'row', gap: 8, marginTop: 8 },
   timeField: { flex: 1 },
   ingredientsLabel: { fontSize: 13, fontWeight: '600', color: '#334155', marginTop: 12, marginBottom: 6 },
   ingredientRow: { flexDirection: 'row', gap: 6, marginBottom: 6, alignItems: 'center' },

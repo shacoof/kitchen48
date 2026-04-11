@@ -6,6 +6,7 @@ import { useLocalSearchParams, useRouter, useFocusEffect } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { getRecipeById, deleteRecipe, type RecipeWithSteps } from '../../src/db/recipes-db';
 import { deleteRecipeMedia } from '../../src/services/media-storage';
+import { VideoPlayer } from '../../src/components/VideoPlayer';
 import { createLogger } from '../../src/lib/logger';
 
 const logger = createLogger('RecipeDetail');
@@ -135,6 +136,12 @@ export default function RecipeDetailScreen() {
                       {step.instruction}
                     </Text>
                   ) : null}
+                  {step.imagePath ? (
+                    <Image source={{ uri: step.imagePath }} style={styles.stepImage} />
+                  ) : null}
+                  {step.videoPath ? (
+                    <VideoPlayer uri={step.videoPath} height={160} />
+                  ) : null}
                 </View>
               </View>
             ))}
@@ -189,6 +196,7 @@ const styles = StyleSheet.create({
   stepContent: { flex: 1 },
   stepTitle: { fontSize: 15, fontWeight: '600', color: '#0f172a' },
   stepInstruction: { fontSize: 13, color: '#64748b', marginTop: 2 },
+  stepImage: { width: '100%', height: 140, borderRadius: 8, marginTop: 8 },
   actions: { flexDirection: 'row', gap: 12, marginTop: 20 },
   editButton: {
     flex: 1, backgroundColor: '#334155', borderRadius: 10, paddingVertical: 14,
