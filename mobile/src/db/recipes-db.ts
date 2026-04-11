@@ -1,6 +1,6 @@
-import { v4 as uuid } from 'uuid';
 import { getDatabase } from './database';
 import { createLogger } from '../lib/logger';
+import { generateId } from '../lib/id';
 
 const logger = createLogger('RecipesDB');
 
@@ -285,7 +285,7 @@ export async function getRecipeById(id: string): Promise<RecipeWithSteps | null>
 
 export async function createRecipe(input: CreateRecipeInput): Promise<string> {
   const db = await getDatabase();
-  const id = uuid();
+  const id = generateId();
   const timestamp = now();
   const slug = generateSlug(input.title);
 
@@ -344,7 +344,7 @@ export async function deleteRecipe(id: string): Promise<void> {
 
 export async function createStep(input: CreateStepInput): Promise<string> {
   const db = await getDatabase();
-  const id = uuid();
+  const id = generateId();
   const timestamp = now();
   const slug = input.title ? generateSlug(input.title) : `step-${input.sortOrder}`;
 
@@ -414,7 +414,7 @@ export async function deleteStep(id: string): Promise<void> {
 
 export async function createIngredient(input: CreateIngredientInput): Promise<string> {
   const db = await getDatabase();
-  const id = uuid();
+  const id = generateId();
 
   await db.runAsync(
     `INSERT INTO step_ingredients (id, step_id, name, quantity, unit, sort_order)
@@ -457,7 +457,7 @@ export async function setDietaryTags(recipeId: string, tags: string[]): Promise<
   for (const tag of tags) {
     await db.runAsync(
       'INSERT INTO dietary_tags (id, recipe_id, tag) VALUES (?, ?, ?)',
-      [uuid(), recipeId, tag]
+      [generateId(), recipeId, tag]
     );
   }
 }
