@@ -1,5 +1,5 @@
 import { Paths, File, Directory } from 'expo-file-system';
-import { createLogger } from '@/lib/logger';
+import { createLogger } from '../lib/logger';
 
 const logger = createLogger('MediaStorage');
 

@@ -1,6 +1,6 @@
 import { v4 as uuid } from 'uuid';
 import { getDatabase } from './database';
-import { createLogger } from '@/lib/logger';
+import { createLogger } from '../lib/logger';
 
 const logger = createLogger('RecipesDB');
 

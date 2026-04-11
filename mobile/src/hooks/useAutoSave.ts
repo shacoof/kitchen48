@@ -1,5 +1,5 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
-import { createLogger } from '@/lib/logger';
+import { createLogger } from '../lib/logger';
 
 const logger = createLogger('useAutoSave');
 

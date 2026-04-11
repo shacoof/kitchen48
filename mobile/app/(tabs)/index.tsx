@@ -2,9 +2,9 @@ import { useState, useCallback } from 'react';
 import { View, Text, FlatList, StyleSheet, Pressable } from 'react-native';
 import { useRouter, useFocusEffect } from 'expo-router';
 import { useTranslation } from 'react-i18next';
-import { listRecipes, type Recipe } from '@/db/recipes.db';
-import { RecipeCard } from '@/components/RecipeCard';
-import { SearchBar } from '@/components/SearchBar';
+import { listRecipes, type Recipe } from '../../src/db/recipes.db';
+import { RecipeCard } from '../../src/components/RecipeCard';
+import { SearchBar } from '../../src/components/SearchBar';
 
 export default function HomeScreen() {
   const { t } = useTranslation('common');

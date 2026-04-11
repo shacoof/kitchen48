@@ -9,10 +9,10 @@ import {
   createStep, updateStep, deleteStep,
   createIngredient, updateIngredient, deleteIngredient,
   type RecipeWithSteps, type StepWithIngredients, type StepIngredient,
-} from '@/db/recipes.db';
-import { useAutoSave } from '@/hooks/useAutoSave';
-import { SaveStatus } from '@/components/SaveStatus';
-import { createLogger } from '@/lib/logger';
+} from '../../src/db/recipes.db';
+import { useAutoSave } from '../../src/hooks/useAutoSave';
+import { SaveStatus } from '../../src/components/SaveStatus';
+import { createLogger } from '../../src/lib/logger';
 
 const logger = createLogger('ManualCreate');
 

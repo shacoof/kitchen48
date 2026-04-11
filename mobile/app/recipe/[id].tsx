@@ -4,9 +4,9 @@ import {
 } from 'react-native';
 import { useLocalSearchParams, useRouter, useFocusEffect } from 'expo-router';
 import { useTranslation } from 'react-i18next';
-import { getRecipeById, deleteRecipe, type RecipeWithSteps } from '@/db/recipes.db';
-import { deleteRecipeMedia } from '@/services/media-storage';
-import { createLogger } from '@/lib/logger';
+import { getRecipeById, deleteRecipe, type RecipeWithSteps } from '../../src/db/recipes.db';
+import { deleteRecipeMedia } from '../../src/services/media-storage';
+import { createLogger } from '../../src/lib/logger';
 
 const logger = createLogger('RecipeDetail');
 

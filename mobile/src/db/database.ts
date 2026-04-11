@@ -1,5 +1,5 @@
 import * as SQLite from 'expo-sqlite';
-import { createLogger } from '@/lib/logger';
+import { createLogger } from '../lib/logger';
 
 const logger = createLogger('Database');
 
