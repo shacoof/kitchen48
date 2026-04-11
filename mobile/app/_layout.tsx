@@ -1,7 +1,6 @@
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect } from 'react';
-import { I18nManager } from 'react-native';
 import '../src/config/i18n';
 import { initDatabase } from '../src/db/database';
 import { createLogger } from '../src/lib/logger';
