@@ -10,7 +10,7 @@ Standalone Expo (React Native) mobile app for Kitchen48.
 
 | Layer | Technology |
 |-------|-----------|
-| Framework | Expo SDK 52 + Expo Router |
+| Framework | Expo SDK 54 + Expo Router |
 | Language | TypeScript |
 | Database | SQLite (expo-sqlite) |
 | File storage | expo-file-system (images, videos) |
@@ -94,6 +94,29 @@ steps:
       - name: "flour"
         quantity: 200
         unit: "g"
+```
+
+---
+
+## Development & Testing
+
+**Dev environment runs on WSL2.** Android SDK is not installed locally.
+
+### Running the app on a physical device
+
+```bash
+cd mobile && npx expo start --tunnel
+```
+
+- **Always use `--tunnel`** — required because WSL2 networking does not expose the dev server to the local WiFi network. Without `--tunnel`, the phone cannot reach the Metro bundler.
+- Install **Expo Go** on the phone (Play Store / App Store)
+- Scan the QR code from the terminal with the phone camera (iOS) or Expo Go (Android)
+- The `@expo/ngrok` package is required for tunneling (auto-installed on first use)
+
+### TypeScript check
+
+```bash
+cd mobile && npx tsc --noEmit
 ```
 
 ---
