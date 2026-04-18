@@ -60,6 +60,36 @@ const SCHEMA_SQL = `
     key TEXT PRIMARY KEY,
     value TEXT NOT NULL
   );
+
+  CREATE TABLE IF NOT EXISTS play_sessions (
+    id TEXT PRIMARY KEY,
+    recipe_id TEXT NOT NULL,
+    started_at TEXT NOT NULL,
+    ended_at TEXT,
+    current_step_id TEXT,
+    status TEXT NOT NULL,
+    FOREIGN KEY (recipe_id) REFERENCES recipes(id) ON DELETE CASCADE
+  );
+
+  CREATE INDEX IF NOT EXISTS idx_play_sessions_active
+    ON play_sessions(status, recipe_id);
+
+  CREATE TABLE IF NOT EXISTS step_timers (
+    id TEXT PRIMARY KEY,
+    session_id TEXT NOT NULL,
+    step_id TEXT NOT NULL,
+    kind TEXT NOT NULL,
+    started_at TEXT NOT NULL,
+    duration_ms INTEGER NOT NULL,
+    fires_at TEXT NOT NULL,
+    state TEXT NOT NULL,
+    paused_at TEXT,
+    remaining_ms INTEGER,
+    FOREIGN KEY (session_id) REFERENCES play_sessions(id) ON DELETE CASCADE
+  );
+
+  CREATE INDEX IF NOT EXISTS idx_step_timers_session
+    ON step_timers(session_id, state);
 `;
 
 let db: SQLite.SQLiteDatabase | null = null;

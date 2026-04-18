@@ -29,7 +29,28 @@
   "navigation": {
     "create": "\u05E6\u05D5\u05E8",
     "recipes": "\u05D4\u05DE\u05EA\u05DB\u05D5\u05E0\u05D9\u05DD \u05E9\u05DC\u05D9",
+    "cooking": "מבשלים",
     "settings": "\u05D4\u05D2\u05D3\u05E8\u05D5\u05EA"
+  },
+  "play": {
+    "start_cooking": "▶  התחל לבשל",
+    "empty_title": "לא מבשלים כרגע",
+    "empty_body": "פתח מתכון ולחץ על התחל לבשל כדי להתחיל.",
+    "stop": "עצור",
+    "stop_title": "לעצור את הבישול?",
+    "stop_body": "\"{{title}}\" יוסר וכל הטיימרים שלו יאבדו.",
+    "stop_confirm": "עצור",
+    "step_counter": "שלב {{n}} מתוך {{total}}",
+    "for_this_step": "לשלב הזה",
+    "prep": "הכנה",
+    "wait": "המתנה",
+    "start": "התחל",
+    "pause": "השהה",
+    "resume": "המשך",
+    "reset": "אפס",
+    "next": "הבא",
+    "prev": "הקודם",
+    "no_active_timer": "אין טיימר פעיל"
   },
   "settings": {
     "title": "\u05D4\u05D2\u05D3\u05E8\u05D5\u05EA",

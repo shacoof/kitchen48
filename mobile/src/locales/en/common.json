@@ -29,7 +29,28 @@
   "navigation": {
     "create": "Create",
     "recipes": "My Recipes",
+    "cooking": "Cooking",
     "settings": "Settings"
+  },
+  "play": {
+    "start_cooking": "▶  Start cooking",
+    "empty_title": "Nothing cooking",
+    "empty_body": "Open a recipe and tap Play to start cooking.",
+    "stop": "Stop",
+    "stop_title": "Stop cooking?",
+    "stop_body": "\"{{title}}\" will be removed and all its timers will be lost.",
+    "stop_confirm": "Stop",
+    "step_counter": "Step {{n}} of {{total}}",
+    "for_this_step": "For this step",
+    "prep": "Prep",
+    "wait": "Wait",
+    "start": "Start",
+    "pause": "Pause",
+    "resume": "Resume",
+    "reset": "Reset",
+    "next": "Next",
+    "prev": "Prev",
+    "no_active_timer": "No active timer"
   },
   "settings": {
     "title": "Settings",

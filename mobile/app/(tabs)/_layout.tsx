@@ -1,8 +1,15 @@
 import { Tabs } from 'expo-router';
 import { useTranslation } from 'react-i18next';
+import { Text } from 'react-native';
+import { useActiveSessions } from '../../src/hooks/useActiveSessions';
 
 export default function TabLayout() {
   const { t } = useTranslation('common');
+  const snapshots = useActiveSessions();
+  const cookingCount = snapshots.length;
+  const isCooking = cookingCount > 0;
+
+  const cookingColor = isCooking ? '#f97316' : '#94a3b8';
 
   return (
     <Tabs
@@ -26,6 +33,22 @@ export default function TabLayout() {
         options={{
           title: t('navigation.create', 'Create'),
           tabBarLabel: t('navigation.create', 'Create'),
+        }}
+      />
+      <Tabs.Screen
+        name="cooking"
+        options={{
+          title: t('navigation.cooking', 'Cooking'),
+          tabBarLabel: t('navigation.cooking', 'Cooking'),
+          tabBarActiveTintColor: isCooking ? '#f97316' : undefined,
+          tabBarInactiveTintColor: isCooking ? '#fb923c' : undefined,
+          tabBarBadge: isCooking ? cookingCount : undefined,
+          tabBarBadgeStyle: { backgroundColor: '#f97316', color: '#ffffff' },
+          tabBarIcon: ({ size }) => (
+            <Text style={{ fontSize: (size ?? 22) + 2, color: cookingColor }}>
+              {isCooking ? '🔥' : '🍲'}
+            </Text>
+          ),
         }}
       />
       <Tabs.Screen
