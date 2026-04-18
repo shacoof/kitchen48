@@ -4,6 +4,12 @@ Here are the workflows currently available. You can trigger them by typing the c
 
 **All workflows below follow the Git Worktree Workflow defined in ~/CLAUDE.md for parallel session safety.**
 
+## Start Here
+
+| Command | Description | When to use |
+|---------|-------------|-------------|
+| **/shacoof-orchestrate** | **Orchestration Gate** | **START HERE for any task.** Reads all project config, reviews all workflows, classifies the task, recommends the right workflow, and waits for approval before proceeding. |
+
 ## Development Workflows
 
 | Command | Description | When to use |

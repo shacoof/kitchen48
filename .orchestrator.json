@@ -1,0 +1,57 @@
+{
+  "name": "kitchen48",
+  "displayName": "Kitchen48",
+  "repoPath": "/home/owner/dev/kitchen48",
+  "complianceFile": "compliance.md",
+
+  "stack": {
+    "framework": "React + Vite (frontend), Node.js + Express (backend)",
+    "language": "TypeScript",
+    "database": "PostgreSQL 16 via Docker (local) / Cloud SQL (production)",
+    "orm": "Prisma",
+    "styling": "Theme tokens from database (CSS variables)",
+    "testing": "Jest + React Testing Library (unit), Supertest (integration), Playwright (E2E)",
+    "grids": "Tabulator 6",
+    "i18n": "react-i18next with JSON locale files (en, he)"
+  },
+
+  "env": {
+    "copyEnvFrom": "backend/.env",
+    "dockerCompose": true,
+    "dbContainer": "kitchen48-postgres",
+    "dbPort": 5433,
+    "frontendPort": 5173,
+    "backendPort": 3000,
+    "devCommand": "npm run dev",
+    "buildCommand": "npm run build"
+  },
+
+  "worktree": {
+    "basePath": "../worktrees",
+    "branchPrefix": "feature/",
+    "fixPrefix": "fix/"
+  },
+
+  "pipeline": {
+    "model": "claude-opus-4-6",
+    "maxTokens": 8096,
+    "workflows": {
+      "new-feature": {
+        "stages": ["product-manager", "architect", "ui-designer", "developer", "dev-code", "qa", "qa-code", "test-runner", "reviewer"]
+      },
+      "bug-fix": {
+        "stages": ["product-manager", "architect", "developer", "dev-code", "qa", "qa-code", "test-runner", "reviewer"],
+        "skipStages": ["ui-designer"]
+      },
+      "feature-update": {
+        "stages": ["product-manager", "architect", "ui-designer", "developer", "dev-code", "qa", "qa-code", "test-runner", "reviewer"]
+      }
+    }
+  },
+
+  "deploy": {
+    "command": "./scripts/deploy.sh",
+    "platform": "GCP Cloud Run",
+    "healthCheck": "https://www.kitchen48.com/api/health"
+  }
+}

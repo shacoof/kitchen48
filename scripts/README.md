@@ -92,6 +92,10 @@ scripts/.venv/bin/python scripts/export-recipes-to-drive.py --folder-id <DRIVE_F
 | Script | Description | Usage |
 |--------|-------------|-------|
 | `build-mobile-apk.sh` | Build a standalone Android APK via EAS Build (cloud, ~10-15 min) | `./scripts/build-mobile-apk.sh [profile]` |
+| `run_expo_on_mobile.sh` | Start Expo dev server so you can test the latest app on your phone via Expo Go (LAN) | `run_expo_on_mobile.sh [--tunnel]` |
+
+**`run_expo_on_mobile.sh`:** Runs `npx expo start` from `mobile/`. Phone and machine must share the same Wi-Fi; pass `--tunnel` if not. Scan the printed QR code with Expo Go. Auto-installs `node_modules` on first run.
+
 
 **Profiles:**
 - `preview` (default) — APK for sideloading

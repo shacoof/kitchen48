@@ -26,6 +26,45 @@ See main `CLAUDE.md` → "Module Structure & Documentation" for the full templat
 
 ## Available Commands
 
+### `/shacoof-orchestrate` - Workflow Selection & Compliance Gate
+
+**Start here for any task.** This is a mandatory pre-work gate that ensures the correct workflow is selected and all project conventions are followed before any work begins.
+
+#### Usage
+
+```
+/shacoof-orchestrate <task description>
+```
+
+#### Examples
+
+```
+/shacoof-orchestrate The mobile view shows "step not found" when visiting the home page
+```
+
+```
+/shacoof-orchestrate Add PWA support for installable app experience
+```
+
+```
+/shacoof-orchestrate Change the recipe card layout to show cooking time
+```
+
+#### What It Does
+
+1. **Step 1: Read All Orchestrator Instructions** — Reads `.orchestrator.json`, project `CLAUDE.md`, and global `~/CLAUDE.md`
+2. **Step 2: Review All Skills** — Lists every skill available in the session
+3. **Step 3: Review All Slash Commands** — Lists every command in `.claude/commands/`
+4. **Step 4: Task Analysis** — Classifies the task and recommends the appropriate workflow
+5. **Step 5: Approval Checkpoint** — Presents the full plan and **waits for explicit approval**
+6. **Step 6: Execute** — Invokes the approved workflow
+
+#### Key Principle
+
+**No work begins until the user approves the workflow selection and execution plan.** This prevents skipping investigation steps, using the wrong workflow, or jumping straight to code.
+
+---
+
 ### `/shacoof-bug-fix` - Systematic Bug Investigation & Resolution
 
 Rigorous bug investigation workflow with mandatory compliance verification before fixing.
