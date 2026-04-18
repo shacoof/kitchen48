@@ -1,4 +1,5 @@
-import { createContext, useContext, useEffect } from 'react';
+import { createContext, useCallback, useContext } from 'react';
+import { useFocusEffect } from 'expo-router';
 
 export interface HeaderAction {
   icon: string;           // Ionicons glyph name
@@ -24,15 +25,22 @@ export const ScreenHeaderContext = createContext<Ctx>({
   setConfig: () => { /* no-op before provider mounts */ },
 });
 
+/**
+ * Registers this screen's TopBar2 config whenever the screen is focused.
+ *
+ * Gated on focus so background-mounted screens (e.g. the Cooking tab
+ * polling every second) don't overwrite the foreground screen's config.
+ * Callers should wrap `config` in useMemo so referential equality holds
+ * across unchanged renders.
+ */
 export function useScreenHeader(config: ScreenHeaderConfig): void {
   const { setConfig } = useContext(ScreenHeaderContext);
-  const actionsKey = (config.actions ?? []).map((a) => `${a.icon}:${a.disabled ? '1' : '0'}:${a.tint ?? ''}`).join('|');
-
-  useEffect(() => {
-    setConfig(config);
-    return () => setConfig({});
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [config.title, config.showBack, actionsKey, setConfig]);
+  useFocusEffect(
+    useCallback(() => {
+      setConfig(config);
+      return () => setConfig({});
+    }, [config, setConfig])
+  );
 }
 
 export function useCurrentScreenHeader(): ScreenHeaderConfig {
