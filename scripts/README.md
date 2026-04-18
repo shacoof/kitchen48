@@ -56,6 +56,37 @@ Features:
 - Batch commands: `stop-all`, `start-all`, `stop <project>`, `start <project>`
 - Manages Cloud Run via ingress settings and Cloud SQL via activation policies
 
+## Recipe Export
+
+| Script | Description | Usage |
+|--------|-------------|-------|
+| `export-recipes-to-drive.py` | Export all production recipes to local folders (or also upload to Google Drive). Each recipe becomes `{nickname}-{slug}/` with `kitchen48-recipe.yaml` + images | `./scripts/export-recipes-to-drive.py [--limit N] [--folder-id DRIVE_ID]` |
+
+**Setup (one-time):**
+```bash
+# Install uv if not already (Python package manager)
+curl -LsSf https://astral.sh/uv/install.sh | sh
+
+# Create the script's venv with required deps
+uv venv scripts/.venv --python 3.12
+uv pip install --python scripts/.venv/bin/python "psycopg[binary]" pyyaml requests google-api-python-client google-auth google-auth-oauthlib
+```
+
+**Local-only export (default — no auth needed):**
+```bash
+scripts/.venv/bin/python scripts/export-recipes-to-drive.py
+```
+Output goes to `./recipe-export/`. Auto-starts cloud-sql-proxy if `/home/owner/cloud-sql-proxy` exists.
+
+**Upload to Drive (optional):**
+```bash
+gcloud auth application-default login \
+  --scopes=https://www.googleapis.com/auth/drive.file,https://www.googleapis.com/auth/cloud-platform
+scripts/.venv/bin/python scripts/export-recipes-to-drive.py --folder-id <DRIVE_FOLDER_ID>
+```
+
+**Note on videos:** Cloudflare Stream HLS streams aren't downloaded as MP4s (Stream's "downloads" feature isn't enabled). The HLS URL is preserved in the YAML under `introVideoSourceUrl` / `videoSourceUrl` so it can be fetched later (e.g. with `ffmpeg -i <url> output.mp4` once ffmpeg is installed).
+
 ## Mobile (Expo) Scripts
 
 | Script | Description | Usage |
