@@ -1,36 +1,91 @@
-# Kitchen48 Scripts
+# Scripts
 
-Operational scripts for deploying, backing up, and building Kitchen48.
+All utility scripts for Kitchen48 live in this directory. **Before creating a new script, check here first** to avoid duplicating existing functionality.
 
-## Web / Backend
+## Quick Start
 
-| Script | Purpose |
-|--------|---------|
-| [`deploy.sh`](./deploy.sh) | One-click deploy of the combined app (frontend + backend) to Cloud Run + Cloud SQL. See header for flags. |
-| [`deploy-cloud-sql.sh`](./deploy-cloud-sql.sh) | Provision/update the Cloud SQL instance only. |
-| [`ensure-db.sh`](./ensure-db.sh) | Start the local Docker Postgres container if not already running. Used by `npm run dev`. |
-| [`backup-database.sh`](./backup-database.sh) | Create a pg_dump of the local database to `backups/`. |
-| [`restore-database.sh`](./restore-database.sh) | Restore a dump from `backups/` into the local database (requires confirmation). |
-| [`prod-db.sh`](./prod-db.sh) | Open a psql session against the production Cloud SQL DB via Cloud SQL Proxy. |
-| [`copy-recipe-to-prod.js`](./copy-recipe-to-prod.js) | Copy a specific recipe (and its steps/ingredients/media refs) from dev DB to prod DB. |
-
-## Mobile
-
-| Script | Purpose |
-|--------|---------|
-| [`build-mobile-apk.sh`](./build-mobile-apk.sh) | Build a standalone Android APK for the Expo mobile app via EAS Build (cloud, ~10-15 min). Default profile is `preview` (sideloadable APK). |
-
-### Mobile build usage
+Run the interactive menu to browse and launch any script:
 
 ```bash
-./scripts/build-mobile-apk.sh                  # preview APK (default) — for sideload
-./scripts/build-mobile-apk.sh production       # AAB for Play Store
-./scripts/build-mobile-apk.sh development      # dev client APK
-./scripts/build-mobile-apk.sh --help           # show help
+./scripts/script-menu.sh
 ```
 
-The script runs `tsc --noEmit` first to catch type errors before burning a cloud build slot, then submits the build. When complete, open the build URL on your phone and tap to install the APK.
+---
 
-**Prerequisite (one-time):** `cd mobile && npx eas-cli@latest login`
+## Database Scripts
 
-Build profiles are defined in [`mobile/eas.json`](../mobile/eas.json).
+| Script | Description | Usage |
+|--------|-------------|-------|
+| `backup-database.sh` | Backup the local dev database | `./scripts/backup-database.sh [backup-name]` |
+| `restore-database.sh` | Restore a database backup | `./scripts/restore-database.sh backups/<file>.dump` |
+| `ensure-db.sh` | Ensure the dev database container is running | `./scripts/ensure-db.sh` |
+
+## Recipe Copy Scripts
+
+| Script | Description | Usage |
+|--------|-------------|-------|
+| `copy-recipe-to-prod.js` | Copy recipes from dev to production | `node scripts/copy-recipe-to-prod.js <nickname>/<slug>` |
+| `copy-recipe-to-dev.js` | Copy recipes from production to dev | `node scripts/copy-recipe-to-dev.js <nickname>/<slug>` |
+
+Both scripts accept multiple recipes and full URLs:
+```bash
+node scripts/copy-recipe-to-prod.js auser/borekas auser/bread
+node scripts/copy-recipe-to-dev.js https://www.kitchen48.com/auser/borekas
+```
+
+**Requires**: Cloud SQL proxy running on port 5434 for prod access (see `docs/prod-db-connection.md`).
+
+## Deployment Scripts
+
+| Script | Description | Usage |
+|--------|-------------|-------|
+| `deploy.sh` | One-click deploy to Google Cloud Run | `./scripts/deploy.sh` |
+| `deploy-cloud-sql.sh` | Deploy/update Cloud SQL instance | `./scripts/deploy-cloud-sql.sh` |
+
+See main `CLAUDE.md` for deployment details and required `.env.production` setup.
+
+## Google Cloud Management
+
+| Script | Description | Usage |
+|--------|-------------|-------|
+| `gcp-services.sh` | Interactive GCP services dashboard | `./scripts/gcp-services.sh` |
+
+Features:
+- Shows status of all Cloud Run services and Cloud SQL instances
+- Toggle individual services on/off by number
+- Batch commands: `stop-all`, `start-all`, `stop <project>`, `start <project>`
+- Manages Cloud Run via ingress settings and Cloud SQL via activation policies
+
+## Mobile (Expo) Scripts
+
+| Script | Description | Usage |
+|--------|-------------|-------|
+| `build-mobile-apk.sh` | Build a standalone Android APK via EAS Build (cloud, ~10-15 min) | `./scripts/build-mobile-apk.sh [profile]` |
+
+**Profiles:**
+- `preview` (default) — APK for sideloading
+- `production` — AAB for Play Store
+- `development` — dev client APK (connects to Metro)
+
+The script runs `tsc --noEmit` first to catch type errors before burning a cloud build slot. When the build completes, open the URL on your phone to download and install the APK.
+
+**One-time setup:** `cd mobile && npx eas-cli@latest login`. Build profiles are defined in [`mobile/eas.json`](../mobile/eas.json).
+
+**For JS-only updates between rebuilds**, use OTA:
+```bash
+cd mobile && npx eas-cli@latest update --branch preview
+```
+
+## Script Menu
+
+| Script | Description | Usage |
+|--------|-------------|-------|
+| `script-menu.sh` | Interactive launcher for all scripts | `./scripts/script-menu.sh` |
+
+Shows a categorized menu of all available scripts, lets you pick one by number, prompts for arguments if needed, and runs it.
+
+## Production Database Scripts
+
+SQL scripts for one-time production data changes live in `backend/prisma/scripts/` — see [`backend/prisma/scripts/README.md`](../backend/prisma/scripts/README.md).
+
+Automated data migrations (new LOV types, reference data) go in `backend/prisma/data-migrations/` — see main `CLAUDE.md` for details.
