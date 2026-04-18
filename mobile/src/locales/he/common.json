@@ -73,7 +73,8 @@
     "url": "מכתובת URL",
     "url_desc": "הדבק כתובת URL של מתכון, AI יחלץ",
     "import": "ייבוא מ-URL",
-    "import_desc": "ייבא תיקיית מתכון מ-Drive, GitHub, Box ועוד"
+    "import_desc": "ייבא תיקיית מתכון מ-Drive, GitHub, Box ועוד",
+    "add_step": "הוסף שלב"
   },
   "export": {
     "working": "מייצא...",

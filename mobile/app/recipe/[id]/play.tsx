@@ -112,10 +112,25 @@ export default function PlayScreen() {
       })}`
     : t('messages.loading');
 
+  const atFirstStep = stepIdx === 0;
+  const atLastStep = !recipe || stepIdx >= recipe.steps.length - 1;
+
   useScreenHeader(useMemo(() => ({
     title: headerTitle,
     showBack: true,
     actions: [
+      {
+        icon: 'play-skip-back-outline',
+        label: t('play.prev', 'Prev'),
+        onPress: () => goToStep(stepIdx - 1),
+        disabled: atFirstStep,
+      },
+      {
+        icon: 'play-skip-forward-outline',
+        label: t('play.next', 'Next'),
+        onPress: () => goToStep(stepIdx + 1),
+        disabled: atLastStep,
+      },
       {
         icon: 'stop-circle-outline',
         label: t('play.stop', 'Stop'),
@@ -123,7 +138,7 @@ export default function PlayScreen() {
         tint: '#dc2626',
       },
     ],
-  }), [headerTitle, t, handleStop]));
+  }), [headerTitle, t, handleStop, goToStep, stepIdx, atFirstStep, atLastStep]));
 
   if (!recipe || !session || !currentStep) {
     return (
@@ -178,23 +193,6 @@ export default function PlayScreen() {
           />
         </View>
       </ScrollView>
-
-      <View style={styles.nav}>
-        <Pressable
-          style={[styles.navBtn, stepIdx === 0 && styles.navBtnDisabled]}
-          onPress={() => goToStep(stepIdx - 1)}
-          disabled={stepIdx === 0}
-        >
-          <Text style={styles.navBtnText}>{t('play.prev', 'Prev')}</Text>
-        </Pressable>
-        <Pressable
-          style={[styles.navBtn, styles.navBtnPrimary, stepIdx >= recipe.steps.length - 1 && styles.navBtnDisabled]}
-          onPress={() => goToStep(stepIdx + 1)}
-          disabled={stepIdx >= recipe.steps.length - 1}
-        >
-          <Text style={[styles.navBtnText, styles.navBtnPrimaryText]}>{t('play.next', 'Next')}</Text>
-        </Pressable>
-      </View>
     </View>
   );
 }
@@ -279,18 +277,4 @@ const styles = StyleSheet.create({
   timerBtnText: { color: '#ffffff', fontSize: 13, fontWeight: '600' },
   timerBtnSecondary: { backgroundColor: '#fee2e2' },
   timerBtnSecondaryText: { color: '#dc2626', fontSize: 13, fontWeight: '600' },
-  nav: {
-    flexDirection: 'row', gap: 12,
-    paddingHorizontal: 16, paddingVertical: 12,
-    backgroundColor: '#ffffff',
-    borderTopWidth: 1, borderTopColor: '#fed7aa',
-  },
-  navBtn: {
-    flex: 1, paddingVertical: 14, borderRadius: 10,
-    backgroundColor: '#f1f5f9', alignItems: 'center',
-  },
-  navBtnPrimary: { backgroundColor: '#f97316' },
-  navBtnDisabled: { opacity: 0.4 },
-  navBtnText: { fontSize: 15, fontWeight: '600', color: '#334155' },
-  navBtnPrimaryText: { color: '#ffffff' },
 });

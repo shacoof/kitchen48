@@ -73,7 +73,8 @@
     "url": "From URL",
     "url_desc": "Paste a recipe URL, AI extracts the recipe",
     "import": "Import from URL",
-    "import_desc": "Import a recipe folder hosted on Drive, GitHub, Box, etc."
+    "import_desc": "Import a recipe folder hosted on Drive, GitHub, Box, etc.",
+    "add_step": "Add step"
   },
   "export": {
     "working": "Exporting...",

@@ -1,6 +1,6 @@
 import { ReactNode, useState, useMemo } from 'react';
 import { View, StyleSheet } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ScreenHeaderContext, type ScreenHeaderConfig } from '../hooks/useScreenHeader';
 import { TopBar1 } from './TopBar1';
 import { TopBar2 } from './TopBar2';
@@ -12,13 +12,14 @@ interface Props {
 export function AppShell({ children }: Props) {
   const [config, setConfig] = useState<ScreenHeaderConfig>({});
   const ctx = useMemo(() => ({ config, setConfig }), [config]);
+  const insets = useSafeAreaInsets();
 
   return (
     <ScreenHeaderContext.Provider value={ctx}>
       <SafeAreaView style={styles.root} edges={['top']}>
         <TopBar1 />
         <TopBar2 />
-        <View style={styles.body}>{children}</View>
+        <View style={[styles.body, { paddingBottom: insets.bottom }]}>{children}</View>
       </SafeAreaView>
     </ScreenHeaderContext.Provider>
   );

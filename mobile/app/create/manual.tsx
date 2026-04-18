@@ -1,6 +1,6 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useMemo } from 'react';
 import {
-  View, Text, TextInput, ScrollView, StyleSheet, Pressable, Alert,
+  View, Text, TextInput, ScrollView, StyleSheet, Pressable,
 } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { useTranslation } from 'react-i18next';
@@ -8,9 +8,10 @@ import {
   createRecipe, updateRecipe, getRecipeById,
   createStep, updateStep, deleteStep,
   createIngredient, updateIngredient, deleteIngredient,
-  type RecipeWithSteps, type StepWithIngredients, type StepIngredient,
+  type StepWithIngredients, type StepIngredient,
 } from '../../src/db/recipes-db';
 import { useAutoSave } from '../../src/hooks/useAutoSave';
+import { useScreenHeader } from '../../src/hooks/useScreenHeader';
 import { SaveStatus } from '../../src/components/SaveStatus';
 import { MediaPicker } from '../../src/components/MediaPicker';
 import { saveMedia, deleteMedia } from '../../src/services/media-storage';
@@ -280,12 +281,19 @@ export default function ManualCreateScreen() {
     if (step?.id) await updateStep(step.id, { videoPath: null });
   }, [steps]);
 
-  const handleDone = useCallback(async () => {
-    if (!recipeId && title.trim()) {
-      await handleCreate();
-    }
-    router.back();
-  }, [recipeId, title, handleCreate, router]);
+  useScreenHeader(useMemo(() => ({
+    title: params.recipeId
+      ? t('buttons.edit') + (title ? ` · ${title}` : '')
+      : t('create.title', 'Create Recipe'),
+    showBack: true,
+    actions: [
+      {
+        icon: 'add-circle-outline',
+        label: t('create.add_step', 'Add step'),
+        onPress: handleAddStep,
+      },
+    ],
+  }), [params.recipeId, t, title, handleAddStep]));
 
   return (
     <ScrollView style={styles.container} keyboardShouldPersistTaps="handled">
@@ -448,14 +456,6 @@ export default function ManualCreateScreen() {
         </View>
       ))}
 
-      <Pressable style={styles.addStepButton} onPress={handleAddStep}>
-        <Text style={styles.addStepText}>+ {t('buttons.add')} Step</Text>
-      </Pressable>
-
-      <Pressable style={styles.doneButton} onPress={handleDone}>
-        <Text style={styles.doneButtonText}>Done</Text>
-      </Pressable>
-
       <View style={{ height: 60 }} />
     </ScrollView>
   );
@@ -492,14 +492,4 @@ const styles = StyleSheet.create({
   deleteIngText: { fontSize: 14, color: '#ef4444', fontWeight: '600' },
   addIngButton: { paddingVertical: 6 },
   addIngText: { fontSize: 13, color: '#3b82f6', fontWeight: '500' },
-  addStepButton: {
-    backgroundColor: '#334155', borderRadius: 10, paddingVertical: 14,
-    alignItems: 'center', marginTop: 8,
-  },
-  addStepText: { color: '#ffffff', fontSize: 16, fontWeight: '600' },
-  doneButton: {
-    backgroundColor: '#22c55e', borderRadius: 10, paddingVertical: 14,
-    alignItems: 'center', marginTop: 12,
-  },
-  doneButtonText: { color: '#ffffff', fontSize: 16, fontWeight: '600' },
 });
