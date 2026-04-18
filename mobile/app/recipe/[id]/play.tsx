@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   View, Text, ScrollView, StyleSheet, Pressable, Alert, ActivityIndicator,
 } from 'react-native';
@@ -22,6 +22,7 @@ import {
   type TimerKind,
 } from '../../../src/db/step-timers-db';
 import { useSessionTimers, computeRemainingMs, formatCountdown } from '../../../src/hooks/useSessionTimers';
+import { useScreenHeader } from '../../../src/hooks/useScreenHeader';
 import { createLogger } from '../../../src/lib/logger';
 
 const logger = createLogger('PlayScreen');
@@ -105,6 +106,25 @@ export default function PlayScreen() {
     refreshTimers();
   }, [refreshTimers]);
 
+  const headerTitle = recipe
+    ? `${recipe.title} · ${t('play.step_counter_short', 'Step {{n}}/{{total}}', {
+        n: stepIdx + 1, total: recipe.steps.length,
+      })}`
+    : t('messages.loading');
+
+  useScreenHeader(useMemo(() => ({
+    title: headerTitle,
+    showBack: true,
+    actions: [
+      {
+        icon: 'stop-circle-outline',
+        label: t('play.stop', 'Stop'),
+        onPress: handleStop,
+        tint: '#dc2626',
+      },
+    ],
+  }), [headerTitle, t, handleStop]));
+
   if (!recipe || !session || !currentStep) {
     return (
       <View style={styles.loading}>
@@ -122,20 +142,6 @@ export default function PlayScreen() {
 
   return (
     <View style={styles.container}>
-      <View style={styles.header}>
-        <View style={{ flex: 1 }}>
-          <Text style={styles.recipeTitle} numberOfLines={1}>{recipe.title}</Text>
-          <Text style={styles.stepCounter}>
-            {t('play.step_counter', 'Step {{n}} of {{total}}', {
-              n: stepIdx + 1, total: recipe.steps.length,
-            })}
-          </Text>
-        </View>
-        <Pressable style={styles.stopBtn} onPress={handleStop}>
-          <Text style={styles.stopBtnText}>{t('play.stop', 'Stop')}</Text>
-        </Pressable>
-      </View>
-
       <ScrollView style={styles.body} contentContainerStyle={styles.bodyContent}>
         {currentStep.title ? (
           <Text style={styles.stepTitle}>{currentStep.title}</Text>
@@ -244,18 +250,6 @@ function TimerCard({ label, minutes, timer, onToggle, onCancel }: TimerCardProps
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#fff7ed' },
   loading: { flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: '#fff7ed' },
-  header: {
-    flexDirection: 'row', alignItems: 'center',
-    paddingHorizontal: 16, paddingTop: 16, paddingBottom: 12,
-    backgroundColor: '#ffffff',
-    borderBottomWidth: 1, borderBottomColor: '#fed7aa',
-  },
-  recipeTitle: { fontSize: 18, fontWeight: '700', color: '#0f172a' },
-  stepCounter: { fontSize: 12, color: '#f97316', marginTop: 2, fontWeight: '600' },
-  stopBtn: {
-    paddingHorizontal: 14, paddingVertical: 8, borderRadius: 8, backgroundColor: '#fee2e2',
-  },
-  stopBtnText: { color: '#dc2626', fontWeight: '600', fontSize: 14 },
   body: { flex: 1 },
   bodyContent: { padding: 20 },
   stepTitle: { fontSize: 22, fontWeight: '700', color: '#0f172a', marginBottom: 10 },

@@ -1,10 +1,11 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useMemo } from 'react';
 import { View, Text, FlatList, StyleSheet, Pressable } from 'react-native';
 import { useRouter, useFocusEffect } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { listRecipes, type Recipe } from '../../src/db/recipes-db';
 import { RecipeCard } from '../../src/components/RecipeCard';
 import { SearchBar } from '../../src/components/SearchBar';
+import { useScreenHeader } from '../../src/hooks/useScreenHeader';
 
 export default function HomeScreen() {
   const { t } = useTranslation('common');
@@ -12,6 +13,17 @@ export default function HomeScreen() {
   const [recipes, setRecipes] = useState<Recipe[]>([]);
   const [search, setSearch] = useState('');
   const [isLoading, setIsLoading] = useState(true);
+
+  useScreenHeader(useMemo(() => ({
+    title: t('navigation.recipes', 'My Recipes'),
+    actions: [
+      {
+        icon: 'add',
+        label: t('create.manual', 'Create'),
+        onPress: () => router.push('/create'),
+      },
+    ],
+  }), [t, router]));
 
   const loadRecipes = useCallback(async () => {
     setIsLoading(true);

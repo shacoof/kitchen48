@@ -1,6 +1,8 @@
+import { useMemo } from 'react';
 import { View, Text, StyleSheet, Pressable } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
+import { useScreenHeader } from '../../src/hooks/useScreenHeader';
 
 interface OptionProps {
   title: string;
@@ -27,9 +29,12 @@ export default function CreateScreen() {
   const { t } = useTranslation('common');
   const router = useRouter();
 
+  useScreenHeader(useMemo(() => ({
+    title: t('create.title'),
+  }), [t]));
+
   return (
     <View style={styles.container}>
-      <Text style={styles.header}>{t('create.title')}</Text>
 
       <OptionCard
         title={t('create.manual')}

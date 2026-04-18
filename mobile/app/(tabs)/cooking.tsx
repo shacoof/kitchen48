@@ -1,11 +1,17 @@
+import { useMemo } from 'react';
 import { View, Text, ScrollView, StyleSheet } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { useActiveSessions } from '../../src/hooks/useActiveSessions';
 import { SessionCard } from '../../src/components/SessionCard';
+import { useScreenHeader } from '../../src/hooks/useScreenHeader';
 
 export default function CookingScreen() {
   const { t } = useTranslation('common');
   const snapshots = useActiveSessions();
+
+  useScreenHeader(useMemo(() => ({
+    title: t('navigation.cooking', 'Cooking'),
+  }), [t]));
 
   if (snapshots.length === 0) {
     return (

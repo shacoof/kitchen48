@@ -41,6 +41,7 @@
     "stop_body": "\"{{title}}\" יוסר וכל הטיימרים שלו יאבדו.",
     "stop_confirm": "עצור",
     "step_counter": "שלב {{n}} מתוך {{total}}",
+    "step_counter_short": "שלב {{n}}/{{total}}",
     "for_this_step": "לשלב הזה",
     "prep": "הכנה",
     "wait": "המתנה",

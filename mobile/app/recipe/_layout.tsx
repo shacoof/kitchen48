@@ -1,10 +1,7 @@
 import { Stack } from 'expo-router';
 
 export default function RecipeLayout() {
-  return (
-    <Stack>
-      <Stack.Screen name="[id]/index" options={{ title: 'Recipe', headerBackTitle: 'Back' }} />
-      <Stack.Screen name="[id]/play" options={{ headerShown: false }} />
-    </Stack>
-  );
+  // Chrome is provided by AppShell's TopBar1 + TopBar2. Stack here manages
+  // history so router.back() works from drill-in routes.
+  return <Stack screenOptions={{ headerShown: false }} />;
 }

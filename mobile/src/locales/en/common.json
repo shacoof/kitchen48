@@ -41,6 +41,7 @@
     "stop_body": "\"{{title}}\" will be removed and all its timers will be lost.",
     "stop_confirm": "Stop",
     "step_counter": "Step {{n}} of {{total}}",
+    "step_counter_short": "Step {{n}}/{{total}}",
     "for_this_step": "For this step",
     "prep": "Prep",
     "wait": "Wait",

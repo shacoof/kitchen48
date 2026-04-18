@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useMemo } from 'react';
 import {
   View, Text, ScrollView, StyleSheet, Pressable, Image, Alert,
 } from 'react-native';
@@ -8,6 +8,7 @@ import { getRecipeById, deleteRecipe, type RecipeWithSteps } from '../../../src/
 import { deleteRecipeMedia } from '../../../src/services/media-storage';
 import { exportRecipe, copyExportToPickedFolder } from '../../../src/services/recipe-export';
 import { VideoPlayer } from '../../../src/components/VideoPlayer';
+import { useScreenHeader } from '../../../src/hooks/useScreenHeader';
 import { createLogger } from '../../../src/lib/logger';
 
 const logger = createLogger('RecipeDetail');
@@ -83,6 +84,26 @@ export default function RecipeDetailScreen() {
     }
   }, [id, exporting, t]);
 
+  useScreenHeader(useMemo(() => ({
+    title: recipe?.title ?? t('messages.loading'),
+    showBack: true,
+    actions: [
+      { icon: 'create-outline', label: t('buttons.edit'), onPress: handleEdit },
+      {
+        icon: 'share-outline',
+        label: t('buttons.export'),
+        onPress: handleExport,
+        disabled: exporting,
+      },
+      {
+        icon: 'trash-outline',
+        label: t('buttons.delete'),
+        onPress: handleDelete,
+        tint: '#dc2626',
+      },
+    ],
+  }), [recipe?.title, t, handleEdit, handleExport, handleDelete, exporting]));
+
   if (!recipe) {
     return (
       <View style={styles.loading}>
@@ -97,7 +118,6 @@ export default function RecipeDetailScreen() {
 
   return (
     <ScrollView style={styles.container}>
-      {/* Hero image */}
       {recipe.heroImagePath ? (
         <Image source={{ uri: recipe.heroImagePath }} style={styles.heroImage} />
       ) : (
@@ -106,14 +126,11 @@ export default function RecipeDetailScreen() {
         </View>
       )}
 
-      {/* Title & description */}
       <View style={styles.content}>
-        <Text style={styles.title}>{recipe.title}</Text>
         {recipe.description ? (
           <Text style={styles.description}>{recipe.description}</Text>
         ) : null}
 
-        {/* Metadata row */}
         <View style={styles.metaRow}>
           {recipe.servings ? (
             <View style={styles.metaChip}>
@@ -139,7 +156,6 @@ export default function RecipeDetailScreen() {
           </View>
         </View>
 
-        {/* Ingredients summary */}
         {allIngredients.length > 0 ? (
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Ingredients</Text>
@@ -151,7 +167,6 @@ export default function RecipeDetailScreen() {
           </View>
         ) : null}
 
-        {/* Steps overview */}
         {recipe.steps.length > 0 ? (
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Steps</Text>
@@ -181,32 +196,12 @@ export default function RecipeDetailScreen() {
           </View>
         ) : null}
 
-        {/* Play button (primary CTA) */}
         <Pressable
           style={styles.playButton}
           onPress={() => router.push(`/recipe/${id}/play`)}
         >
           <Text style={styles.playButtonText}>{t('play.start_cooking', '▶  Start cooking')}</Text>
         </Pressable>
-
-        {/* Action buttons */}
-        <View style={styles.actions}>
-          <Pressable style={styles.editButton} onPress={handleEdit}>
-            <Text style={styles.editButtonText}>{t('buttons.edit')}</Text>
-          </Pressable>
-          <Pressable
-            style={[styles.exportButton, exporting && styles.buttonDisabled]}
-            onPress={handleExport}
-            disabled={exporting}
-          >
-            <Text style={styles.exportButtonText}>
-              {exporting ? t('export.working') : t('buttons.export')}
-            </Text>
-          </Pressable>
-          <Pressable style={styles.deleteButton} onPress={handleDelete}>
-            <Text style={styles.deleteButtonText}>{t('buttons.delete')}</Text>
-          </Pressable>
-        </View>
       </View>
 
       <View style={{ height: 40 }} />
@@ -225,7 +220,6 @@ const styles = StyleSheet.create({
   },
   heroInitial: { fontSize: 64, fontWeight: '700', color: '#ffffff' },
   content: { padding: 20 },
-  title: { fontSize: 26, fontWeight: '700', color: '#0f172a', marginBottom: 8 },
   description: { fontSize: 15, color: '#475569', lineHeight: 22, marginBottom: 16 },
   metaRow: { flexDirection: 'row', gap: 12, marginBottom: 20 },
   metaChip: {
@@ -252,21 +246,4 @@ const styles = StyleSheet.create({
     alignItems: 'center', marginTop: 20,
   },
   playButtonText: { color: '#ffffff', fontSize: 17, fontWeight: '700' },
-  actions: { flexDirection: 'row', gap: 12, marginTop: 12 },
-  editButton: {
-    flex: 1, backgroundColor: '#334155', borderRadius: 10, paddingVertical: 14,
-    alignItems: 'center',
-  },
-  editButtonText: { color: '#ffffff', fontSize: 16, fontWeight: '600' },
-  deleteButton: {
-    flex: 1, backgroundColor: '#fee2e2', borderRadius: 10, paddingVertical: 14,
-    alignItems: 'center',
-  },
-  deleteButtonText: { color: '#ef4444', fontSize: 16, fontWeight: '600' },
-  exportButton: {
-    flex: 1, backgroundColor: '#e0f2fe', borderRadius: 10, paddingVertical: 14,
-    alignItems: 'center',
-  },
-  exportButtonText: { color: '#0369a1', fontSize: 16, fontWeight: '600' },
-  buttonDisabled: { opacity: 0.5 },
 });
