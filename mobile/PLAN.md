@@ -125,12 +125,33 @@ cd mobile && npx expo start --tunnel
 npx tsc --noEmit
 ```
 
+## Build & Distribution ✅ Configured (commit `e9a757d`, 2026-04-18)
+
+EAS Build is set up. Project: `@shacoof/kitchen48` (EAS project id `2061b5ec-d682-4ffa-be6e-84b95a7a8535`).
+
+**Build an APK (standalone, no Metro required):**
+```bash
+./scripts/build-mobile-apk.sh                  # preview APK (default) — for sideload
+./scripts/build-mobile-apk.sh production       # AAB for Play Store
+./scripts/build-mobile-apk.sh development      # dev client APK
+```
+
+Build profiles are defined in `mobile/eas.json`. First build verified successfully on 2026-04-18 (APK installs and runs standalone on Android).
+
+**Update already-installed APKs with JS-only changes (OTA):**
+```bash
+cd mobile && npx eas-cli@latest update --branch preview
+```
+
+**Rebuild APK when:** adding native deps, completing a phase, or ready for a clean snapshot.
+
 ## Key Decisions Already Made
 
 - **Offline-first over BFF.** No auth, no backend — eliminates operational burden; each user owns their data and AI costs.
 - **User-provided Anthropic key.** Stored in `expo-secure-store`, never in plain storage.
 - **Local UUIDs, not `uuid` package.** React Native JS engine lacks `crypto.getRandomValues`; we use a simple local ID generator (see commit `2f957af`).
 - **`.web.ts` stubs for native-only modules.** Lets Expo web preview compile despite native-only imports.
+- **EAS Build for distribution.** Free tier (30 builds/month) is enough for personal/ongoing use. Keystore auto-generated and stored on Expo servers.
 
 ---
 

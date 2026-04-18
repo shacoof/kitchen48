@@ -2,6 +2,8 @@
 
 Standalone Expo (React Native) mobile app for Kitchen48.
 
+**Phase plan & status:** see [`PLAN.md`](./PLAN.md) for the offline-first roadmap (Phases A–F).
+
 ---
 
 ## Architecture
