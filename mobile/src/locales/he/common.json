@@ -42,14 +42,36 @@
     "imperial": "\u05D0\u05D9\u05DE\u05E4\u05E8\u05D9\u05D0\u05DC\u05D9"
   },
   "create": {
-    "title": "\u05E6\u05D5\u05E8 \u05DE\u05EA\u05DB\u05D5\u05DF",
-    "manual": "\u05D4\u05E7\u05DC\u05D3\u05D4 \u05D9\u05D3\u05E0\u05D9\u05EA",
-    "manual_desc": "\u05E6\u05D5\u05E8 \u05DE\u05EA\u05DB\u05D5\u05DF \u05E6\u05E2\u05D3 \u05D0\u05D7\u05E8 \u05E6\u05E2\u05D3",
-    "photos": "\u05DE\u05EA\u05DE\u05D5\u05E0\u05D5\u05EA",
-    "photos_desc": "\u05E6\u05DC\u05DD \u05D0\u05D5 \u05D4\u05E2\u05DC\u05D4 \u05EA\u05DE\u05D5\u05E0\u05D5\u05EA, AI \u05D9\u05D7\u05DC\u05E5 \u05D0\u05EA \u05D4\u05DE\u05EA\u05DB\u05D5\u05DF",
-    "url": "\u05DE\u05DB\u05EA\u05D5\u05D1\u05EA URL",
-    "url_desc": "\u05D4\u05D3\u05D1\u05E7 \u05DB\u05EA\u05D5\u05D1\u05EA URL \u05E9\u05DC \u05DE\u05EA\u05DB\u05D5\u05DF, AI \u05D9\u05D7\u05DC\u05E5",
-    "import": "\u05D9\u05D9\u05D1\u05D5\u05D0 \u05E7\u05D5\u05D1\u05E5",
-    "import_desc": "\u05D9\u05D9\u05D1\u05D5\u05D0 \u05DE\u05E7\u05D5\u05D1\u05E5 Kitchen48 \u05D0\u05D5 \u05DB\u05EA\u05D5\u05D1\u05EA \u05EA\u05D9\u05E7\u05D9\u05D9\u05D4"
+    "title": "צור מתכון",
+    "manual": "הקלדה ידנית",
+    "manual_desc": "צור מתכון צעד אחר צעד",
+    "photos": "מתמונות",
+    "photos_desc": "צלם או העלה תמונות, AI יחלץ את המתכון",
+    "url": "מכתובת URL",
+    "url_desc": "הדבק כתובת URL של מתכון, AI יחלץ",
+    "import": "ייבוא מ-URL",
+    "import_desc": "ייבא תיקיית מתכון מ-Drive, GitHub, Box ועוד"
+  },
+  "export": {
+    "working": "מייצא...",
+    "done_title": "המתכון יוצא",
+    "done_body": "התיקייה \"{{folder}}\" נכתבה ({{count}} קבצי מדיה). שמור אותה ב-Drive, GitHub או בכל מקום אחר.",
+    "save_to_folder": "שמור לתיקייה…",
+    "saved_title": "נשמר",
+    "saved_body": "הקבצים הועתקו אל:\n{{path}}"
+  },
+  "import": {
+    "title": "ייבוא מ-URL",
+    "description": "הדבק כתובת URL ישירה לקובץ kitchen48-recipe.yaml. קבצי מדיה עם נתיבים יחסיים יושגו מאותה תיקייה; כתובות מוחלטות יושגו כפי שהן.",
+    "url_label": "כתובת YAML",
+    "url_placeholder": "https://.../kitchen48-recipe.yaml",
+    "url_hint": "עבור Google Drive, השתמש בכתובת הורדה ישירה לכל קובץ (https://drive.google.com/uc?id=…) או ארח את התיקייה במקום שמגיש קבצים בנתיבים יחסיים (GitHub raw, Dropbox, Box, S3).",
+    "importing": "מייבא...",
+    "done_title": "המתכון יובא",
+    "done_body": "\"{{title}}\" נוסף ({{downloaded}} מדיה הורדו, {{skipped}} דולגו).",
+    "view_recipe": "הצג מתכון",
+    "failed_title": "הייבוא נכשל",
+    "invalid_url_title": "כתובת לא תקינה",
+    "invalid_url_body": "אנא הדבק כתובת URL של קובץ kitchen48-recipe.yaml."
   }
 }

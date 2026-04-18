@@ -6,6 +6,7 @@ import { useLocalSearchParams, useRouter, useFocusEffect } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { getRecipeById, deleteRecipe, type RecipeWithSteps } from '../../src/db/recipes-db';
 import { deleteRecipeMedia } from '../../src/services/media-storage';
+import { exportRecipe, copyExportToPickedFolder } from '../../src/services/recipe-export';
 import { VideoPlayer } from '../../src/components/VideoPlayer';
 import { createLogger } from '../../src/lib/logger';
 
@@ -16,6 +17,7 @@ export default function RecipeDetailScreen() {
   const { t } = useTranslation('common');
   const router = useRouter();
   const [recipe, setRecipe] = useState<RecipeWithSteps | null>(null);
+  const [exporting, setExporting] = useState(false);
 
   useFocusEffect(
     useCallback(() => {
@@ -49,6 +51,37 @@ export default function RecipeDetailScreen() {
   const handleEdit = useCallback(() => {
     router.push(`/create/manual?recipeId=${id}`);
   }, [id, router]);
+
+  const handleExport = useCallback(async () => {
+    if (!id || exporting) return;
+    setExporting(true);
+    try {
+      const result = await exportRecipe(id);
+      Alert.alert(
+        t('export.done_title'),
+        t('export.done_body', { folder: result.folderName, count: result.mediaFilenames.length }),
+        [
+          {
+            text: t('export.save_to_folder'),
+            onPress: async () => {
+              try {
+                const dest = await copyExportToPickedFolder(result);
+                Alert.alert(t('export.saved_title'), t('export.saved_body', { path: dest }));
+              } catch (err) {
+                logger.warning(`Save to folder canceled or failed: ${String(err)}`);
+              }
+            },
+          },
+          { text: t('buttons.close'), style: 'cancel' },
+        ]
+      );
+    } catch (err) {
+      logger.error(`Export failed: ${String(err)}`);
+      Alert.alert(t('messages.error'), String(err));
+    } finally {
+      setExporting(false);
+    }
+  }, [id, exporting, t]);
 
   if (!recipe) {
     return (
@@ -153,6 +186,15 @@ export default function RecipeDetailScreen() {
           <Pressable style={styles.editButton} onPress={handleEdit}>
             <Text style={styles.editButtonText}>{t('buttons.edit')}</Text>
           </Pressable>
+          <Pressable
+            style={[styles.exportButton, exporting && styles.buttonDisabled]}
+            onPress={handleExport}
+            disabled={exporting}
+          >
+            <Text style={styles.exportButtonText}>
+              {exporting ? t('export.working') : t('buttons.export')}
+            </Text>
+          </Pressable>
           <Pressable style={styles.deleteButton} onPress={handleDelete}>
             <Text style={styles.deleteButtonText}>{t('buttons.delete')}</Text>
           </Pressable>
@@ -208,4 +250,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   deleteButtonText: { color: '#ef4444', fontSize: 16, fontWeight: '600' },
+  exportButton: {
+    flex: 1, backgroundColor: '#e0f2fe', borderRadius: 10, paddingVertical: 14,
+    alignItems: 'center',
+  },
+  exportButtonText: { color: '#0369a1', fontSize: 16, fontWeight: '600' },
+  buttonDisabled: { opacity: 0.5 },
 });

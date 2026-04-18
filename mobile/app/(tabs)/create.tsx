@@ -51,8 +51,7 @@ export default function CreateScreen() {
       <OptionCard
         title={t('create.import')}
         description={t('create.import_desc')}
-        onPress={() => {}}
-        disabled
+        onPress={() => router.push('/create/import')}
       />
     </View>
   );
