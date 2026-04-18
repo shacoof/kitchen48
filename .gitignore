@@ -51,3 +51,10 @@ backups/*
 # Uploaded files (local dev only)
 backend/uploads/*
 !backend/uploads/.gitkeep
+
+# Local recipe export output (scripts/export-recipes-to-drive.py)
+/recipe-export/
+
+# Python venv (scripts/.venv)
+**/.venv/
+**/__pycache__/
