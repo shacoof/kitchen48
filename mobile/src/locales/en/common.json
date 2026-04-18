@@ -49,7 +49,29 @@
     "photos_desc": "Take or upload photos, AI extracts the recipe",
     "url": "From URL",
     "url_desc": "Paste a recipe URL, AI extracts the recipe",
-    "import": "Import File",
-    "import_desc": "Import from a Kitchen48 zip or folder URL"
+    "import": "Import from URL",
+    "import_desc": "Import a recipe folder hosted on Drive, GitHub, Box, etc."
+  },
+  "export": {
+    "working": "Exporting...",
+    "done_title": "Recipe exported",
+    "done_body": "Folder \"{{folder}}\" written ({{count}} media file(s)). Save it to Drive, GitHub or anywhere else.",
+    "save_to_folder": "Save to folder…",
+    "saved_title": "Saved",
+    "saved_body": "Files copied to:\n{{path}}"
+  },
+  "import": {
+    "title": "Import from URL",
+    "description": "Paste a direct URL to a kitchen48-recipe.yaml file. Media files referenced with relative paths will be fetched from the same folder; absolute URLs are fetched as-is.",
+    "url_label": "YAML URL",
+    "url_placeholder": "https://.../kitchen48-recipe.yaml",
+    "url_hint": "For Google Drive, use a per-file direct-download URL (https://drive.google.com/uc?id=…) or host the folder somewhere that serves files at relative paths (GitHub raw, Dropbox, Box, S3).",
+    "importing": "Importing...",
+    "done_title": "Recipe imported",
+    "done_body": "\"{{title}}\" added ({{downloaded}} media downloaded, {{skipped}} skipped).",
+    "view_recipe": "View Recipe",
+    "failed_title": "Import failed",
+    "invalid_url_title": "Invalid URL",
+    "invalid_url_body": "Please paste the URL of the kitchen48-recipe.yaml file."
   }
 }
