@@ -38,43 +38,25 @@
 - Media saved to `${documentDirectory}/recipes/{recipeId}/`
 - Web stubs (`.web.tsx`) for Expo web preview
 
-### Phase D — Import / Export 🔲 Not started
+### Phase D — Import / Export ✅ Done (commit `520efe5`, merged `7459e1b`, 2026-04-18)
 
-**Recipe exchange format** (documented in `mobile/CLAUDE.md`):
+YAML exchange format + folder-URL import/export implemented. Zod schema at
+`src/services/recipe-yaml-schema.ts`; import at `src/services/recipe-import.ts`.
+URL normalization handles Google Drive / Dropbox / GitHub blob links.
 
-```
-my-recipe/
-├── kitchen48-recipe.yaml
-├── hero.jpg
-├── step-1.jpg
-├── step-1-video.mp4
-└── ...
-```
+**Follow-on: Out-of-box seed recipes ✅ Done (commit `932d4c1`, 2026-04-18)**
 
-YAML schema:
-```yaml
-version: "1.0"
-title: "..."
-servings: 4
-measurementSystem: "metric"
-steps:
-  - order: 1
-    instruction: "..."
-    image: "step-1.jpg"
-    ingredients:
-      - { name: "flour", quantity: 200, unit: "g" }
-```
+11 starter recipes from `~/kitchen48-recipe-export/` ship with the app:
+- Build-time codegen (`scripts/build-seed-data.mjs`) reads the export folder,
+  copies hero images into `assets/seed-recipes/<slug>/`, and emits
+  `src/seed/seed-recipes.ts` (typed static data + `require()` for images).
+- Runtime seeder (`src/services/recipe-seeder.ts`) runs on first launch,
+  gated by `settings.seed_recipes_loaded_version`. Seeded recipes are fully
+  user-owned — editable and deletable like any imported recipe.
+- Regenerate with `npm run build:seed`. Bump `SEED_SCHEMA_VERSION` to force
+  re-seed on existing installs (note: current seeder appends, doesn't dedupe).
 
-**Import flows:**
-- From zip: `expo-document-picker` → extract → parse YAML → copy media to local storage → insert into SQLite
-- From folder URL: fetch `{url}/kitchen48-recipe.yaml` → download referenced media → store locally
-
-**Export flow:**
-- Generate YAML from SQLite → bundle with local media files into zip → `expo-sharing`
-
-**New deps:** `expo-document-picker`, `expo-sharing`, YAML library
-
-### Phase E — Play Mode 🔲 Not started
+### Phase E — Play Mode 🚧 Current focus
 
 Immersive kitchen-optimized cooking screen.
 
