@@ -58,7 +58,8 @@ URL normalization handles Google Drive / Dropbox / GitHub blob links.
 
 ### Phase E — Play Mode 🚧 Current focus
 
-Immersive kitchen-optimized cooking screen.
+Immersive kitchen-optimized cooking screen. **Multi-session**: user can have
+several recipes playing in parallel (e.g., lasagna baking while bread rises).
 
 | Feature | Native API |
 |---------|-----------|
@@ -70,10 +71,14 @@ Immersive kitchen-optimized cooking screen.
 | Swipe gestures | `react-native-gesture-handler` |
 | Haptic feedback | `expo-haptics` |
 
-**Multi-recipe background timers:**
-- Each recipe's timers tracked independently
-- Timer state persisted in SQLite for crash recovery
-- Local notifications fire when timer reaches zero
+**Parallel sessions + per-recipe timers:**
+- Multiple `play_sessions` can be active at once, each bound to a recipe.
+- New SQLite tables: `play_sessions` (id, recipe_id, started_at, current_step_id, status) and `step_timers` (id, session_id, step_id, kind=prep|wait, started_at, duration_ms, fires_at, state).
+- Timers keyed by (sessionId, stepId, kind) — never global. Persisted so they survive app restarts and crashes.
+- Local notifications carry `{ sessionId, stepId }` in payload so tap opens the right session.
+- Sessions-dashboard surface (or floating pill) shows all active sessions with a count badge; user can jump between them.
+- Leaving a session keeps it running in the background; explicit "End cooking" required to terminate.
+- Voice commands target the foreground session by default; "pause lasagna timer" can disambiguate by recipe title.
 
 ### Phase F — AI Import 🔲 Not started
 
