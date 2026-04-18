@@ -30,6 +30,13 @@
       "expo-sqlite",
       "expo-secure-store",
       "expo-localization"
-    ]
+    ],
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "2061b5ec-d682-4ffa-be6e-84b95a7a8535"
+      }
+    },
+    "owner": "shacoof"
   }
 }

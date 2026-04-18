@@ -119,6 +119,30 @@ cd mobile && npx expo start --tunnel
 cd mobile && npx tsc --noEmit
 ```
 
+### Building a standalone APK (no Metro, runs offline on phone)
+
+For ongoing use on a phone without desktop dependence, build an APK via EAS Build:
+
+```bash
+./scripts/build-mobile-apk.sh                  # preview APK (default) — for sideload
+./scripts/build-mobile-apk.sh production       # AAB for Play Store
+./scripts/build-mobile-apk.sh development      # dev client APK (connects to Metro)
+```
+
+**When to rebuild:**
+- After completing each phase (D/E/F) — full rebuild captures all native module changes
+- When adding a new native dependency (Expo Go won't pick it up; a new APK is required)
+
+**For JS-only changes between phases** (bugfixes, UI tweaks), prefer OTA updates instead of a full rebuild:
+```bash
+cd mobile && npx eas-cli@latest update --branch preview
+```
+The installed APK will pull the new JS bundle on next launch.
+
+Build profiles are defined in [`eas.json`](./eas.json). Project ID is stored in `app.json` under `expo.extra.eas.projectId`.
+
+**One-time setup (already done):** `npx eas-cli@latest login`
+
 ---
 
 ## Conventions
