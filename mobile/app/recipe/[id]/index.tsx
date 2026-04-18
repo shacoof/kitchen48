@@ -101,8 +101,14 @@ export default function RecipeDetailScreen() {
         onPress: handleDelete,
         tint: '#dc2626',
       },
+      {
+        icon: 'play-circle',
+        label: t('play.start_cooking_short', 'Start cooking'),
+        onPress: () => router.push(`/recipe/${id}/play`),
+        tint: '#f97316',
+      },
     ],
-  }), [recipe?.title, t, handleEdit, handleExport, handleDelete, exporting]));
+  }), [recipe?.title, t, handleEdit, handleExport, handleDelete, exporting, router, id]));
 
   if (!recipe) {
     return (
@@ -196,12 +202,6 @@ export default function RecipeDetailScreen() {
           </View>
         ) : null}
 
-        <Pressable
-          style={styles.playButton}
-          onPress={() => router.push(`/recipe/${id}/play`)}
-        >
-          <Text style={styles.playButtonText}>{t('play.start_cooking', '▶  Start cooking')}</Text>
-        </Pressable>
       </View>
 
       <View style={{ height: 40 }} />
@@ -241,9 +241,4 @@ const styles = StyleSheet.create({
   stepTitle: { fontSize: 15, fontWeight: '600', color: '#0f172a' },
   stepInstruction: { fontSize: 13, color: '#64748b', marginTop: 2 },
   stepImage: { width: '100%', height: 140, borderRadius: 8, marginTop: 8 },
-  playButton: {
-    backgroundColor: '#f97316', borderRadius: 12, paddingVertical: 16,
-    alignItems: 'center', marginTop: 20,
-  },
-  playButtonText: { color: '#ffffff', fontSize: 17, fontWeight: '700' },
 });

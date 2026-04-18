@@ -34,6 +34,7 @@
   },
   "play": {
     "start_cooking": "▶  Start cooking",
+    "start_cooking_short": "Start cooking",
     "empty_title": "Nothing cooking",
     "empty_body": "Open a recipe and tap Play to start cooking.",
     "stop": "Stop",

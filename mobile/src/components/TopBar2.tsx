@@ -62,9 +62,9 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: '#e2e8f0',
   },
-  side: { width: 96, flexDirection: 'row', alignItems: 'center' },
+  side: { flexDirection: 'row', alignItems: 'center' },
   sideRight: { justifyContent: 'flex-end' },
-  titleWrap: { flex: 1, alignItems: 'center' },
+  titleWrap: { flex: 1, paddingHorizontal: 8 },
   title: { fontSize: 17, fontWeight: '700', color: '#0f172a' },
   iconBtn: {
     width: 40, height: 40, alignItems: 'center', justifyContent: 'center',
