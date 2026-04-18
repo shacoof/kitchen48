@@ -56,7 +56,12 @@ URL normalization handles Google Drive / Dropbox / GitHub blob links.
 - Regenerate with `npm run build:seed`. Bump `SEED_SCHEMA_VERSION` to force
   re-seed on existing installs (note: current seeder appends, doesn't dedupe).
 
-### Phase E — Play Mode 🚧 Current focus
+### Phase E — Play Mode 🚧 In progress
+
+**E1 ✅ Done (commit `0482d50`, 2026-04-18)** — multi-session core + dashboard.
+**E2 ✅ Done (this commit)** — local notifications, background survival, foreground haptics, deep-link from notification tap.
+**E3 🔲** — voice commands, TTS, gestures.
+**E4 🔲** — polish (timer editing mid-cook, session stats, rescheduling).
 
 Immersive kitchen-optimized cooking screen. **Multi-session**: user can have
 several recipes playing in parallel (e.g., lasagna baking while bread rises).

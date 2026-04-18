@@ -10,18 +10,16 @@ import {
   startOrResumeSession,
   stopSession,
   advanceToStep,
+  startStepTimer,
+  pauseStepTimer,
+  resumeStepTimer,
+  cancelStepTimer,
+  findLiveTimer,
 } from '../../../src/services/play-session-service';
 import type { PlaySession } from '../../../src/db/play-sessions-db';
-import {
-  findLiveTimer,
-  startTimer,
-  pauseTimer,
-  resumeTimer,
-  cancelTimer,
-  type StepTimer,
-  type TimerKind,
-} from '../../../src/db/step-timers-db';
+import type { StepTimer, TimerKind } from '../../../src/db/step-timers-db';
 import { useSessionTimers, computeRemainingMs, formatCountdown } from '../../../src/hooks/useSessionTimers';
+import { handleFiredTimers } from '../../../src/services/timer-alarms';
 import { useScreenHeader } from '../../../src/hooks/useScreenHeader';
 import { createLogger } from '../../../src/lib/logger';
 
@@ -89,22 +87,39 @@ export default function PlayScreen() {
   }, [session, recipe, t, router]);
 
   const handleTimerToggle = useCallback(async (kind: TimerKind, minutes: number | null) => {
-    if (!session || !currentStep || !minutes || minutes <= 0) return;
+    if (!session || !recipe || !currentStep || !minutes || minutes <= 0) return;
     const existing = await findLiveTimer(session.id, currentStep.id, kind);
     if (!existing) {
-      await startTimer(session.id, currentStep.id, kind, minutes * 60 * 1000);
+      await startStepTimer({
+        sessionId: session.id,
+        stepId: currentStep.id,
+        kind,
+        durationMs: minutes * 60 * 1000,
+        recipeId: recipe.id,
+        recipeTitle: recipe.title,
+      });
     } else if (existing.state === 'running') {
-      await pauseTimer(existing.id);
+      await pauseStepTimer(existing.id);
     } else if (existing.state === 'paused') {
-      await resumeTimer(existing.id);
+      await resumeStepTimer(existing.id, recipe.id, recipe.title);
     }
     refreshTimers();
-  }, [session, currentStep, refreshTimers]);
+  }, [session, recipe, currentStep, refreshTimers]);
 
   const handleTimerCancel = useCallback(async (timer: StepTimer) => {
-    await cancelTimer(timer.id);
+    await cancelStepTimer(timer.id);
     refreshTimers();
   }, [refreshTimers]);
+
+  // Foreground alarm loop: tick once a second and fire haptics when any
+  // running timer in the session hits zero. DB state updates to 'fired'.
+  useEffect(() => {
+    if (!session) return;
+    const tick = () => { void handleFiredTimers(timers); };
+    tick();
+    const id = setInterval(tick, 1000);
+    return () => clearInterval(id);
+  }, [session, timers]);
 
   const headerTitle = recipe
     ? `${recipe.title} · ${t('play.step_counter_short', 'Step {{n}}/{{total}}', {

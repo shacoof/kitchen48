@@ -15,6 +15,7 @@ export interface StepTimer {
   state: TimerState;
   pausedAt: string | null;
   remainingMs: number | null;
+  notificationId: string | null;
 }
 
 interface TimerRow {
@@ -28,6 +29,7 @@ interface TimerRow {
   state: TimerState;
   paused_at: string | null;
   remaining_ms: number | null;
+  notification_id: string | null;
 }
 
 function mapRow(row: TimerRow): StepTimer {
@@ -42,6 +44,7 @@ function mapRow(row: TimerRow): StepTimer {
     state: row.state,
     pausedAt: row.paused_at,
     remainingMs: row.remaining_ms,
+    notificationId: row.notification_id ?? null,
   };
 }
 
@@ -160,4 +163,29 @@ export async function markFired(timerId: string): Promise<void> {
     "UPDATE step_timers SET state = 'fired' WHERE id = ? AND state = 'running'",
     [timerId]
   );
+}
+
+export async function setNotificationId(timerId: string, notificationId: string | null): Promise<void> {
+  const db = await getDatabase();
+  await db.runAsync(
+    'UPDATE step_timers SET notification_id = ? WHERE id = ?',
+    [notificationId, timerId]
+  );
+}
+
+export async function getTimerById(timerId: string): Promise<StepTimer | null> {
+  const db = await getDatabase();
+  const row = await db.getFirstAsync<TimerRow>(
+    'SELECT * FROM step_timers WHERE id = ?',
+    [timerId]
+  );
+  return row ? mapRow(row) : null;
+}
+
+export async function listRunningTimers(): Promise<StepTimer[]> {
+  const db = await getDatabase();
+  const rows = await db.getAllAsync<TimerRow>(
+    "SELECT * FROM step_timers WHERE state = 'running'"
+  );
+  return rows.map(mapRow);
 }

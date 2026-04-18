@@ -85,6 +85,7 @@ const SCHEMA_SQL = `
     state TEXT NOT NULL,
     paused_at TEXT,
     remaining_ms INTEGER,
+    notification_id TEXT,
     FOREIGN KEY (session_id) REFERENCES play_sessions(id) ON DELETE CASCADE
   );
 
@@ -95,11 +96,23 @@ const SCHEMA_SQL = `
 let db: SQLite.SQLiteDatabase | null = null;
 let openPromise: Promise<SQLite.SQLiteDatabase> | null = null;
 
+async function safeMigrate(handle: SQLite.SQLiteDatabase, sql: string): Promise<void> {
+  try {
+    await handle.execAsync(sql);
+  } catch (err) {
+    // typical: "duplicate column name" when migration already applied
+    logger.debug(`Skipped migration: ${String(err).substring(0, 120)}`);
+  }
+}
+
 async function openAndMigrate(): Promise<SQLite.SQLiteDatabase> {
   const handle = await SQLite.openDatabaseAsync('kitchen48.db');
   await handle.execAsync('PRAGMA journal_mode = WAL;');
   await handle.execAsync('PRAGMA foreign_keys = ON;');
   await handle.execAsync(SCHEMA_SQL);
+  // Additive migrations for older installs. ALTER statements must run
+  // individually so one failure doesn't skip the rest.
+  await safeMigrate(handle, 'ALTER TABLE step_timers ADD COLUMN notification_id TEXT;');
   return handle;
 }
 
