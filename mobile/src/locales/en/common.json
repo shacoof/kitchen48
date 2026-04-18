@@ -1,0 +1,55 @@
+{
+  "buttons": {
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "loading": "Loading...",
+    "submit": "Submit",
+    "add": "Add",
+    "edit": "Edit",
+    "close": "Close",
+    "retry": "Retry",
+    "export": "Export",
+    "import": "Import"
+  },
+  "validation": {
+    "required": "This field is required"
+  },
+  "messages": {
+    "loading": "Loading...",
+    "error": "Error",
+    "success": "Success",
+    "failed": "Failed",
+    "please_try_again": "Please try again",
+    "no_recipes": "No recipes yet",
+    "saving": "Saving...",
+    "saved": "All changes saved",
+    "save_error": "Error saving"
+  },
+  "navigation": {
+    "create": "Create",
+    "recipes": "My Recipes",
+    "settings": "Settings"
+  },
+  "settings": {
+    "title": "Settings",
+    "api_key": "Anthropic API Key",
+    "api_key_placeholder": "sk-ant-...",
+    "api_key_hint": "Required for AI recipe import (photo & URL)",
+    "language": "Interface Language",
+    "measurement": "Measurement System",
+    "metric": "Metric",
+    "imperial": "Imperial"
+  },
+  "create": {
+    "title": "Create Recipe",
+    "manual": "Type Manually",
+    "manual_desc": "Create a recipe step by step",
+    "photos": "From Photos",
+    "photos_desc": "Take or upload photos, AI extracts the recipe",
+    "url": "From URL",
+    "url_desc": "Paste a recipe URL, AI extracts the recipe",
+    "import": "Import File",
+    "import_desc": "Import from a Kitchen48 zip or folder URL"
+  }
+}
