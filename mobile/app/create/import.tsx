@@ -1,7 +1,8 @@
 import { useState, useCallback } from 'react';
 import {
-  View, Text, StyleSheet, TextInput, Pressable, Alert, ActivityIndicator, ScrollView,
+  View, StyleSheet, Pressable, Alert, ActivityIndicator, ScrollView,
 } from 'react-native';
+import { Text, TextInput } from '../../src/components/ScaledText';
 import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { importRecipeFromUrl, ImportError } from '../../src/services/recipe-import';

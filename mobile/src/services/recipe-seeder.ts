@@ -48,7 +48,7 @@ async function copyAssetToRecipeDir(
     const dest = new File(dir, filename);
     if (dest.exists) dest.delete();
     const source = new File(sourceUri);
-    source.copy(dest);
+    source.copySync(dest);
     return dest.uri;
   } catch (err) {
     logger.warning(`Failed to copy seed asset: ${String(err)}`);

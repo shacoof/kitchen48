@@ -27,7 +27,7 @@ export async function saveMedia(
   const dir = await ensureRecipeDir(recipeId);
   const dest = new File(dir, filename);
   const source = new File(sourceUri);
-  source.copy(dest);
+  source.copySync(dest);
   logger.debug(`Saved media: ${filename} for recipe ${recipeId}`);
   return dest.uri;
 }

@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
-import { View, Text, ScrollView, StyleSheet } from 'react-native';
+import { View, ScrollView, StyleSheet } from 'react-native';
+import { Text } from '../../src/components/ScaledText';
 import { useTranslation } from 'react-i18next';
 import { useActiveSessions } from '../../src/hooks/useActiveSessions';
 import { SessionCard } from '../../src/components/SessionCard';

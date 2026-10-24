@@ -6,13 +6,7 @@
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
-    "newArchEnabled": true,
     "scheme": "kitchen48",
-    "splash": {
-      "image": "./assets/splash-icon.png",
-      "resizeMode": "contain",
-      "backgroundColor": "#334155"
-    },
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.kitchen48.app",
@@ -26,7 +20,6 @@
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#334155"
       },
-      "edgeToEdgeEnabled": true,
       "package": "com.kitchen48.app"
     },
     "plugins": [
@@ -39,6 +32,18 @@
         "expo-notifications",
         {
           "androidMode": "default"
+        }
+      ],
+      "expo-status-bar",
+      "expo-video",
+      "expo-font",
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/splash-icon.png",
+          "resizeMode": "contain",
+          "backgroundColor": "#334155",
+          "imageWidth": 200
         }
       ]
     ],

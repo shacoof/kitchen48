@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
-  View, Text, ScrollView, StyleSheet, Pressable, Alert, ActivityIndicator,
+  View, ScrollView, StyleSheet, Pressable, Alert, ActivityIndicator,
 } from 'react-native';
+import { Text } from '../../../src/components/ScaledText';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useKeepAwake } from 'expo-keep-awake';
 import { useTranslation } from 'react-i18next';

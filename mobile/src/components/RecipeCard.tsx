@@ -1,4 +1,5 @@
-import { View, Text, StyleSheet, Pressable, Image } from 'react-native';
+import { View, StyleSheet, Pressable, Image } from 'react-native';
+import { Text } from './ScaledText';
 import type { Recipe } from '../db/recipes-db';
 
 interface Props {

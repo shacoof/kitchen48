@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { View, Text, StyleSheet, Pressable, Image, Alert, ActionSheetIOS, Platform } from 'react-native';
+import { View, StyleSheet, Pressable, Image, Alert, ActionSheetIOS, Platform } from 'react-native';
+import { Text } from './ScaledText';
 import * as ImagePicker from 'expo-image-picker';
 import { useTranslation } from 'react-i18next';
 import { createLogger } from '../lib/logger';
