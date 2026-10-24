@@ -72,7 +72,7 @@ several recipes playing in parallel (e.g., lasagna baking while bread rises).
 | Text-to-speech | `expo-speech` |
 | Wake lock | `expo-keep-awake` |
 | Background timers | `expo-task-manager` + `expo-notifications` |
-| Audio alarm | `expo-av` |
+| Audio alarm | `expo-audio` |
 | Swipe gestures | `react-native-gesture-handler` |
 | Haptic feedback | `expo-haptics` |
 

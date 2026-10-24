@@ -12,7 +12,7 @@ Standalone Expo (React Native) mobile app for Kitchen48.
 
 | Layer | Technology |
 |-------|-----------|
-| Framework | Expo SDK 54 + Expo Router |
+| Framework | Expo SDK 57 + Expo Router |
 | Language | TypeScript |
 | Database | SQLite (expo-sqlite) |
 | File storage | expo-file-system (images, videos) |

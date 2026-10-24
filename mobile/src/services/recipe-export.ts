@@ -43,7 +43,7 @@ function copyMedia(srcPath: string, destDir: Directory, filename: string): strin
   }
   const dest = new File(destDir, filename);
   if (dest.exists) dest.delete();
-  src.copy(dest);
+  src.copySync(dest);
   return filename;
 }
 
@@ -157,12 +157,12 @@ export async function copyExportToPickedFolder(result: ExportResult): Promise<st
   destRoot.create();
 
   const yamlSrc = new File(src, result.yamlFilename);
-  yamlSrc.copy(new File(destRoot, result.yamlFilename));
+  yamlSrc.copySync(new File(destRoot, result.yamlFilename));
 
   for (const name of result.mediaFilenames) {
     const mediaSrc = new File(src, name);
     if (mediaSrc.exists) {
-      mediaSrc.copy(new File(destRoot, name));
+      mediaSrc.copySync(new File(destRoot, name));
     }
   }
 

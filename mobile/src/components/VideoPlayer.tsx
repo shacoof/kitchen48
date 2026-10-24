@@ -1,36 +1,29 @@
-import { useState, useRef } from 'react';
-import { View, StyleSheet, Pressable } from 'react-native';
+import { useState } from 'react';
+import { View, StyleSheet } from 'react-native';
 import { Text } from './ScaledText';
-import { Video, ResizeMode, type AVPlaybackStatus } from 'expo-av';
+import { useEventListener } from 'expo';
+import { useVideoPlayer, VideoView } from 'expo-video';
 import { createLogger } from '../lib/logger';
 
 const logger = createLogger('VideoPlayer');
 
 interface Props {
   uri: string;
-  posterUri?: string;
   height?: number;
 }
 
-export function VideoPlayer({ uri, posterUri, height = 220 }: Props) {
-  const videoRef = useRef<Video>(null);
-  const [isPlaying, setIsPlaying] = useState(false);
+export function VideoPlayer({ uri, height = 220 }: Props) {
+  const player = useVideoPlayer(uri, (p) => {
+    p.loop = false;
+  });
   const [error, setError] = useState(false);
 
-  const handlePlaybackUpdate = (status: AVPlaybackStatus) => {
-    if (status.isLoaded) {
-      setIsPlaying(status.isPlaying);
+  useEventListener(player, 'statusChange', ({ status, error: playerError }) => {
+    if (status === 'error') {
+      logger.error(`Video error: ${playerError?.message}`);
+      setError(true);
     }
-  };
-
-  const togglePlay = async () => {
-    if (!videoRef.current) return;
-    if (isPlaying) {
-      await videoRef.current.pauseAsync();
-    } else {
-      await videoRef.current.playAsync();
-    }
-  };
+  });
 
   if (error) {
     return (
@@ -41,22 +34,14 @@ export function VideoPlayer({ uri, posterUri, height = 220 }: Props) {
   }
 
   return (
-    <Pressable onPress={togglePlay} style={[styles.container, { height }]}>
-      <Video
-        ref={videoRef}
-        source={{ uri }}
-        posterSource={posterUri ? { uri: posterUri } : undefined}
+    <View style={[styles.container, { height }]}>
+      <VideoView
+        player={player}
         style={styles.video}
-        resizeMode={ResizeMode.CONTAIN}
-        useNativeControls
-        isLooping={false}
-        onPlaybackStatusUpdate={handlePlaybackUpdate}
-        onError={(err) => {
-          logger.error(`Video error: ${err}`);
-          setError(true);
-        }}
+        contentFit="contain"
+        nativeControls
       />
-    </Pressable>
+    </View>
   );
 }
 
