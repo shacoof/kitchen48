@@ -104,5 +104,94 @@
     "failed_title": "Import failed",
     "invalid_url_title": "Invalid URL",
     "invalid_url_body": "Please paste the URL of the kitchen48-recipe.yaml file."
+  },
+  "voice": {
+    "mic_on": "Turn on voice commands",
+    "mic_off": "Turn off voice commands",
+    "tap_to_talk": "Tap to talk",
+    "listening": "Listening…",
+    "heard": "✓ {{command}}",
+    "not_understood": "Didn't catch \"{{text}}\"",
+    "unavailable": "Voice commands need the full app build",
+    "permission": "Microphone access denied — enable it in phone settings",
+    "failed": "Voice stopped — tap the mic to retry",
+    "read": "Read step aloud",
+    "stop_reading": "Stop reading",
+    "help": "Voice help",
+    "help_title": "Voice commands",
+    "help_hint": "Tap the mic to keep listening, or tap the bar to say one command.",
+    "help_spoken": "You can say: {{list}}",
+    "auto_read": "Read each step aloud when it opens",
+    "close": "Close",
+    "ingredients_intro": "Ingredients:",
+    "no_ingredients": "No ingredients for this step.",
+    "first_step": "This is the first step.",
+    "last_step": "This is the last step.",
+    "no_timer": "This step has no timer.",
+    "no_active_timer": "No timer is running.",
+    "timer_started": "{{label}} timer started, {{time}}.",
+    "timer_paused": "{{label}} timer paused.",
+    "timer_resumed": "{{label}} timer resumed.",
+    "timer_reset": "{{label}} timer cancelled.",
+    "timer_already_running": "{{label}} timer is already running.",
+    "timer_left": "{{label}} timer: {{time}} left.",
+    "timer_left_paused": "{{label}} timer paused with {{time}} left.",
+    "time_ms": "{{m}} minutes and {{s}} seconds",
+    "time_m": "{{m}} minutes",
+    "time_s": "{{s}} seconds",
+    "cmd": {
+      "describe": {
+        "keyword": "\"Read\"",
+        "desc": "Read the step instructions aloud"
+      },
+      "ingredients": {
+        "keyword": "\"Read ingredients\"",
+        "desc": "Read this step's ingredients aloud"
+      },
+      "stop": {
+        "keyword": "\"Stop\"",
+        "desc": "Stop reading aloud"
+      },
+      "next": {
+        "keyword": "\"Next\"",
+        "desc": "Go to the next step"
+      },
+      "previous": {
+        "keyword": "\"Back\"",
+        "desc": "Go to the previous step"
+      },
+      "restart": {
+        "keyword": "\"Start over\"",
+        "desc": "Go back to the first step"
+      },
+      "timer": {
+        "keyword": "\"Start timer\"",
+        "desc": "Start this step's timer (say \"prep\" or \"wait\" to pick one)"
+      },
+      "pauseTimer": {
+        "keyword": "\"Pause timer\"",
+        "desc": "Pause the running timer — add a recipe name to target another dish"
+      },
+      "resumeTimer": {
+        "keyword": "\"Resume timer\"",
+        "desc": "Resume a paused timer"
+      },
+      "resetTimer": {
+        "keyword": "\"Reset timer\"",
+        "desc": "Cancel the timer"
+      },
+      "timerStatus": {
+        "keyword": "\"Timer status\"",
+        "desc": "Say how much time is left"
+      },
+      "exit": {
+        "keyword": "\"Exit\"",
+        "desc": "Leave the cooking screen (timers keep running)"
+      },
+      "help": {
+        "keyword": "\"Help\"",
+        "desc": "Show and read this list"
+      }
+    }
   }
 }

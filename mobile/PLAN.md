@@ -60,7 +60,7 @@ URL normalization handles Google Drive / Dropbox / GitHub blob links.
 
 **E1 ✅ Done (commit `0482d50`, 2026-04-18)** — multi-session core + dashboard.
 **E2 ✅ Done (this commit)** — local notifications, background survival, foreground haptics, deep-link from notification tap.
-**E3 🔲** — voice commands, TTS, gestures.
+**E3 🚧** — voice commands + TTS (see "Voice (E3)" below). Gestures deferred to E4.
 **E4 🔲** — polish (timer editing mid-cook, session stats, rescheduling).
 
 Immersive kitchen-optimized cooking screen. **Multi-session**: user can have
@@ -68,7 +68,7 @@ several recipes playing in parallel (e.g., lasagna baking while bread rises).
 
 | Feature | Native API |
 |---------|-----------|
-| Voice commands | `@react-native-voice/voice` |
+| Voice commands | `expo-speech-recognition` (major version tracks the Expo SDK, e.g. `^57`) |
 | Text-to-speech | `expo-speech` |
 | Wake lock | `expo-keep-awake` |
 | Background timers | `expo-task-manager` + `expo-notifications` |
@@ -84,6 +84,32 @@ several recipes playing in parallel (e.g., lasagna baking while bread rises).
 - Sessions-dashboard surface (or floating pill) shows all active sessions with a count badge; user can jump between them.
 - Leaving a session keeps it running in the background; explicit "End cooking" required to terminate.
 - Voice commands target the foreground session by default; "pause lasagna timer" can disambiguate by recipe title.
+
+**Voice (E3):**
+- **Voice is additive — it never hides or replaces step content.** The Play
+  screen keeps showing the step title, instruction, "For this step"
+  ingredients and the Prep/Wait timer cards. Every voice command has a
+  tap equivalent that keeps working. Voice only adds a compact bar at the
+  bottom (mic toggle, push-to-talk, last-heard command, help).
+- The display follows voice: "next"/"back" change the visible step;
+  timer commands update the visible timer cards.
+- TTS (`expo-speech`) reads exactly what is on screen (instruction, then
+  ingredients) in the interface language. Auto-read on step change
+  (toggle in the voice help sheet; not on first open).
+- Recognition (`expo-speech-recognition`): on-device when available,
+  `contextualStrings` seeded with command keywords, `en-US` / `he-IL`.
+- Half-duplex: recognition is paused while TTS speaks, so the mic never
+  hears the app's own voice.
+- Two listening modes: continuous (mic toggle, auto-restarts after
+  silence) and push-to-talk (single utterance).
+- Command keywords ported from the web `voice_commands` seed (EN + HE),
+  bundled in `src/voice/commands.ts` (no backend). Matcher prefers the
+  longest matching keyword so "read ingredients" beats "read".
+- Native module → requires a dev client / APK; in Expo Go the voice bar
+  shows "voice unavailable" and the rest of Play Mode works unchanged.
+- Out of scope for E3: Claude fallback for free-form questions (Phase F),
+  text-size voice commands (text size is a Settings option),
+  video/volume commands.
 
 ### Phase F — AI Import 🔲 Not started
 
