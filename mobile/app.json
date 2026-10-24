@@ -47,7 +47,8 @@
           "microphonePermission": "Kitchen48 uses the microphone so you can control cooking mode with your voice.",
           "speechRecognitionPermission": "Kitchen48 uses speech recognition to understand voice commands like \"next\" and \"start timer\"."
         }
-      ]
+      ],
+      "expo-font"
     ],
     "extra": {
       "router": {},
