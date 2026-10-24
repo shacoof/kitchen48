@@ -172,12 +172,14 @@ never hides or replaces that content; it adds a bottom voice bar only.
 | `src/services/tts.ts` | `expo-speech` wrapper: speak/stop, language mapping, speaking state |
 | `src/hooks/useVoiceControl.ts` | Recognition lifecycle, continuous vs push-to-talk, pauses while TTS speaks |
 | `src/components/VoiceBar.tsx` | Mic toggle, push-to-talk, last-heard feedback, help button |
-| `src/components/VoiceHelpModal.tsx` | Lists available commands |
+| `src/components/VoiceHelpModal.tsx` | Lists available commands + auto-read toggle |
+| `src/voice/recognizer.ts` | Lazy native-module loader (Expo Go → unavailable) |
 
 Commands target the foreground session; a timer command that names another
 active recipe's title ("pause lasagna timer") targets that session.
 
-Setting: `voice_auto_read` (`'1'`/`'0'`, default `'1'`) — read each step aloud when it opens.
+Setting: `voice_auto_read` (`'1'`/`'0'`, default `'1'`) — read each step aloud when the step changes
+(not on first open). Toggled from the voice help sheet.
 
 ---
 

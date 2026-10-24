@@ -94,8 +94,8 @@ several recipes playing in parallel (e.g., lasagna baking while bread rises).
 - The display follows voice: "next"/"back" change the visible step;
   timer commands update the visible timer cards.
 - TTS (`expo-speech`) reads exactly what is on screen (instruction, then
-  ingredients) in the interface language. Optional auto-read on step
-  change (Settings → Voice).
+  ingredients) in the interface language. Auto-read on step change
+  (toggle in the voice help sheet; not on first open).
 - Recognition (`expo-speech-recognition`): on-device when available,
   `contextualStrings` seeded with command keywords, `en-US` / `he-IL`.
 - Half-duplex: recognition is paused while TTS speaks, so the mic never

@@ -193,6 +193,13 @@ export function useVoiceControl({ lang, onCommand }: Options) {
     startOnce();
   }, [recognizer, ensurePermission, startOnce, updateMode]);
 
+  /** Stop listening entirely (e.g. when the screen loses focus). */
+  const stop = useCallback(() => {
+    clearRestart();
+    updateMode('off');
+    recognizer?.abort();
+  }, [recognizer, updateMode]);
+
   const pushToTalk = useCallback(async () => {
     if (!recognizer || modeRef.current !== 'off') return;
     if (!(await ensurePermission())) return;
@@ -209,5 +216,6 @@ export function useVoiceControl({ lang, onCommand }: Options) {
     error,
     toggleContinuous,
     pushToTalk,
+    stop,
   };
 }
