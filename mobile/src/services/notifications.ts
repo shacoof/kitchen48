@@ -1,8 +1,17 @@
 import { Platform } from 'react-native';
-import * as Notifications from 'expo-notifications';
+import { isRunningInExpoGo } from 'expo';
+import type * as NotificationsModule from 'expo-notifications';
 import { createLogger } from '../lib/logger';
 
 const logger = createLogger('Notifications');
+
+// Expo Go on Android (SDK 55+) ships without the expo-notifications native
+// module, and merely importing it throws. Load it lazily and degrade to no-ops
+// there — timers still alarm via the foreground loop.
+const Notifications: typeof NotificationsModule | null =
+  Platform.OS === 'android' && isRunningInExpoGo()
+    ? null
+    : require('expo-notifications');
 
 export const TIMER_CHANNEL_ID = 'timer';
 
@@ -19,7 +28,7 @@ export interface TimerNotificationData {
 }
 
 async function ensureInitialized(): Promise<void> {
-  if (initialized) return;
+  if (initialized || !Notifications) return;
   initialized = true;
 
   // Foreground behavior: banner + sound + list entry.
@@ -47,6 +56,7 @@ async function ensureInitialized(): Promise<void> {
 
 export async function ensureNotificationPermission(): Promise<boolean> {
   await ensureInitialized();
+  if (!Notifications) return false;
   if (permissionStatus === 'granted') return true;
 
   const existing = await Notifications.getPermissionsAsync();
@@ -71,6 +81,7 @@ export interface ScheduleArgs {
 
 export async function scheduleTimerNotification(args: ScheduleArgs): Promise<string | null> {
   await ensureInitialized();
+  if (!Notifications) return null;
   const fireTime = new Date(args.firesAt).getTime();
   if (fireTime - Date.now() < 1000) {
     // Too soon / already past — skip OS scheduling. Foreground alarm loop
@@ -99,7 +110,7 @@ export async function scheduleTimerNotification(args: ScheduleArgs): Promise<str
 }
 
 export async function cancelTimerNotification(notificationId: string | null): Promise<void> {
-  if (!notificationId) return;
+  if (!notificationId || !Notifications) return;
   try {
     await Notifications.cancelScheduledNotificationAsync(notificationId);
   } catch (err) {
@@ -110,6 +121,7 @@ export async function cancelTimerNotification(notificationId: string | null): Pr
 export function addNotificationResponseListener(
   handler: (data: TimerNotificationData) => void
 ): () => void {
+  if (!Notifications) return () => {};
   const sub = Notifications.addNotificationResponseReceivedListener((response) => {
     const data = response.notification.request.content.data as unknown;
     if (isTimerData(data)) handler(data);
