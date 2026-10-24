@@ -115,6 +115,19 @@ cd mobile && npx expo start --tunnel
 - Scan the QR code from the terminal with the phone camera (iOS) or Expo Go (Android)
 - The `@expo/ngrok` package is required for tunneling (auto-installed on first use)
 
+### Native modules → dev client (Expo Go is not enough)
+
+Voice (`expo-speech-recognition`) is a native module that Expo Go does not
+include. To test voice, build and install the dev client once, then run Metro:
+
+```bash
+./scripts/build-mobile-apk.sh development       # once, and after any native dep change
+cd mobile && npx expo start --dev-client --tunnel
+```
+
+Expo Go still works for everything else; the voice bar degrades to
+"voice unavailable".
+
 ### TypeScript check
 
 ```bash
@@ -144,6 +157,27 @@ The installed APK will pull the new JS bundle on next launch.
 Build profiles are defined in [`eas.json`](./eas.json). Project ID is stored in `app.json` under `expo.extra.eas.projectId`.
 
 **One-time setup (already done):** `npx eas-cli@latest login`
+
+---
+
+## Play Mode Voice (Phase E3)
+
+**Requirement: voice is additive.** The Play screen always shows the current
+step (title, instruction, ingredients, timers) and all tap controls. Voice
+never hides or replaces that content; it adds a bottom voice bar only.
+
+| File | Role |
+|------|------|
+| `src/voice/commands.ts` | Command ids + EN/HE keywords (ported from web seed), matcher |
+| `src/services/tts.ts` | `expo-speech` wrapper: speak/stop, language mapping, speaking state |
+| `src/hooks/useVoiceControl.ts` | Recognition lifecycle, continuous vs push-to-talk, pauses while TTS speaks |
+| `src/components/VoiceBar.tsx` | Mic toggle, push-to-talk, last-heard feedback, help button |
+| `src/components/VoiceHelpModal.tsx` | Lists available commands |
+
+Commands target the foreground session; a timer command that names another
+active recipe's title ("pause lasagna timer") targets that session.
+
+Setting: `voice_auto_read` (`'1'`/`'0'`, default `'1'`) — read each step aloud when it opens.
 
 ---
 
