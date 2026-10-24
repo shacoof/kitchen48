@@ -12,7 +12,7 @@
 
 ### Phase A — Foundation ✅ Done (commit `0563cbd`, 2026-04-11)
 
-- Expo SDK 54 + expo-router + TypeScript
+- Expo SDK 57 + expo-router + TypeScript
 - SQLite tables: `recipes`, `steps`, `step_ingredients`, `dietary_tags`, `settings`
 - i18n with EN/HE locales, RTL via `I18nManager`
 - Tab navigation: My Recipes, Create, Settings
@@ -33,7 +33,7 @@
 ### Phase C — Media ✅ Done (commit `d8853fe`, 2026-04-11)
 
 - `MediaPicker` component: camera + gallery for images and videos
-- `VideoPlayer` component: expo-av with native controls
+- `VideoPlayer` component: expo-video with native controls
 - Hero image + per-step images and videos
 - Media saved to `${documentDirectory}/recipes/{recipeId}/`
 - Web stubs (`.web.tsx`) for Expo web preview
