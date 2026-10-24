@@ -136,25 +136,39 @@ cd mobile && npx tsc --noEmit
 
 ### Building a standalone APK (no Metro, runs offline on phone)
 
-For ongoing use on a phone without desktop dependence, build an APK via EAS Build:
+For ongoing use on a phone without desktop dependence, build an APK with the build script. By default it builds **locally** (no EAS cloud quota) and **uploads to Google Drive**:
 
 ```bash
-./scripts/build-mobile-apk.sh                  # preview APK (default) — for sideload
+./scripts/build-mobile-apk.sh                  # preview APK (default), local build — for sideload
 ./scripts/build-mobile-apk.sh production       # AAB for Play Store
 ./scripts/build-mobile-apk.sh development      # dev client APK (connects to Metro)
+./scripts/build-mobile-apk.sh --cloud          # build on EAS servers instead of locally
+./scripts/build-mobile-apk.sh --no-upload      # skip the Google Drive upload
 ```
+
+**Every build automatically:**
+1. Bumps `expo.version` in `app.json`: `1.0.0` → `1.1` → `1.2` → … (never edit it by hand)
+2. Builds and saves `mobile/build-output/kitchen48-v<version>.apk` (git-ignored)
+3. Uploads the file to the Drive builds folder: https://drive.google.com/drive/folders/1f6LyPM-VBpw2yD24RFSgwN1UoQFuU2aB (via rclone remote `gdrive`)
+4. Commits the bump as `chore(mobile): build v<version> (<profile>)` — the bump is reverted if the build fails
+
+The script refuses to run mid-merge/rebase or with uncommitted `app.json` changes. Uncommitted changes elsewhere in `mobile/` are included in the build.
+
+To install on the phone: open the APK from the Drive app → Install. It installs over the existing app (same EAS signing key) and keeps local data — don't uninstall first.
 
 **When to rebuild:**
 - After completing each phase (D/E/F) — full rebuild captures all native module changes
 - When adding a new native dependency (Expo Go won't pick it up; a new APK is required)
 
-**For JS-only changes between phases** (bugfixes, UI tweaks), prefer OTA updates instead of a full rebuild:
-```bash
-cd mobile && npx eas-cli@latest update --branch preview
-```
-The installed APK will pull the new JS bundle on next launch.
+**OTA updates are not set up** (`expo-updates` is not installed), so every change currently needs a new APK.
 
 Build profiles are defined in [`eas.json`](./eas.json). Project ID is stored in `app.json` under `expo.extra.eas.projectId`.
+
+**Local toolchain (installed in user home, no sudo):**
+- JDK 17 (Temurin): `~/.local/jdk/jdk-17.0.21+9`
+- Android SDK: `~/Android/Sdk` (platform 36, build-tools 36.0.0, NDK 27.1.12297006, platform-tools)
+- rclone: `~/.local/bin/rclone`, remote `gdrive` (`rclone config`, Google Drive, full scope)
+- `JAVA_HOME` / `ANDROID_HOME` are exported in `~/.bashrc`; the script falls back to these paths if unset
 
 **One-time setup (already done):** `npx eas-cli@latest login`
 
