@@ -1,7 +1,8 @@
 import { useState, useCallback, useEffect, useMemo } from 'react';
 import {
-  View, Text, TextInput, ScrollView, StyleSheet, Pressable,
+  View, ScrollView, StyleSheet, Pressable,
 } from 'react-native';
+import { Text, TextInput } from '../../src/components/ScaledText';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import {

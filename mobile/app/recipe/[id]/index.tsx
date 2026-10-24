@@ -1,7 +1,8 @@
 import { useState, useCallback, useMemo } from 'react';
 import {
-  View, Text, ScrollView, StyleSheet, Pressable, Image, Alert,
+  View, ScrollView, StyleSheet, Pressable, Image, Alert,
 } from 'react-native';
+import { Text } from '../../../src/components/ScaledText';
 import { useLocalSearchParams, useRouter, useFocusEffect } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { getRecipeById, deleteRecipe, type RecipeWithSteps } from '../../../src/db/recipes-db';

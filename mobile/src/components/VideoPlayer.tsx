@@ -1,5 +1,6 @@
 import { useState, useRef } from 'react';
-import { View, Text, StyleSheet, Pressable } from 'react-native';
+import { View, StyleSheet, Pressable } from 'react-native';
+import { Text } from './ScaledText';
 import { Video, ResizeMode, type AVPlaybackStatus } from 'expo-av';
 import { createLogger } from '../lib/logger';
 

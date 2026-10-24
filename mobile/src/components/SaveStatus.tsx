@@ -1,4 +1,5 @@
-import { Text, StyleSheet } from 'react-native';
+import { StyleSheet } from 'react-native';
+import { Text } from './ScaledText';
 import { useTranslation } from 'react-i18next';
 
 interface Props {

@@ -1,4 +1,5 @@
-import { View, Pressable, Text, StyleSheet } from 'react-native';
+import { View, Pressable, StyleSheet } from 'react-native';
+import { Text } from './ScaledText';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter, usePathname } from 'expo-router';
 import { useTranslation } from 'react-i18next';
@@ -94,7 +95,7 @@ const styles = StyleSheet.create({
     top: -4,
     right: -10,
     minWidth: 16,
-    height: 16,
+    minHeight: 16,
     borderRadius: 8,
     backgroundColor: '#f97316',
     alignItems: 'center',

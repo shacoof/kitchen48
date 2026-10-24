@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
-import { View, Text, StyleSheet, Pressable } from 'react-native';
+import { View, StyleSheet, Pressable } from 'react-native';
+import { Text } from '../../src/components/ScaledText';
 import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { useScreenHeader } from '../../src/hooks/useScreenHeader';

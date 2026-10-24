@@ -62,7 +62,14 @@
     "language": "Interface Language",
     "measurement": "Measurement System",
     "metric": "Metric",
-    "imperial": "Imperial"
+    "imperial": "Imperial",
+    "font_size": "Text size",
+    "font_size_hint": "Makes text bigger or smaller across the app.",
+    "font_size_small": "Small",
+    "font_size_normal": "Normal",
+    "font_size_large": "Large",
+    "font_size_xlarge": "Extra large",
+    "font_size_preview": "Preheat the oven to 180°C and grease the pan."
   },
   "create": {
     "title": "Create Recipe",

@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
-import { View, Text, Image, Pressable, StyleSheet, Alert } from 'react-native';
+import { View, Image, Pressable, StyleSheet, Alert } from 'react-native';
+import { Text } from './ScaledText';
 import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import type { ActiveSessionSnapshot } from '../hooks/useActiveSessions';
