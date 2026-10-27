@@ -69,7 +69,11 @@
     "font_size_normal": "Normal",
     "font_size_large": "Large",
     "font_size_xlarge": "Extra large",
-    "font_size_preview": "Preheat the oven to 180°C and grease the pan."
+    "font_size_preview": "Preheat the oven to 180°C and grease the pan.",
+    "about": "About",
+    "version": "Version {{version}}",
+    "update_id": "Update {{id}} · {{date}}",
+    "update_builtin": "Built-in code (no over-the-air update yet)"
   },
   "create": {
     "title": "Create Recipe",

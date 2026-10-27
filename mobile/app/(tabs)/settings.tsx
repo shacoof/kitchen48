@@ -2,6 +2,8 @@ import { useMemo } from 'react';
 import { View, ScrollView, StyleSheet, Pressable } from 'react-native';
 import { Text } from '../../src/components/ScaledText';
 import { useTranslation } from 'react-i18next';
+import Constants from 'expo-constants';
+import * as Updates from 'expo-updates';
 import { useScreenHeader } from '../../src/hooks/useScreenHeader';
 import { useFontScale, FONT_SIZE_LEVELS } from '../../src/config/font-scale';
 
@@ -42,6 +44,22 @@ export default function SettingsScreen() {
           <Text style={styles.previewText}>{t('settings.font_size_preview')}</Text>
         </View>
       </View>
+
+      <View style={[styles.section, styles.sectionSpaced]}>
+        <Text style={styles.sectionTitle}>{t('settings.about')}</Text>
+        <Text style={styles.hint}>
+          {t('settings.version', { version: Constants.expoConfig?.version ?? '?' })}
+        </Text>
+        {/* Shows which OTA update is running, so a published update can be confirmed on the phone */}
+        <Text style={styles.hint}>
+          {Updates.isEnabled && !Updates.isEmbeddedLaunch && Updates.updateId
+            ? t('settings.update_id', {
+                id: Updates.updateId.slice(0, 8),
+                date: Updates.createdAt?.toLocaleDateString() ?? '',
+              })
+            : t('settings.update_builtin')}
+        </Text>
+      </View>
     </ScrollView>
   );
 }
@@ -56,6 +74,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#e2e8f0',
   },
+  sectionSpaced: { marginTop: 16 },
   sectionTitle: { fontSize: 17, fontWeight: '600', color: '#0f172a', marginBottom: 4 },
   hint: { fontSize: 14, color: '#64748b', marginBottom: 12 },
   options: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
