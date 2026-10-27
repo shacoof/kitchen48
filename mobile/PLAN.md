@@ -158,7 +158,7 @@ Build profiles are defined in `mobile/eas.json`. First build verified successful
 
 **Update already-installed APKs with JS-only changes (OTA, APKs from v1.2 onward):**
 ```bash
-cd mobile && npx eas-cli update --channel preview --platform android --message "<what changed>"
+cd mobile && npx eas-cli update --channel preview --environment preview --platform android --message "<what changed>"
 ```
 See `mobile/CLAUDE.md` → "OTA updates" for when a new APK is still required.
 

@@ -163,7 +163,7 @@ To install on the phone: open the APK from the Drive app → Install. It install
 APKs from v1.2 onward include `expo-updates`, so JS/asset changes ship over the air instead of as a new APK:
 
 ```bash
-cd mobile && npx eas-cli update --channel preview --platform android --message "<what changed>"
+cd mobile && npx eas-cli update --channel preview --environment preview --platform android --message "<what changed>"
 ```
 
 - The phone checks for an update on launch and downloads it in the background; it applies on the **next** launch. To pick it up: open the app, wait a few seconds, swipe it away from recents, open it again.
