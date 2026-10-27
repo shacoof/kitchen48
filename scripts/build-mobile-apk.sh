@@ -20,7 +20,9 @@ set -e
 #   ./scripts/build-mobile-apk.sh --help           # show help
 #
 # Each build:
-#   1. Bumps expo.version in mobile/app.json (1.0.0 -> 1.1 -> 1.2 ...)
+#   1. Bumps the major version in mobile/app.json (2.0.0 -> 3.0.0 ...); every
+#      APK is a major version, OTA updates bump minor/patch
+#      (scripts/publish-mobile-update.sh)
 #   2. Builds (locally by default, needs JDK 17 + Android SDK)
 #   3. Saves mobile/build-output/kitchen48-v<version>.apk
 #   4. Uploads it to Google Drive via rclone (remote "gdrive")
@@ -99,9 +101,9 @@ if [ -n "$(git status --porcelain app.json)" ]; then
   exit 1
 fi
 
-# Next version: 1.0.0 -> 1.1, 1.1 -> 1.2, ...
+# Every APK is a new major version: 2.3.1 -> 3.0.0
 OLD_VERSION=$(node -p "require('./app.json').expo.version")
-NEW_VERSION=$(node -p "const [maj, min] = '$OLD_VERSION'.split('.').map(Number); maj + '.' + (min + 1)")
+NEW_VERSION=$(node -p "const [maj] = '$OLD_VERSION'.split('.').map(Number); (maj + 1) + '.0.0'")
 
 if [ "$PROFILE" = "production" ]; then EXT="aab"; else EXT="apk"; fi
 SUFFIX=""

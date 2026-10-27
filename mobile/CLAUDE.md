@@ -147,12 +147,14 @@ For ongoing use on a phone without desktop dependence, build an APK with the bui
 ```
 
 **Every build automatically:**
-1. Bumps `expo.version` in `app.json`: `1.0.0` → `1.1` → `1.2` → … (never edit it by hand)
+1. Bumps the **major** version in `app.json` (`2.0.0` → `3.0.0`) — see the versioning rules below (never edit it by hand)
 2. Builds and saves `mobile/build-output/kitchen48-v<version>.apk` (git-ignored)
 3. Uploads the file to the Drive builds folder: https://drive.google.com/drive/folders/1f6LyPM-VBpw2yD24RFSgwN1UoQFuU2aB (via rclone remote `gdrive`)
 4. Commits the bump as `chore(mobile): build v<version> (<profile>)` — the bump is reverted if the build fails
 
 The script refuses to run mid-merge/rebase or with uncommitted `app.json` changes. Uncommitted changes elsewhere in `mobile/` are included in the build.
+
+Release builds (`preview`, `production`) run **R8 code shrinking + resource shrinking** (`expo-build-properties` in `app.json`) — roughly halves the APK. If a release APK crashes at a screen that works in the dev client, suspect R8 stripping a class a library loads by reflection; add a keep rule via `expo-build-properties` → `android.extraProguardRules`.
 
 The `development` and `preview` profiles build native code for `arm64-v8a` only (`ORG_GRADLE_PROJECT_reactNativeArchitectures` in `eas.json`) — the target phone is a Samsung S20 FE 5G, and a single ABI cuts native compile time and APK size. Add ABIs there if the app ever needs to run on an emulator (`x86_64`) or an old 32-bit phone (`armeabi-v7a`). `production` keeps all ABIs, since the Play Store splits the AAB per device.
 
@@ -163,10 +165,16 @@ To install on the phone: copy the APK to the phone (build with `--no-upload`; th
 APKs from v1.3 onward (fingerprint runtime) receive OTA updates, so JS/asset changes ship over the air instead of as a new APK:
 
 ```bash
-./scripts/publish-mobile-update.sh "<what changed>"    # preview channel (the phone)
+./scripts/publish-mobile-update.sh "<what changed>"             # small change
+./scripts/publish-mobile-update.sh --feature "<what changed>"   # major feature
 ```
 
-**Every build and every OTA publish gets a new version number.** Both scripts bump `expo.version` (`1.3` → `1.4` → …) and commit it, so Settings → About on the phone always shows the latest version. APK file names therefore skip numbers used by OTA updates.
+**Versioning rules (`x.y.z`, set by the user 2026-10-27) — every build and every OTA publish gets a new number:**
+- **x — new APK** (`build-mobile-apk.sh`): `2.3.1` → `3.0.0`
+- **y — major feature, OTA** (`publish-mobile-update.sh --feature`): `2.0.1` → `2.1.0`
+- **z — small change / fix, OTA** (`publish-mobile-update.sh`): `2.0.0` → `2.0.1`
+
+Both scripts bump `expo.version` and commit it, so Settings → About on the phone always shows the latest version.
 
 - The phone checks for an update on launch and downloads it in the background; it applies on the **next** launch. To pick it up: open the app, wait a few seconds, swipe it away from recents, open it again.
 - `runtimeVersion` uses the `fingerprint` policy: an update only reaches APKs built from the same native code (hash of native deps, plugins and native config). `mobile/fingerprint.config.js` leaves `expo.version` out of the hash, so version bumps don't cut installed APKs off. If a publish would need native code the installed APK lacks, its fingerprint differs and the phone simply won't receive it — build a new APK.

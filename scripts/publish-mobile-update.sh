@@ -8,12 +8,14 @@ set -e
 # APKs already installed on phones, and bumps the app version like a build.
 #
 # Usage:
-#   ./scripts/publish-mobile-update.sh "what changed"             # preview channel
+#   ./scripts/publish-mobile-update.sh "what changed"             # small change: 2.0.0 -> 2.0.1
+#   ./scripts/publish-mobile-update.sh --feature "what changed"   # major feature: 2.0.1 -> 2.1.0
 #   ./scripts/publish-mobile-update.sh "what changed" production  # production channel
 #   ./scripts/publish-mobile-update.sh --help
 #
 # Each publish:
-#   1. Bumps expo.version in mobile/app.json (1.3 -> 1.4 ...), shared with builds
+#   1. Bumps expo.version in mobile/app.json: patch for small changes, minor
+#      with --feature (major is reserved for APK builds)
 #   2. Publishes to the channel (only reaches APKs with the same native
 #      fingerprint — native changes need a new APK via build-mobile-apk.sh)
 #   3. Commits the bump (reverted if publishing fails)
@@ -32,14 +34,16 @@ NC='\033[0m'
 
 MESSAGE=""
 CHANNEL="preview"
+BUMP="patch"
 
 for arg in "$@"; do
   case "$arg" in
     -h|--help)
-      sed -n '3,20p' "$0" | sed 's/^# \{0,1\}//'
+      sed -n '3,22p' "$0" | sed 's/^# \{0,1\}//'
       exit 0
       ;;
     preview|production|development) CHANNEL="$arg" ;;
+    --feature) BUMP="minor" ;;
     *)
       if [ -z "$MESSAGE" ]; then
         MESSAGE="$arg"
@@ -71,12 +75,15 @@ if [ -n "$(git status --porcelain app.json)" ]; then
 fi
 
 OLD_VERSION=$(node -p "require('./app.json').expo.version")
-NEW_VERSION=$(node -p "const [maj, min] = '$OLD_VERSION'.split('.').map(Number); maj + '.' + (min + 1)")
+NEW_VERSION=$(node -p "
+const [maj, min = 0, pat = 0] = '$OLD_VERSION'.split('.').map(Number);
+'$BUMP' === 'minor' ? maj + '.' + (min + 1) + '.0' : maj + '.' + min + '.' + (pat + 1)
+")
 
 echo -e "${CYAN}${BOLD}Kitchen48 OTA Update${NC}"
 echo "============================================================================"
 echo -e "Channel:    ${YELLOW}$CHANNEL${NC}"
-echo -e "Version:    ${YELLOW}$OLD_VERSION -> $NEW_VERSION${NC}"
+echo -e "Version:    ${YELLOW}$OLD_VERSION -> $NEW_VERSION${NC} ($BUMP)"
 echo -e "Message:    $MESSAGE"
 echo "============================================================================"
 

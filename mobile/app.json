@@ -53,7 +53,16 @@
           "speechRecognitionPermission": "Kitchen48 uses speech recognition to understand voice commands like \"next\" and \"start timer\"."
         }
       ],
-      "./plugins/withGradleMemory"
+      "./plugins/withGradleMemory",
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "enableMinifyInReleaseBuilds": true,
+            "enableShrinkResourcesInReleaseBuilds": true
+          }
+        }
+      ]
     ],
     "extra": {
       "router": {},
