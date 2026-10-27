@@ -154,6 +154,8 @@ For ongoing use on a phone without desktop dependence, build an APK with the bui
 
 The script refuses to run mid-merge/rebase or with uncommitted `app.json` changes. Uncommitted changes elsewhere in `mobile/` are included in the build.
 
+The `development` and `preview` profiles build native code for `arm64-v8a` only (`ORG_GRADLE_PROJECT_reactNativeArchitectures` in `eas.json`) — the target phone is a Samsung S20 FE 5G, and a single ABI cuts native compile time and APK size. Add ABIs there if the app ever needs to run on an emulator (`x86_64`) or an old 32-bit phone (`armeabi-v7a`). `production` keeps all ABIs, since the Play Store splits the AAB per device.
+
 To install on the phone: open the APK from the Drive app → Install. It installs over the existing app (same EAS signing key) and keeps local data — don't uninstall first.
 
 **When to rebuild:**
