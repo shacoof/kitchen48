@@ -158,11 +158,24 @@ The `development` and `preview` profiles build native code for `arm64-v8a` only 
 
 To install on the phone: open the APK from the Drive app → Install. It installs over the existing app (same EAS signing key) and keeps local data — don't uninstall first.
 
-**When to rebuild:**
-- After completing each phase (D/E/F) — full rebuild captures all native module changes
-- When adding a new native dependency (Expo Go won't pick it up; a new APK is required)
+### OTA updates (EAS Update) — default for JS-only changes
 
-**OTA updates are not set up** (`expo-updates` is not installed), so every change currently needs a new APK.
+APKs from v1.2 onward include `expo-updates`, so JS/asset changes ship over the air instead of as a new APK:
+
+```bash
+cd mobile && npx eas-cli update --channel preview --platform android --message "<what changed>"
+```
+
+- The phone checks for an update on launch and downloads it in the background; it applies on the **next** launch. To pick it up: open the app, wait a few seconds, swipe it away from recents, open it again.
+- `runtimeVersion` uses the `appVersion` policy: an update only reaches APKs whose `expo.version` matches the current `app.json` version. Publish from the same version the installed APK was built at (the build script commits the bump, so `main` after a build is correct).
+- Channels map to build profiles in `eas.json` (`development`, `preview`, `production`). The phone's sideloaded APK is `preview`.
+- Published updates are visible at https://expo.dev/accounts/shacoof/projects/kitchen48/updates. Roll back with `npx eas-cli update:republish` or by publishing a fixed update.
+
+**A new APK is required (OTA can't deliver these):**
+- Adding, removing or upgrading a native dependency (anything with Android code, e.g. `expo-speech-recognition`)
+- Expo SDK upgrades
+- `app.json` changes to permissions, plugins, icon, splash, name or package
+- Publishing an update that needs a native module the installed APK lacks will crash the app — rebuild instead.
 
 Build profiles are defined in [`eas.json`](./eas.json). Project ID is stored in `app.json` under `expo.extra.eas.projectId`.
 
