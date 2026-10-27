@@ -13,6 +13,53 @@ export function voiceLanguage(lang: string): string {
   return VOICE_LANG[lang] ?? VOICE_LANG.en;
 }
 
+const HEBREW_CHARS = /[\u0590-\u05FF]/;
+
+/**
+ * Voice language for one piece of text. Recipe content can be in a different
+ * language than the interface, so Hebrew text gets the Hebrew voice even when
+ * the interface is English.
+ */
+export function voiceLanguageFor(text: string, lang: string): string {
+  return HEBREW_CHARS.test(text) ? VOICE_LANG.he : voiceLanguage(lang);
+}
+
+type MissingVoiceListener = (language: string) => void;
+
+const missingVoiceListeners = new Set<MissingVoiceListener>();
+let installedVoiceLangs: Promise<string[]> | null = null;
+const reportedMissing = new Set<string>();
+
+/** Subscribe to "no installed voice for this language". Returns an unsubscribe function. */
+export function onMissingVoice(listener: MissingVoiceListener): () => void {
+  missingVoiceListeners.add(listener);
+  return () => { missingVoiceListeners.delete(listener); };
+}
+
+// Android reports Hebrew under the legacy code "iw" as well as "he".
+function langPrefixes(language: string): string[] {
+  const base = language.split('-')[0].toLowerCase();
+  return base === 'he' ? ['he', 'iw'] : [base];
+}
+
+async function checkVoiceInstalled(language: string): Promise<void> {
+  if (reportedMissing.has(language)) return;
+  installedVoiceLangs ??= Speech.getAvailableVoicesAsync()
+    .then((voices) => voices.map((v) => v.language.toLowerCase()))
+    .catch((err) => {
+      logger.warning(`getAvailableVoicesAsync failed: ${err}`);
+      return [];
+    });
+  const langs = await installedVoiceLangs;
+  // An empty list means the engine didn't report voices, not that none exist.
+  if (langs.length === 0) return;
+  const prefixes = langPrefixes(language);
+  if (langs.some((l) => prefixes.some((p) => l.startsWith(p)))) return;
+  reportedMissing.add(language);
+  logger.warning(`no installed voice for ${language}`);
+  for (const l of missingVoiceListeners) l(language);
+}
+
 type SpeakingListener = (speaking: boolean) => void;
 
 const listeners = new Set<SpeakingListener>();
@@ -51,7 +98,8 @@ export function speak(parts: string[], lang: string): Promise<void> {
   }
 
   setSpeaking(true);
-  const language = voiceLanguage(lang);
+  const languages = texts.map((text) => voiceLanguageFor(text, lang));
+  for (const language of new Set(languages)) void checkVoiceInstalled(language);
   return new Promise((resolve) => {
     const finish = () => {
       if (token === currentToken) setSpeaking(false);
@@ -60,7 +108,7 @@ export function speak(parts: string[], lang: string): Promise<void> {
     texts.forEach((text, i) => {
       const last = i === texts.length - 1;
       Speech.speak(text, {
-        language,
+        language: languages[i],
         onDone: last ? finish : undefined,
         onStopped: finish,
         onError: (err) => {

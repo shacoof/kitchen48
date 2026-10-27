@@ -25,7 +25,7 @@ import { useSessionTimers, computeRemainingMs, formatCountdown } from '../../../
 import { handleFiredTimers } from '../../../src/services/timer-alarms';
 import { useScreenHeader } from '../../../src/hooks/useScreenHeader';
 import { useVoiceControl } from '../../../src/hooks/useVoiceControl';
-import { speak, stopSpeaking, onSpeakingChange } from '../../../src/services/tts';
+import { speak, stopSpeaking, onSpeakingChange, onMissingVoice } from '../../../src/services/tts';
 import { VOICE_COMMANDS, titleMatchScore, type MatchedCommand } from '../../../src/voice/commands';
 import { VoiceBar } from '../../../src/components/VoiceBar';
 import { VoiceHelpModal } from '../../../src/components/VoiceHelpModal';
@@ -126,6 +126,12 @@ export default function PlayScreen() {
 
   useEffect(() => onSpeakingChange(setSpeakingState), []);
   useEffect(() => () => stopSpeaking(), []);
+  useEffect(() => onMissingVoice((language) => {
+    Alert.alert(
+      t('voice.missing_voice_title'),
+      t('voice.missing_voice_body', { language: t(`voice.language_${language.split('-')[0]}`, language) }),
+    );
+  }), [t]);
 
   useEffect(() => {
     getSetting('voice_auto_read')
