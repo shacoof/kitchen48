@@ -63,7 +63,7 @@
     },
     "owner": "shacoof",
     "runtimeVersion": {
-      "policy": "appVersion"
+      "policy": "fingerprint"
     },
     "updates": {
       "url": "https://u.expo.dev/2061b5ec-d682-4ffa-be6e-84b95a7a8535"

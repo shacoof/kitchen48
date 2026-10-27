@@ -156,18 +156,20 @@ The script refuses to run mid-merge/rebase or with uncommitted `app.json` change
 
 The `development` and `preview` profiles build native code for `arm64-v8a` only (`ORG_GRADLE_PROJECT_reactNativeArchitectures` in `eas.json`) — the target phone is a Samsung S20 FE 5G, and a single ABI cuts native compile time and APK size. Add ABIs there if the app ever needs to run on an emulator (`x86_64`) or an old 32-bit phone (`armeabi-v7a`). `production` keeps all ABIs, since the Play Store splits the AAB per device.
 
-To install on the phone: open the APK from the Drive app → Install. It installs over the existing app (same EAS signing key) and keeps local data — don't uninstall first.
+To install on the phone: copy the APK to the phone (build with `--no-upload`; the user copies it manually), open it → Install. It installs over the existing app (same EAS signing key) and keeps local data — don't uninstall first.
 
 ### OTA updates (EAS Update) — default for JS-only changes
 
-APKs from v1.2 onward include `expo-updates`, so JS/asset changes ship over the air instead of as a new APK:
+APKs from v1.3 onward (fingerprint runtime) receive OTA updates, so JS/asset changes ship over the air instead of as a new APK:
 
 ```bash
-cd mobile && npx eas-cli update --channel preview --environment preview --platform android --message "<what changed>"
+./scripts/publish-mobile-update.sh "<what changed>"    # preview channel (the phone)
 ```
 
+**Every build and every OTA publish gets a new version number.** Both scripts bump `expo.version` (`1.3` → `1.4` → …) and commit it, so Settings → About on the phone always shows the latest version. APK file names therefore skip numbers used by OTA updates.
+
 - The phone checks for an update on launch and downloads it in the background; it applies on the **next** launch. To pick it up: open the app, wait a few seconds, swipe it away from recents, open it again.
-- `runtimeVersion` uses the `appVersion` policy: an update only reaches APKs whose `expo.version` matches the current `app.json` version. Publish from the same version the installed APK was built at (the build script commits the bump, so `main` after a build is correct).
+- `runtimeVersion` uses the `fingerprint` policy: an update only reaches APKs built from the same native code (hash of native deps, plugins and native config). `mobile/fingerprint.config.js` leaves `expo.version` out of the hash, so version bumps don't cut installed APKs off. If a publish would need native code the installed APK lacks, its fingerprint differs and the phone simply won't receive it — build a new APK.
 - Channels map to build profiles in `eas.json` (`development`, `preview`, `production`). The phone's sideloaded APK is `preview`.
 - Published updates are visible at https://expo.dev/accounts/shacoof/projects/kitchen48/updates. Roll back with `npx eas-cli update:republish` or by publishing a fixed update.
 
@@ -175,7 +177,7 @@ cd mobile && npx eas-cli update --channel preview --environment preview --platfo
 - Adding, removing or upgrading a native dependency (anything with Android code, e.g. `expo-speech-recognition`)
 - Expo SDK upgrades
 - `app.json` changes to permissions, plugins, icon, splash, name or package
-- Publishing an update that needs a native module the installed APK lacks will crash the app — rebuild instead.
+- The fingerprint guards against shipping JS that needs missing native code, but the phone then gets nothing until a new APK is installed — so rebuild whenever native code changes.
 
 Build profiles are defined in [`eas.json`](./eas.json). Project ID is stored in `app.json` under `expo.extra.eas.projectId`.
 

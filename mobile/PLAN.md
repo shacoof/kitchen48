@@ -156,9 +156,9 @@ EAS Build is set up. Project: `@shacoof/kitchen48` (EAS project id `2061b5ec-d68
 
 Build profiles are defined in `mobile/eas.json`. First build verified successfully on 2026-04-18 (APK installs and runs standalone on Android).
 
-**Update already-installed APKs with JS-only changes (OTA, APKs from v1.2 onward):**
+**Update already-installed APKs with JS-only changes (OTA, APKs from v1.3 onward):**
 ```bash
-cd mobile && npx eas-cli update --channel preview --environment preview --platform android --message "<what changed>"
+./scripts/publish-mobile-update.sh "<what changed>"   # bumps version, publishes, commits
 ```
 See `mobile/CLAUDE.md` → "OTA updates" for when a new APK is still required.
 
